@@ -1,0 +1,274 @@
+@import 'tailwindcss';
+
+/*
+ * prompt2column design tokens.
+ *
+ * Palette: cool-neutral paper with a faint green cast, one accent (citron).
+ * The accent carries every primary action, focus ring and progress state.
+ * Corner radius rule: controls 8px, panels 12px, chips full pill. No exceptions.
+ */
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root {
+	color-scheme: light;
+
+	--canvas: oklch(0.98 0.004 110);
+	--surface: oklch(0.995 0.002 110);
+	--surface-2: oklch(0.958 0.005 110);
+	--surface-3: oklch(0.928 0.006 110);
+	--line: oklch(0.902 0.006 110);
+	--line-strong: oklch(0.84 0.008 110);
+	--text: oklch(0.235 0.01 110);
+	--text-2: oklch(0.495 0.01 110);
+	--text-3: oklch(0.615 0.008 110);
+
+	--accent: oklch(0.79 0.165 118);
+	--accent-hover: oklch(0.75 0.17 118);
+	--accent-ink: oklch(0.26 0.06 118);
+	--accent-soft: oklch(0.955 0.05 118);
+	--accent-line: oklch(0.79 0.09 118);
+	--accent-text: oklch(0.45 0.11 118);
+
+	--danger: oklch(0.55 0.18 27);
+	--danger-soft: oklch(0.955 0.03 27);
+	--danger-line: oklch(0.82 0.09 27);
+
+	--tag-1: oklch(0.93 0.045 230);
+	--tag-2: oklch(0.93 0.05 145);
+	--tag-3: oklch(0.93 0.05 60);
+	--tag-4: oklch(0.93 0.045 330);
+	--tag-5: oklch(0.93 0.045 285);
+	--tag-6: oklch(0.93 0.045 25);
+	--tag-ink: oklch(0.34 0.06 var(--tag-hue, 230));
+
+	--shadow-panel: 0 1px 2px oklch(0.235 0.01 110 / 0.06), 0 8px 24px oklch(0.235 0.01 110 / 0.06);
+	--shadow-pop: 0 2px 6px oklch(0.235 0.01 110 / 0.08), 0 16px 40px oklch(0.235 0.01 110 / 0.14);
+
+	--radius-control: 8px;
+	--radius-panel: 12px;
+}
+
+[data-theme='dark'] {
+	color-scheme: dark;
+
+	--canvas: oklch(0.185 0.006 110);
+	--surface: oklch(0.218 0.007 110);
+	--surface-2: oklch(0.253 0.008 110);
+	--surface-3: oklch(0.295 0.009 110);
+	--line: oklch(0.312 0.009 110);
+	--line-strong: oklch(0.4 0.011 110);
+	--text: oklch(0.955 0.004 110);
+	--text-2: oklch(0.735 0.008 110);
+	--text-3: oklch(0.6 0.008 110);
+
+	--accent: oklch(0.83 0.175 118);
+	--accent-hover: oklch(0.87 0.175 118);
+	--accent-ink: oklch(0.22 0.05 118);
+	--accent-soft: oklch(0.315 0.05 118);
+	--accent-line: oklch(0.47 0.08 118);
+	--accent-text: oklch(0.86 0.14 118);
+
+	--danger: oklch(0.7 0.16 27);
+	--danger-soft: oklch(0.32 0.07 27);
+	--danger-line: oklch(0.45 0.1 27);
+
+	--tag-1: oklch(0.34 0.055 230);
+	--tag-2: oklch(0.34 0.06 145);
+	--tag-3: oklch(0.34 0.06 60);
+	--tag-4: oklch(0.34 0.055 330);
+	--tag-5: oklch(0.34 0.055 285);
+	--tag-6: oklch(0.34 0.055 25);
+	--tag-ink: oklch(0.92 0.05 var(--tag-hue, 230));
+
+	--shadow-panel: 0 1px 2px oklch(0.1 0 0 / 0.5), 0 8px 24px oklch(0.1 0 0 / 0.4);
+	--shadow-pop: 0 2px 8px oklch(0.1 0 0 / 0.5), 0 20px 48px oklch(0.1 0 0 / 0.55);
+}
+
+@theme inline {
+	--color-canvas: var(--canvas);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-surface-3: var(--surface-3);
+	--color-line: var(--line);
+	--color-line-strong: var(--line-strong);
+	--color-ink: var(--text);
+	--color-ink-2: var(--text-2);
+	--color-ink-3: var(--text-3);
+	--color-accent: var(--accent);
+	--color-accent-hover: var(--accent-hover);
+	--color-accent-ink: var(--accent-ink);
+	--color-accent-soft: var(--accent-soft);
+	--color-accent-line: var(--accent-line);
+	--color-accent-text: var(--accent-text);
+	--color-danger: var(--danger);
+	--color-danger-soft: var(--danger-soft);
+	--color-danger-line: var(--danger-line);
+
+	--radius-control: var(--radius-control);
+	--radius-panel: var(--radius-panel);
+
+	--font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+	--font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+
+@layer base {
+	html {
+		background-color: var(--canvas);
+		-webkit-text-size-adjust: 100%;
+	}
+
+	body {
+		background-color: var(--canvas);
+		color: var(--text);
+		font-family: var(--font-sans);
+		font-feature-settings: 'cv11', 'ss01';
+		-webkit-font-smoothing: antialiased;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 2px;
+		border-radius: 4px;
+	}
+
+	::selection {
+		background: var(--accent-soft);
+		color: var(--text);
+	}
+
+	input,
+	textarea,
+	select,
+	button {
+		font: inherit;
+		color: inherit;
+	}
+
+	input::placeholder,
+	textarea::placeholder {
+		color: var(--text-3);
+	}
+
+	/* Scrollbars styled so the dense grid does not look like a raw browser table. */
+	* {
+		scrollbar-width: thin;
+		scrollbar-color: var(--line-strong) transparent;
+	}
+}
+
+@layer components {
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
+		border-radius: var(--radius-control);
+		padding: 0.4rem 0.75rem;
+		font-size: 0.8125rem;
+		font-weight: 500;
+		line-height: 1.2;
+		white-space: nowrap;
+		border: 1px solid transparent;
+		transition:
+			background-color 0.14s ease,
+			border-color 0.14s ease,
+			color 0.14s ease,
+			transform 0.08s ease;
+	}
+
+	.btn:active:not(:disabled) {
+		transform: translateY(1px);
+	}
+
+	.btn:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	.btn-primary {
+		background: var(--accent);
+		color: var(--accent-ink);
+		font-weight: 600;
+	}
+
+	.btn-primary:hover:not(:disabled) {
+		background: var(--accent-hover);
+	}
+
+	.btn-ghost {
+		background: transparent;
+		color: var(--text-2);
+	}
+
+	.btn-ghost:hover:not(:disabled) {
+		background: var(--surface-2);
+		color: var(--text);
+	}
+
+	.btn-outline {
+		background: var(--surface);
+		border-color: var(--line-strong);
+		color: var(--text);
+	}
+
+	.btn-outline:hover:not(:disabled) {
+		background: var(--surface-2);
+	}
+
+	.field {
+		width: 100%;
+		background: var(--surface);
+		border: 1px solid var(--line-strong);
+		border-radius: var(--radius-control);
+		padding: 0.45rem 0.6rem;
+		font-size: 0.8125rem;
+		color: var(--text);
+		transition: border-color 0.14s ease;
+	}
+
+	.field:hover:not(:disabled) {
+		border-color: var(--text-3);
+	}
+
+	.field:focus {
+		outline: none;
+		border-color: var(--accent);
+		box-shadow: 0 0 0 3px var(--accent-soft);
+	}
+
+	.label {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 500;
+		color: var(--text-2);
+		margin-bottom: 0.3rem;
+	}
+
+	.panel {
+		background: var(--surface);
+		border: 1px solid var(--line);
+		border-radius: var(--radius-panel);
+	}
+
+	.chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		border-radius: 999px;
+		padding: 0.1rem 0.5rem;
+		font-size: 0.75rem;
+		line-height: 1.5;
+		white-space: nowrap;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+	}
+}
