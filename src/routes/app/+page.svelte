@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, tick } from 'svelte';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, CheckCircle, DownloadSimple, Warning } from 'phosphor-svelte';
 	import Composer from '$lib/components/Composer.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import { downloadCsv, exportFilename } from '$lib/core/csv';
 	import { Workspace } from '$lib/state/workspace.svelte';
@@ -15,6 +16,7 @@
 
 	const ws = new Workspace();
 	let composer = $state<Composer | null>(null);
+	let searchBar = $state<SearchBar | null>(null);
 	let view = $state<'sheet' | 'prompt'>('sheet');
 	let loadedId = $state('');
 
@@ -53,8 +55,28 @@
 		composer?.insertColumn(column);
 	}
 
+	/**
+	 * The grid only renders rows on screen, so the browser's own find would miss
+	 * most of the sheet. Take over its shortcuts while a sheet is open.
+	 */
+	async function onShortcut(event: KeyboardEvent) {
+		if (!ws.project || !(event.metaKey || event.ctrlKey) || event.altKey) return;
+		const key = event.key.toLowerCase();
+		if (key === 'f') {
+			event.preventDefault();
+			view = 'sheet';
+			await tick();
+			searchBar?.focus();
+		} else if (key === 'g' && ws.searchQuery.trim()) {
+			event.preventDefault();
+			ws.stepSearch(event.shiftKey ? -1 : 1);
+		}
+	}
+
 	const generatedCount = $derived(ws.columns.filter((column) => column.generated).length);
 </script>
+
+<svelte:window onkeydown={onShortcut} />
 
 <svelte:head>
 	<title>{ws.project ? `${ws.project.name} | prompt2column` : 'prompt2column'}</title>
@@ -118,7 +140,8 @@
 			</div>
 
 			<div class="main">
-				<div class={['pane', view !== 'sheet' && 'hide']}>
+				<div class={['pane', 'sheet', view !== 'sheet' && 'hide']}>
+					<SearchBar bind:this={searchBar} {ws} />
 					<DataGrid {ws} onInsert={insert} />
 				</div>
 				<div class={['pane', view !== 'prompt' && 'hide']}>
@@ -187,6 +210,11 @@
 		font-weight: 500;
 	}
 
+	.pane.sheet {
+		display: grid;
+		grid-template-rows: auto minmax(0, 1fr);
+	}
+
 	.pane.hide {
 		display: none;
 	}
@@ -203,6 +231,10 @@
 
 		.pane.hide {
 			display: block;
+		}
+
+		.pane.sheet.hide {
+			display: grid;
 		}
 	}
 </style>

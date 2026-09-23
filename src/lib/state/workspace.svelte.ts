@@ -5,6 +5,7 @@ import { findColumn, renameInTemplate, validateTemplate } from '$lib/core/templa
 import { resolveScope } from '$lib/core/scope';
 import { Runner, type RowOutcome, type RunState } from '$lib/core/runner';
 import { toCsv } from '$lib/core/csv';
+import { searchTable, stepIndex, type CellMatch, type SearchResult } from '$lib/core/search';
 import { uid, type CellStatus, type Column, type Project, type Row } from '$lib/core/types';
 
 const AUTOSAVE_MS = 400;
@@ -27,6 +28,17 @@ export class Workspace {
 	runElapsedMs = $state(0);
 	runMessage = $state('');
 	lastRunColumnId = $state<string | null>(null);
+
+	searchQuery = $state('');
+	/** Null searches every column. */
+	searchColumnId = $state<string | null>(null);
+	searchIndex = $state(-1);
+	/** Bumped whenever the grid should scroll the current match back into view. */
+	searchReveal = $state(0);
+
+	search: SearchResult = $derived.by(() =>
+		searchTable(this.columns, this.rows, this.searchQuery, { columnId: this.searchColumnId })
+	);
 
 	private runner: Runner | null = null;
 	private saveTimer: ReturnType<typeof setTimeout> | null = null;
@@ -96,6 +108,8 @@ export class Workspace {
 				return;
 			}
 			this.project = project;
+			this.clearSearch();
+			this.searchColumnId = null;
 			this.selected.clear();
 			this.cellStatus.clear();
 			this.cellError.clear();
@@ -162,6 +176,7 @@ export class Workspace {
 		this.project.columns = this.project.columns.filter((column) => column.id !== columnId);
 		for (const row of this.project.rows) delete row.cells[columnId];
 		if (this.lastRunColumnId === columnId) this.lastRunColumnId = null;
+		if (this.searchColumnId === columnId) this.searchColumnId = null;
 		this.touch();
 	}
 
@@ -296,6 +311,43 @@ export class Workspace {
 		if (this.tickTimer) clearInterval(this.tickTimer);
 		this.tickTimer = null;
 		if (this.runStartedAt) this.runElapsedMs = Date.now() - this.runStartedAt;
+	}
+
+	get currentMatch(): CellMatch | null {
+		const { matches } = this.search;
+		if (!matches.length || this.searchIndex < 0) return null;
+		return matches[Math.min(this.searchIndex, matches.length - 1)];
+	}
+
+	/** Typing a query jumps to its first match, the way a browser's find does. */
+	setSearch(query: string): void {
+		this.searchQuery = query;
+		this.searchIndex = this.search.matches.length ? 0 : -1;
+		this.searchReveal += 1;
+	}
+
+	setSearchColumn(columnId: string | null): void {
+		this.searchColumnId = columnId;
+		this.searchIndex = this.search.matches.length ? 0 : -1;
+		this.searchReveal += 1;
+	}
+
+	stepSearch(step: number): void {
+		const total = this.search.matches.length;
+		const current = Math.min(this.searchIndex, total - 1);
+		this.searchIndex = stepIndex(current, step, total);
+		this.searchReveal += 1;
+	}
+
+	clearSearch(): void {
+		this.searchQuery = '';
+		this.searchIndex = -1;
+	}
+
+	/** Ticks every row holding a match, so a run can target exactly those rows. */
+	tickMatchingRows(): void {
+		this.selected.clear();
+		for (const match of this.search.matches) this.selected.add(match.rowId);
 	}
 
 	exportCsv(): string {

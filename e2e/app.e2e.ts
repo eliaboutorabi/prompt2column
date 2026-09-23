@@ -116,10 +116,13 @@ test('completes a column reference from the prompt editor and from the header', 
 	await signUp(page, 'amara.o');
 
 	await page.getByRole('button', { name: /Research notes/ }).click();
-	const editor = page.getByRole('combobox').first();
+	const editor = page.getByRole('combobox', { name: 'Prompt', exact: true });
 	await editor.fill('');
 	await editor.pressSequentially('Summarize {{stu');
-	await page.getByRole('option', { name: /Study/ }).click();
+	await page
+		.getByRole('listbox', { name: 'Columns' })
+		.getByRole('option', { name: /Study/ })
+		.click();
 	await expect(editor).toHaveValue('Summarize {{Study}}');
 
 	await page.getByRole('grid').getByRole('button', { name: 'Raw notes', exact: true }).click();
@@ -131,7 +134,7 @@ test('blocks a run whose prompt names a column that does not exist', async ({ pa
 	await signUp(page, 'bilal.h');
 
 	await page.getByRole('button', { name: /Research notes/ }).click();
-	const editor = page.getByRole('combobox').first();
+	const editor = page.getByRole('combobox', { name: 'Prompt', exact: true });
 	await editor.fill('Summarize {{Nothing}}');
 	await expect(page.getByRole('alert')).toContainText('No column called "Nothing"');
 	await expect(page.getByRole('button', { name: /Run on/ })).toBeDisabled();
@@ -161,4 +164,32 @@ test('previews the exact prompt one row will send', async ({ page }) => {
 	await expect(dialog.locator('.answer')).toHaveText(/positive|neutral|negative/);
 	await dialog.getByRole('button', { name: 'Next row' }).click();
 	await expect(dialog).toContainText('Tomasz Wierzbicki');
+});
+
+test('finds cells from the keyboard and runs the prompt on just those rows', async ({ page }) => {
+	await mockOllama(page);
+	await signUp(page, 'marta.k');
+
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+	await expect(page.getByRole('columnheader', { name: /Message/ })).toBeVisible();
+
+	await page.getByRole('grid').click();
+	await page.keyboard.press('ControlOrMeta+f');
+	const search = page.getByRole('searchbox', { name: 'Find in sheet' });
+	await expect(search).toBeFocused();
+
+	await search.fill('workaround');
+	await expect(page.getByRole('search')).toContainText(/1\s+of 2/);
+	await expect(page.locator('.cell.current mark')).toHaveText(/workaround/i);
+
+	await search.press('Enter');
+	await expect(page.getByRole('search')).toContainText(/2\s+of 2/);
+
+	await page.getByRole('button', { name: 'Tick 2 rows' }).click();
+	await page.getByRole('button', { name: 'Ticked rows' }).click();
+	await expect(page.getByRole('button', { name: /Run on 2 rows/ })).toBeEnabled();
+
+	await search.press('Escape');
+	await expect(search).toHaveValue('');
+	await expect(page.locator('mark')).toHaveCount(0);
 });

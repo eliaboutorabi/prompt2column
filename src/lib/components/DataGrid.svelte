@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { DotsThree, PencilSimple, Plus, Trash, WarningCircle } from 'phosphor-svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 	import type { Column } from '$lib/core/types';
+	import { cellKey, excerpt, splitByRanges } from '$lib/core/search';
 
 	interface Props {
 		ws: Workspace;
@@ -12,6 +13,7 @@
 	let { ws, onInsert }: Props = $props();
 
 	const ROW_HEIGHT = 34;
+	const HEADER_HEIGHT = 36;
 	const OVERSCAN = 8;
 
 	let scroller = $state<HTMLDivElement | null>(null);
@@ -47,6 +49,21 @@
 	const visibleCount = $derived(Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2);
 	const visible = $derived(rows.slice(firstVisible, firstVisible + visibleCount));
 	const allSelected = $derived(rows.length > 0 && ws.selected.size === rows.length);
+	const currentMatch = $derived(ws.currentMatch);
+
+	// Scroll to the current match only when the search asks for it, not every time
+	// the data changes underneath (a run writing cells would otherwise yank the view).
+	$effect(() => {
+		const token = ws.searchReveal;
+		if (!token) return;
+		untrack(() => {
+			const match = ws.currentMatch;
+			if (!match) return;
+			focusRow = match.rowIndex;
+			focusCol = match.columnIndex;
+			reveal(match.rowIndex, match.columnIndex);
+		});
+	});
 
 	function measure(node: HTMLDivElement) {
 		const observer = new ResizeObserver(() => {
@@ -91,17 +108,30 @@
 		editing = null;
 	}
 
+	/** Scrolls just enough to bring a cell out from under the sticky header and gutter. */
+	function reveal(rowIndex: number, columnIndex: number) {
+		if (!scroller) return;
+		const top = rowIndex * ROW_HEIGHT;
+		const bodyHeight = scroller.clientHeight - HEADER_HEIGHT;
+		if (top < scroller.scrollTop) scroller.scrollTop = top;
+		else if (top + ROW_HEIGHT > scroller.scrollTop + bodyHeight) {
+			scroller.scrollTop = top + ROW_HEIGHT - bodyHeight;
+		}
+
+		const gutter = scroller.querySelector<HTMLElement>('.head-cell.gutter')?.offsetWidth ?? 56;
+		const left = gutter + widths.slice(0, columnIndex).reduce((sum, width) => sum + width, 0);
+		const right = left + (widths[columnIndex] ?? 0);
+		if (left - gutter < scroller.scrollLeft) scroller.scrollLeft = left - gutter;
+		else if (right > scroller.scrollLeft + scroller.clientWidth) {
+			scroller.scrollLeft = right - scroller.clientWidth;
+		}
+	}
+
 	/** Roving tabindex: one stop for the whole grid, arrow keys move inside it. */
 	async function moveFocus(rowStep: number, colStep: number) {
 		focusRow = Math.max(0, Math.min(rows.length - 1, focusRow + rowStep));
 		focusCol = Math.max(0, Math.min(columns.length - 1, focusCol + colStep));
-		const top = focusRow * ROW_HEIGHT;
-		if (scroller) {
-			if (top < scroller.scrollTop) scroller.scrollTop = top;
-			else if (top + ROW_HEIGHT > scroller.scrollTop + viewportHeight - 36) {
-				scroller.scrollTop = top + ROW_HEIGHT - viewportHeight + 36;
-			}
-		}
+		reveal(focusRow, focusCol);
 		await tick();
 		document
 			.querySelector<HTMLElement>(`[data-cell="${focusRow}-${focusCol}"]`)
@@ -276,12 +306,15 @@
 					{#each columns as column, columnIndex (column.id)}
 						{@const value = row.cells[column.id] ?? ''}
 						{@const tone = cellTone(row.id, column.id)}
+						{@const match = ws.search.byCell.get(cellKey(row.id, column.id))}
 						<div
 							class={[
 								'cell',
 								tone,
 								column.generated && 'generated',
-								rowIndex === focusRow && columnIndex === focusCol && 'focused'
+								rowIndex === focusRow && columnIndex === focusCol && 'focused',
+								match && 'hit',
+								match && match === currentMatch && 'current'
 							]}
 							role="gridcell"
 							data-cell={`${rowIndex}-${columnIndex}`}
@@ -316,6 +349,13 @@
 									<WarningCircle size={13} weight="fill" />
 									{ws.cellError.get(row.id) ?? 'Failed'}
 								</span>
+							{:else if match}
+								{@const shown = excerpt(value, match.ranges)}
+								<span class="value" title={value}
+									>{#each splitByRanges(shown.text, shown.ranges) as piece, index (index)}{#if piece.hit}<mark
+												>{piece.text}</mark
+											>{:else}{piece.text}{/if}{/each}</span
+								>
 							{:else}
 								<span class="value" title={value}>{value}</span>
 							{/if}
@@ -504,6 +544,21 @@
 		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 		border-radius: 0;
+	}
+
+	.cell.hit mark {
+		background: var(--hit);
+		color: inherit;
+		border-radius: 2px;
+	}
+
+	.cell.current {
+		box-shadow: inset 0 0 0 2px var(--accent);
+	}
+
+	.cell.current mark {
+		background: var(--accent);
+		color: var(--accent-ink);
 	}
 
 	.cell.error {

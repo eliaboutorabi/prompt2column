@@ -30,6 +30,11 @@ Advanced in the composer.
 - **Choose the rows**: all, first N, a range, ticked rows, or only rows whose
   result cell is still empty.
 - **Watch it run** with per-row status, pause, resume, stop and retry-failed.
+- **Find cells** with the search bar above the sheet, or ⌘F / Ctrl F. It ignores
+  case and accents, can be limited to one column, highlights every hit, and steps
+  through them with Enter and Shift Enter. It searches the data rather than the
+  page, so it finds rows the grid has not drawn yet. "Tick rows" selects every
+  row with a match, ready for a run on ticked rows only.
 - **Export** the sheet back to CSV.
 
 Projects live in IndexedDB under a local account. Accounts keep projects apart on
@@ -49,8 +54,8 @@ e2e/                Playwright flows against a mocked Ollama
 ## Tests
 
 ```bash
-npm run test:unit -- --run   # 99 node + 37 browser
-npm run test:e2e             # 6 Playwright flows
+npm run test:unit -- --run   # node and browser tests
+npm run test:e2e             # Playwright flows
 npm run check                # svelte-check
 ```
 
