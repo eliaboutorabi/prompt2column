@@ -244,7 +244,9 @@ test('finds cells from the keyboard and runs the prompt on just those rows', asy
 	await expect(page.locator('mark')).toHaveCount(0);
 });
 
-test('floats the composer over the sheet as frosted glass on wide screens', async ({ page }) => {
+test('floats the composer over the sheet as frosted glass on wide screens and phones', async ({
+	page
+}) => {
 	await page.setViewportSize({ width: 1180, height: 760 });
 	await mockOllama(page);
 	await signUp(page, 'freya.glass');
@@ -265,9 +267,23 @@ test('floats the composer over the sheet as frosted glass on wide screens', asyn
 	const last = (await page.getByRole('columnheader', { name: /Message/ }).boundingBox())!;
 	expect(last.x + last.width).toBeLessThanOrEqual(sideBox.x + 1);
 
-	// Below the wide breakpoint the panels take turns, so there is nothing to see through.
-	await page.setViewportSize({ width: 800, height: 760 });
+	// On phones the Prompt tab lays the panel over the whole sheet, which stays
+	// drawn underneath so it shows through the glass but can't be reached.
+	await page.setViewportSize({ width: 390, height: 844 });
 	await page.getByRole('button', { name: 'Prompt', exact: true }).click();
 	await expect(page.getByRole('complementary')).toBeVisible();
-	expect(await sidebar.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
+	expect(await sidebar.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain('blur');
+	const sheet = page.locator('.pane.sheet');
+	await expect(sheet).toBeVisible();
+	const sheetBox = (await sheet.boundingBox())!;
+	const panelBox = (await sidebar.boundingBox())!;
+	expect(panelBox.x).toBeLessThanOrEqual(sheetBox.x + 1);
+	expect(panelBox.width).toBeGreaterThanOrEqual(sheetBox.width - 1);
+	expect(await sheet.evaluate((el) => (el as HTMLElement).inert)).toBe(true);
+	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+
+	// The Sheet tab takes the panel away and hands the sheet back.
+	await page.getByRole('button', { name: 'Sheet', exact: true }).click();
+	await expect(page.getByRole('complementary')).toBeHidden();
+	expect(await sheet.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
 });

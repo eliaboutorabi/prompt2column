@@ -26,6 +26,9 @@
 	const overlay = new MediaQuery('min-width: 1024px');
 	let sidebarWidth = $state(0);
 	const occludedRight = $derived(overlay.current ? sidebarWidth : 0);
+	// On phones the Prompt tab lays the composer over the whole sheet. The sheet
+	// stays drawn so it shows through the glass, but it can't be reached.
+	const sheetCovered = $derived(!overlay.current && view === 'prompt');
 	let loadedId = $state('');
 
 	$effect(() => {
@@ -91,7 +94,7 @@
 	<title>{ws.project ? `${ws.project.name} | prompt2column` : 'prompt2column'}</title>
 </svelte:head>
 
-<div class="grid h-[100dvh] grid-rows-[3.25rem_1fr]">
+<div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_1fr]">
 	<header class="flex items-center gap-3 border-b border-line bg-surface px-3">
 		<a href={resolve('/')} class="btn btn-ghost px-2" aria-label="Back to projects">
 			<ArrowLeft size={16} />
@@ -147,7 +150,7 @@
 			</div>
 
 			<div class="main">
-				<div class={['pane', 'sheet', view !== 'sheet' && 'hide']}>
+				<div class="pane sheet" inert={sheetCovered}>
 					<SearchBar bind:this={searchBar} {ws} {occludedRight} />
 					<DataGrid {ws} onInsert={insert} {occludedRight} />
 				</div>
@@ -160,15 +163,18 @@
 </div>
 
 <style>
+	/* Shrinks on phones so the header never pushes the page wider than the screen. */
 	.name {
+		flex: 0 1 12rem;
+		width: 0;
+		min-width: 5rem;
 		background: transparent;
 		border: 1px solid transparent;
 		border-radius: 6px;
 		padding: 0.2rem 0.4rem;
 		font-size: 0.875rem;
 		font-weight: 500;
-		min-width: 6rem;
-		max-width: 18rem;
+		text-overflow: ellipsis;
 	}
 
 	.name:hover {
@@ -181,14 +187,22 @@
 		background: var(--surface);
 	}
 
+	/* minmax(0, 1fr) columns stop any child's natural width from widening the
+	   page past a phone screen. */
 	.workspace {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: auto minmax(0, 1fr);
 		min-height: 0;
 	}
 
+	/* Both panes share one cell: the sheet underneath, the composer floating on top
+	   as frosted glass. Layers: grid header and gutter stay below 20, the composer
+	   is 20, popovers 40. */
 	.main {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		grid-template-rows: minmax(0, 1fr);
 		min-height: 0;
 	}
 
@@ -217,66 +231,66 @@
 		font-weight: 500;
 	}
 
+	.pane.sheet,
+	.pane.side {
+		grid-area: 1 / 1;
+	}
+
 	.pane.sheet {
 		display: grid;
+		grid-template-columns: minmax(0, 1fr);
 		grid-template-rows: auto minmax(0, 1fr);
 	}
 
-	.pane.hide {
+	.pane.side {
+		z-index: 20;
+		background: var(--surface);
+		--composer-bg: transparent;
+		--composer-edge: transparent;
+	}
+
+	/* Tabbed layout: the Prompt tab covers the sheet, the Sheet tab removes the panel. */
+	.pane.side.hide {
 		display: none;
 	}
 
-	@media (min-width: 1024px) {
-		.main {
-			grid-template-columns: minmax(0, 1fr);
-			grid-template-rows: minmax(0, 1fr);
-		}
-
-		/* The sheet runs the full width and the composer floats over its right edge.
-		   Layers: grid header and gutter stay below 20, the sidebar is 20, popovers 40. */
-		.pane.sheet,
+	@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
 		.pane.side {
-			grid-area: 1 / 1;
+			background: var(--glass);
+			-webkit-backdrop-filter: blur(6px) saturate(1.4);
+			backdrop-filter: blur(6px) saturate(1.4);
+			--composer-footer-bg: var(--glass-footer);
+		}
+	}
+
+	/* Wide layout: no tabs, and the composer becomes a sidebar over the sheet's
+	   right edge. Scoped rules outrank Tailwind utilities, so the breakpoint lives here. */
+	@media (min-width: 1024px) {
+		.tabs {
+			display: none;
 		}
 
 		.pane.side {
 			justify-self: end;
 			width: 24rem;
-			z-index: 20;
-			background: var(--surface);
 			border-left: 1px solid var(--line);
-			--composer-bg: transparent;
-			--composer-edge: transparent;
+		}
+
+		.pane.side.hide {
+			display: block;
 		}
 
 		@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
 			.pane.side {
-				background: var(--glass);
 				border-left-color: var(--glass-edge);
 				box-shadow:
 					inset 1px 0 0 var(--glass-highlight),
 					var(--glass-shadow);
-				-webkit-backdrop-filter: blur(6px) saturate(1.4);
-				backdrop-filter: blur(6px) saturate(1.4);
-				--composer-footer-bg: var(--glass-footer);
 			}
-		}
-
-		/* Scoped rules outrank Tailwind utilities, so the breakpoint lives here. */
-		.tabs {
-			display: none;
-		}
-
-		.pane.hide {
-			display: block;
-		}
-
-		.pane.sheet.hide {
-			display: grid;
 		}
 	}
 
-	@media (min-width: 1024px) and (prefers-reduced-transparency: reduce) {
+	@media (prefers-reduced-transparency: reduce) {
 		.pane.side {
 			background: var(--surface);
 			-webkit-backdrop-filter: none;
