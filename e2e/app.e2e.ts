@@ -243,3 +243,31 @@ test('finds cells from the keyboard and runs the prompt on just those rows', asy
 	await expect(search).toHaveValue('');
 	await expect(page.locator('mark')).toHaveCount(0);
 });
+
+test('floats the composer over the sheet as frosted glass on wide screens', async ({ page }) => {
+	await page.setViewportSize({ width: 1180, height: 760 });
+	await mockOllama(page);
+	await signUp(page, 'freya.glass');
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+
+	const grid = page.getByRole('grid');
+	const sidebar = page.locator('.pane.side');
+	await expect(page.getByRole('complementary')).toBeVisible();
+	expect(await sidebar.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain('blur');
+
+	// The sheet runs on underneath the sidebar instead of stopping at its edge.
+	const gridBox = (await grid.boundingBox())!;
+	const sideBox = (await sidebar.boundingBox())!;
+	expect(gridBox.x + gridBox.width).toBeGreaterThan(sideBox.x + sideBox.width / 2);
+
+	// Scrolled all the way right, the last column sits clear of the glass.
+	await grid.evaluate((el) => (el.scrollLeft = el.scrollWidth));
+	const last = (await page.getByRole('columnheader', { name: /Message/ }).boundingBox())!;
+	expect(last.x + last.width).toBeLessThanOrEqual(sideBox.x + 1);
+
+	// Below the wide breakpoint the panels take turns, so there is nothing to see through.
+	await page.setViewportSize({ width: 800, height: 760 });
+	await page.getByRole('button', { name: 'Prompt', exact: true }).click();
+	await expect(page.getByRole('complementary')).toBeVisible();
+	expect(await sidebar.evaluate((el) => getComputedStyle(el).backdropFilter)).toBe('none');
+});

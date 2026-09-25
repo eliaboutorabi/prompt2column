@@ -37,9 +37,9 @@ function makeWorkspace(rows: Row[] = baseRows): Workspace {
 }
 
 /** Gives the grid a real viewport so it virtualizes the way it does in the app. */
-function sizedTarget(): HTMLElement {
+function sizedTarget(width = 520): HTMLElement {
 	const target = document.createElement('div');
-	target.style.cssText = 'height: 320px; width: 520px;';
+	target.style.cssText = `height: 320px; width: ${width}px;`;
 	document.body.append(target);
 	targets.push(target);
 	return target;
@@ -190,5 +190,80 @@ describe('search in the grid', () => {
 		expect(container.querySelector('.cell.hit .value')?.getAttribute('title')).toContain(
 			'Renewal quote'
 		);
+	});
+});
+
+describe('grid under the frosted sidebar', () => {
+	const wide: Column[] = [
+		{ id: 'c1', name: 'Customer', generated: false },
+		{ id: 'c2', name: 'Message', generated: false },
+		{ id: 'c3', name: 'Notes', generated: false }
+	];
+	const long = 'A long enough message to give this column its widest possible layout';
+	const rows: Row[] = Array.from({ length: 8 }, (_, index) => ({
+		id: `r${index}`,
+		cells: { c1: `Customer ${index}`, c2: long, c3: index === 5 ? 'Needle in notes' : long }
+	}));
+
+	function workspace(): Workspace {
+		const ws = makeWorkspace(rows);
+		ws.project!.columns = wide;
+		return ws;
+	}
+
+	it('adds room at the end of each row so the last column can clear the sidebar', async () => {
+		const ws = workspace();
+		render(DataGrid, {
+			props: { ws, onInsert: () => {}, occludedRight: 250 },
+			target: sizedTarget()
+		});
+		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+		await expect.poll(() => grid.scrollWidth).toBeGreaterThan(0);
+		const columnsWidth = [...document.querySelectorAll<HTMLElement>('.head-cell')].reduce(
+			(sum, cell) => sum + cell.offsetWidth,
+			0
+		);
+		expect(grid.scrollWidth).toBe(columnsWidth + 250);
+	});
+
+	it('scrolls a match out from under the sidebar', async () => {
+		const ws = workspace();
+		render(SearchBar, { props: { ws } });
+		render(DataGrid, {
+			props: { ws, onInsert: () => {}, occludedRight: 250 },
+			target: sizedTarget(820)
+		});
+		await userEvent.fill(page.getByRole('searchbox'), 'needle');
+		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+		await expect.poll(() => grid.scrollLeft).toBeGreaterThan(0);
+		const cell = document.querySelector<HTMLElement>('.cell.current')!;
+		const clearEdge = grid.getBoundingClientRect().right - 250;
+		expect(cell.getBoundingClientRect().right).toBeLessThanOrEqual(clearEdge + 1);
+	});
+
+	it('lines up a column wider than the clear area by its left edge', async () => {
+		const ws = workspace();
+		render(SearchBar, { props: { ws } });
+		render(DataGrid, {
+			props: { ws, onInsert: () => {}, occludedRight: 250 },
+			target: sizedTarget(520)
+		});
+		await userEvent.fill(page.getByRole('searchbox'), 'needle');
+		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+		await expect.poll(() => grid.scrollLeft).toBeGreaterThan(0);
+		const cell = document.querySelector<HTMLElement>('.cell.current')!;
+		const gutter = document.querySelector<HTMLElement>('.head-cell.gutter')!.offsetWidth;
+		expect(cell.getBoundingClientRect().left).toBeCloseTo(
+			grid.getBoundingClientRect().left + gutter,
+			0
+		);
+	});
+
+	it('leaves the layout alone when nothing floats over the grid', async () => {
+		const ws = workspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget() });
+		const head = document.querySelector<HTMLElement>('.head')!;
+		await expect.poll(() => head.style.gridTemplateColumns).not.toBe('');
+		expect(head.style.gridTemplateColumns.split(' ')).toHaveLength(wide.length + 1);
 	});
 });

@@ -8,9 +8,15 @@
 	interface Props {
 		ws: Workspace;
 		onInsert: (column: Column) => void;
+		/**
+		 * Width in pixels of whatever floats over the grid's right edge (the frosted
+		 * sidebar). The grid adds that much room at the end of each row so the last
+		 * column can be scrolled clear, and treats that strip as off screen.
+		 */
+		occludedRight?: number;
 	}
 
-	let { ws, onInsert }: Props = $props();
+	let { ws, onInsert, occludedRight = 0 }: Props = $props();
 
 	const ROW_HEIGHT = 34;
 	const HEADER_HEIGHT = 36;
@@ -43,7 +49,13 @@
 		})
 	);
 
-	const gridTemplate = $derived(['3.5rem', ...widths.map((width) => `${width}px`)].join(' '));
+	const gridTemplate = $derived(
+		[
+			'3.5rem',
+			...widths.map((width) => `${width}px`),
+			...(occludedRight > 0 ? [`${Math.round(occludedRight)}px`] : [])
+		].join(' ')
+	);
 
 	const firstVisible = $derived(Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN));
 	const visibleCount = $derived(Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2);
@@ -108,7 +120,10 @@
 		editing = null;
 	}
 
-	/** Scrolls just enough to bring a cell out from under the sticky header and gutter. */
+	/**
+	 * Scrolls just enough to bring a cell out from under the sticky header, the
+	 * gutter, and anything floating over the right edge.
+	 */
 	function reveal(rowIndex: number, columnIndex: number) {
 		if (!scroller) return;
 		const top = rowIndex * ROW_HEIGHT;
@@ -121,9 +136,11 @@
 		const gutter = scroller.querySelector<HTMLElement>('.head-cell.gutter')?.offsetWidth ?? 56;
 		const left = gutter + widths.slice(0, columnIndex).reduce((sum, width) => sum + width, 0);
 		const right = left + (widths[columnIndex] ?? 0);
+		const visibleWidth = scroller.clientWidth - occludedRight;
 		if (left - gutter < scroller.scrollLeft) scroller.scrollLeft = left - gutter;
-		else if (right > scroller.scrollLeft + scroller.clientWidth) {
-			scroller.scrollLeft = right - scroller.clientWidth;
+		else if (right > scroller.scrollLeft + visibleWidth) {
+			// A column wider than the clear area lines up by its left edge instead.
+			scroller.scrollLeft = Math.min(left - gutter, right - visibleWidth);
 		}
 	}
 

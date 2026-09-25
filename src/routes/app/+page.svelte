@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy, tick } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
@@ -19,6 +20,12 @@
 	let composer = $state<Composer | null>(null);
 	let searchBar = $state<SearchBar | null>(null);
 	let view = $state<'sheet' | 'prompt'>('sheet');
+
+	// On wide screens the composer floats over the sheet's right edge as frosted
+	// glass. The grid needs its width to keep columns reachable from under it.
+	const overlay = new MediaQuery('min-width: 1024px');
+	let sidebarWidth = $state(0);
+	const occludedRight = $derived(overlay.current ? sidebarWidth : 0);
 	let loadedId = $state('');
 
 	$effect(() => {
@@ -141,10 +148,10 @@
 
 			<div class="main">
 				<div class={['pane', 'sheet', view !== 'sheet' && 'hide']}>
-					<SearchBar bind:this={searchBar} {ws} />
-					<DataGrid {ws} onInsert={insert} />
+					<SearchBar bind:this={searchBar} {ws} {occludedRight} />
+					<DataGrid {ws} onInsert={insert} {occludedRight} />
 				</div>
-				<div class={['pane', view !== 'prompt' && 'hide']}>
+				<div class={['pane', 'side', view !== 'prompt' && 'hide']} bind:offsetWidth={sidebarWidth}>
 					<Composer bind:this={composer} {ws} />
 				</div>
 			</div>
@@ -221,7 +228,38 @@
 
 	@media (min-width: 1024px) {
 		.main {
-			grid-template-columns: minmax(0, 1fr) 24rem;
+			grid-template-columns: minmax(0, 1fr);
+			grid-template-rows: minmax(0, 1fr);
+		}
+
+		/* The sheet runs the full width and the composer floats over its right edge.
+		   Layers: grid header and gutter stay below 20, the sidebar is 20, popovers 40. */
+		.pane.sheet,
+		.pane.side {
+			grid-area: 1 / 1;
+		}
+
+		.pane.side {
+			justify-self: end;
+			width: 24rem;
+			z-index: 20;
+			background: var(--surface);
+			border-left: 1px solid var(--line);
+			--composer-bg: transparent;
+			--composer-edge: transparent;
+		}
+
+		@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+			.pane.side {
+				background: var(--glass);
+				border-left-color: var(--glass-edge);
+				box-shadow:
+					inset 1px 0 0 var(--glass-highlight),
+					var(--glass-shadow);
+				-webkit-backdrop-filter: blur(6px) saturate(1.4);
+				backdrop-filter: blur(6px) saturate(1.4);
+				--composer-footer-bg: var(--glass-footer);
+			}
 		}
 
 		/* Scoped rules outrank Tailwind utilities, so the breakpoint lives here. */
@@ -235,6 +273,15 @@
 
 		.pane.sheet.hide {
 			display: grid;
+		}
+	}
+
+	@media (min-width: 1024px) and (prefers-reduced-transparency: reduce) {
+		.pane.side {
+			background: var(--surface);
+			-webkit-backdrop-filter: none;
+			backdrop-filter: none;
+			--composer-footer-bg: var(--surface-2);
 		}
 	}
 </style>

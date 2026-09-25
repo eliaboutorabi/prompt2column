@@ -346,13 +346,15 @@
 {/if}
 
 <style>
+	/* Solid by default. The workspace swaps these for frosted glass when the
+	   composer floats over the sheet. */
 	.composer {
 		display: grid;
 		grid-template-rows: 1fr auto;
 		height: 100%;
 		min-height: 0;
-		background: var(--surface);
-		border-left: 1px solid var(--line);
+		background: var(--composer-bg, var(--surface));
+		border-left: 1px solid var(--composer-edge, var(--line));
 	}
 
 	.scroll {
@@ -457,7 +459,7 @@
 		gap: 0.6rem;
 		padding: 0.85rem 1rem;
 		border-top: 1px solid var(--line);
-		background: var(--surface-2);
+		background: var(--composer-footer-bg, var(--surface-2));
 	}
 
 	.track {

@@ -37,6 +37,13 @@
 	/* Search hits: the accent, thinned so cell text stays readable on top. */
 	--hit: color-mix(in oklch, var(--accent) 45%, transparent);
 
+	/* Frosted sidebar: translucent surface, blurred sheet behind, lit inner edge. */
+	--glass: color-mix(in oklch, var(--surface) 55%, transparent);
+	--glass-footer: color-mix(in oklch, var(--surface-2) 64%, transparent);
+	--glass-edge: oklch(0.235 0.01 110 / 0.1);
+	--glass-highlight: oklch(1 0 0 / 0.6);
+	--glass-shadow: -18px 0 40px -24px oklch(0.235 0.01 110 / 0.28);
+
 	--tag-1: oklch(0.93 0.045 230);
 	--tag-2: oklch(0.93 0.05 145);
 	--tag-3: oklch(0.93 0.05 60);
@@ -77,6 +84,12 @@
 	--danger-line: oklch(0.45 0.1 27);
 
 	--hit: color-mix(in oklch, var(--accent) 38%, transparent);
+
+	--glass: color-mix(in oklch, var(--surface) 42%, transparent);
+	--glass-footer: color-mix(in oklch, var(--surface-2) 56%, transparent);
+	--glass-edge: oklch(1 0 0 / 0.08);
+	--glass-highlight: oklch(1 0 0 / 0.06);
+	--glass-shadow: -18px 0 40px -20px oklch(0.1 0 0 / 0.6);
 
 	--tag-1: oklch(0.34 0.055 230);
 	--tag-2: oklch(0.34 0.06 145);

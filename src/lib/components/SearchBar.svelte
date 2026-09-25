@@ -4,9 +4,11 @@
 
 	interface Props {
 		ws: Workspace;
+		/** Width of the sidebar floating over the right edge, kept clear of controls. */
+		occludedRight?: number;
 	}
 
-	let { ws }: Props = $props();
+	let { ws, occludedRight = 0 }: Props = $props();
 
 	let input = $state<HTMLInputElement | null>(null);
 
@@ -35,7 +37,7 @@
 	}
 </script>
 
-<div class="bar" role="search">
+<div class="bar" role="search" style:padding-right="calc(0.6rem + {occludedRight}px)">
 	<div class="field-wrap">
 		<MagnifyingGlass size={14} class="icon" />
 		<input
