@@ -46,7 +46,7 @@ sheets to try it without your own data.
    without writing anything.
 7. **Run it.** Cells fill in as answers arrive. You can pause, resume, stop, and
    retry only the rows that failed.
-8. **Export** the finished sheet as CSV.
+8. **Export** the finished sheet as CSV or JSON.
 
 Projects save automatically, so you can close the tab and pick up later.
 
@@ -118,6 +118,32 @@ the grid hasn't drawn yet (the browser's own find can't see those).
   view. In long text cells, the cell shows the part around the match.
 - **Tick N rows** ticks every row with a match. Switch the run to **Ticked rows**
   to run the prompt on exactly those rows.
+
+## Exporting
+
+**Export**, at the top right of the workspace, saves the whole sheet, generated
+columns included, as either format:
+
+- **CSV** opens in Excel, Google Sheets or Numbers. It's written as UTF-8 with a
+  byte order mark, so accented names come through intact in Excel.
+- **JSON** is an array with one object per row, keyed by column name, in the same
+  order as the sheet:
+
+  <!-- prettier-ignore -->
+  ```json
+  [
+    {
+      "Request": "EXP-0912",
+      "Amount EUR": "240",
+      "Decision": "Approve"
+    }
+  ]
+  ```
+
+  Every value is a string, exactly as it appears in the sheet, so IDs like `007`
+  keep their leading zeros. Empty cells are `""`.
+
+Files are named after the project, for example `expense-requests-enriched.json`.
 
 ## Keyboard shortcuts
 
@@ -206,8 +232,8 @@ endpoints.
 
 ```
 src/lib/core/        Domain logic with no framework code: the template language, answer
-                     shapes, the run engine, CSV, search, the Ollama client,
-                     IndexedDB storage and local accounts
+                     shapes, the run engine, CSV, CSV and JSON export, search, the
+                     Ollama client, IndexedDB storage and local accounts
 src/lib/state/       Svelte 5 rune stores: session, open workspace, models, theme
 src/lib/components/  UI: data grid, prompt editor, composer, search bar, dialogs
 src/routes/          /      sign-in and project list
@@ -243,7 +269,7 @@ on a different port.
 
 ## Not done yet
 
-- Excel files (`.xlsx`) for import and export. `src/lib/core/csv.ts` is where
-  that will go.
+- Excel files (`.xlsx`) for import and export. `src/lib/core/csv.ts` and
+  `src/lib/core/export.ts` are where that will go.
 - A way to read a long generated cell in full. For now it's shown in the cell's
   tooltip.

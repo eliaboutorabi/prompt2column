@@ -1,4 +1,4 @@
-/** CSV import and export. Excel support will slot in beside this module. */
+/** CSV parsing and writing. Excel support will slot in beside this module. */
 import Papa from 'papaparse';
 import { uid, type Column, type Row, type Table } from './types';
 
@@ -52,26 +52,4 @@ export function parseCsv(text: string): ParseReport {
 export function toCsv(columns: Column[], rows: Row[]): string {
 	const data = rows.map((row) => columns.map((column) => row.cells[column.id] ?? ''));
 	return Papa.unparse({ fields: columns.map((c) => c.name), data }, { newline: '\n' });
-}
-
-export function downloadCsv(filename: string, csv: string): void {
-	const blob = new Blob([`\ufeff${csv}`], { type: 'text/csv;charset=utf-8;' });
-	const url = URL.createObjectURL(blob);
-	const anchor = document.createElement('a');
-	anchor.href = url;
-	anchor.download = filename.endsWith('.csv') ? filename : `${filename}.csv`;
-	document.body.append(anchor);
-	anchor.click();
-	anchor.remove();
-	setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
-
-export function exportFilename(projectName: string, sourceName: string | null): string {
-	const base = (projectName || sourceName || 'spreadsheet')
-		.replace(/\.[a-z]+$/i, '')
-		.replace(/[^\w -]+/g, '')
-		.trim()
-		.replace(/\s+/g, '-')
-		.toLowerCase();
-	return `${base || 'spreadsheet'}-enriched.csv`;
 }

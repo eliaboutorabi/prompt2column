@@ -3,12 +3,13 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, CheckCircle, DownloadSimple, Warning } from 'phosphor-svelte';
+	import { ArrowLeft, CheckCircle, Warning } from 'phosphor-svelte';
 	import Composer from '$lib/components/Composer.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
+	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { downloadCsv, exportFilename } from '$lib/core/csv';
+	import { downloadFile, exportFilename, type ExportFormat } from '$lib/core/export';
 	import { Workspace } from '$lib/state/workspace.svelte';
 	import { models } from '$lib/state/models.svelte';
 	import { session } from '$lib/state/session.svelte';
@@ -45,9 +46,10 @@
 
 	onDestroy(() => ws.dispose());
 
-	function exportSheet() {
+	function exportSheet(format: ExportFormat) {
 		if (!ws.project) return;
-		downloadCsv(exportFilename(ws.project.name, ws.project.fileName), ws.exportCsv());
+		const filename = exportFilename(ws.project.name, ws.project.fileName, format);
+		downloadFile(filename, format, ws.exportAs(format));
 	}
 
 	function insert(column: Column) {
@@ -114,9 +116,7 @@
 					{models.models.length === 1 ? 'model' : 'models'}
 				{/if}
 			</span>
-			<button class="btn btn-outline" onclick={exportSheet} disabled={!ws.project}>
-				<DownloadSimple size={15} /> Export CSV
-			</button>
+			<ExportMenu disabled={!ws.project} onExport={exportSheet} />
 			<ThemeToggle />
 		</div>
 	</header>

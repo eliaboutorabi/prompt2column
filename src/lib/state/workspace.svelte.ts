@@ -4,7 +4,7 @@ import { getProject, putProject } from '$lib/core/db';
 import { findColumn, renameInTemplate, validateTemplate } from '$lib/core/template';
 import { resolveScope } from '$lib/core/scope';
 import { Runner, type RowOutcome, type RunState } from '$lib/core/runner';
-import { toCsv } from '$lib/core/csv';
+import { serialize, type ExportFormat } from '$lib/core/export';
 import { searchTable, stepIndex, type CellMatch, type SearchResult } from '$lib/core/search';
 import { uid, type CellStatus, type Column, type Project, type Row } from '$lib/core/types';
 
@@ -350,8 +350,8 @@ export class Workspace {
 		for (const match of this.search.matches) this.selected.add(match.rowId);
 	}
 
-	exportCsv(): string {
-		return toCsv(this.columns, this.rows);
+	exportAs(format: ExportFormat): string {
+		return serialize(format, this.columns, this.rows);
 	}
 
 	dispose(): void {

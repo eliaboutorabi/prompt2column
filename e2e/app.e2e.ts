@@ -48,6 +48,23 @@ async function signUp(page: Page, name = 'ines.moreau') {
 	await expect(page.getByRole('heading', { name: 'Start a project' })).toBeVisible();
 }
 
+/** Picks a format from the Export menu and returns the downloaded file. */
+async function exportAs(page: Page, format: 'CSV' | 'JSON') {
+	await page.getByRole('button', { name: 'Export' }).click();
+	const [download] = await Promise.all([
+		page.waitForEvent('download'),
+		page.getByRole('menuitem', { name: new RegExp(`^${format}`) }).click()
+	]);
+	const stream = await download.createReadStream();
+	const text = await new Promise<string>((resolve, reject) => {
+		let out = '';
+		stream.on('data', (chunk) => (out += chunk));
+		stream.on('end', () => resolve(out));
+		stream.on('error', reject);
+	});
+	return { filename: download.suggestedFilename(), text };
+}
+
 test('signs up, imports a sample, runs a prompt and exports the result', async ({ page }) => {
 	await mockOllama(page);
 	await signUp(page);
@@ -69,20 +86,53 @@ test('signs up, imports a sample, runs a prompt and exports the result', async (
 	await expect(cells.first()).toHaveText(/positive|neutral|negative/);
 	await expect(page.getByText('15 / 15 rows')).toBeVisible();
 
-	const download = await Promise.all([
+	const csv = await exportAs(page, 'CSV');
+	expect(csv.filename).toBe('support-tickets-enriched.csv');
+	expect(csv.text.split('\n')[0]).toContain('Sentiment');
+	expect(csv.text).toMatch(/,(positive|neutral|negative)/);
+
+	const json = await exportAs(page, 'JSON');
+	expect(json.filename).toBe('support-tickets-enriched.json');
+	const rows = JSON.parse(json.text) as Array<Record<string, string>>;
+	expect(rows).toHaveLength(15);
+	expect(Object.keys(rows[0])).toEqual([
+		'Ticket',
+		'Customer',
+		'Plan',
+		'Channel',
+		'Message',
+		'Sentiment'
+	]);
+	expect(rows[0]).toMatchObject({ Ticket: 'SUP-4182', Customer: 'Ines Moreau' });
+	for (const row of rows) expect(row.Sentiment).toMatch(/^(positive|neutral|negative)$/);
+});
+
+test('exports from the keyboard and closes the menu without exporting', async ({ page }) => {
+	await mockOllama(page);
+	await signUp(page, 'chiara.b');
+	await page.getByRole('button', { name: /Research notes/ }).click();
+
+	const trigger = page.getByRole('button', { name: 'Export' });
+	await trigger.focus();
+	await page.keyboard.press('ArrowDown');
+	await expect(page.getByRole('menuitem', { name: /^CSV/ })).toBeFocused();
+	await page.keyboard.press('Escape');
+	await expect(page.getByRole('menu')).toBeHidden();
+	await expect(trigger).toBeFocused();
+
+	await trigger.click();
+	await page.getByRole('grid').click({ position: { x: 200, y: 200 } });
+	await expect(page.getByRole('menu')).toBeHidden();
+
+	await trigger.focus();
+	await page.keyboard.press('ArrowDown');
+	await page.keyboard.press('ArrowDown');
+	await expect(page.getByRole('menuitem', { name: /^JSON/ })).toBeFocused();
+	const [download] = await Promise.all([
 		page.waitForEvent('download'),
-		page.getByRole('button', { name: 'Export CSV' }).click()
-	]).then(([event]) => event);
-	expect(download.suggestedFilename()).toBe('support-tickets-enriched.csv');
-	const stream = await download.createReadStream();
-	const text = await new Promise<string>((resolve, reject) => {
-		let out = '';
-		stream.on('data', (chunk) => (out += chunk));
-		stream.on('end', () => resolve(out));
-		stream.on('error', reject);
-	});
-	expect(text.split('\n')[0]).toContain('Sentiment');
-	expect(text).toMatch(/,(positive|neutral|negative)/);
+		page.keyboard.press('Enter')
+	]);
+	expect(download.suggestedFilename()).toBe('research-notes-enriched.json');
 });
 
 test('keeps the project and its generated column after leaving and coming back', async ({

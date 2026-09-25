@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exportFilename, parseCsv, toCsv } from './csv';
+import { parseCsv, toCsv } from './csv';
 
 describe('parseCsv', () => {
 	it('reads the header as columns and the rest as rows', () => {
@@ -58,21 +58,5 @@ describe('toCsv', () => {
 		table.columns.push(column);
 		table.rows[0].cells.gen = 'positive';
 		expect(toCsv(table.columns, table.rows)).toBe('Name,Sentiment\nInes,positive');
-	});
-});
-
-describe('exportFilename', () => {
-	it('slugs the project name', () => {
-		expect(exportFilename('Support tickets', 'support-tickets.csv')).toBe(
-			'support-tickets-enriched.csv'
-		);
-	});
-
-	it('falls back to the source file name', () => {
-		expect(exportFilename('', 'Q3 report.csv')).toBe('q3-report-enriched.csv');
-	});
-
-	it('never returns an empty base name', () => {
-		expect(exportFilename('***', null)).toBe('spreadsheet-enriched.csv');
 	});
 });
