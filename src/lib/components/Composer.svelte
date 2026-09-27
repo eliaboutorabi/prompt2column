@@ -18,6 +18,7 @@
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import PromptEditor from './PromptEditor.svelte';
+	import { autogrow } from '$lib/actions/autogrow';
 	import Select from './Select.svelte';
 	import OutputEditor from './OutputEditor.svelte';
 	import ScopeEditor from './ScopeEditor.svelte';
@@ -182,10 +183,11 @@
 			<label class="label" for="instructions">Extra rules</label>
 			<textarea
 				id="instructions"
-				class="field"
+				class="field rules"
 				rows="2"
 				placeholder="Judge only what the text says."
 				bind:value={config.instructions}
+				use:autogrow={config.instructions}
 				disabled={busy}
 				oninput={() => ws.touch()}></textarea>
 		</section>
@@ -394,6 +396,10 @@
 	.scroll {
 		overflow-y: auto;
 		min-height: 0;
+	}
+
+	.rules {
+		max-height: 12rem;
 	}
 
 	.block {

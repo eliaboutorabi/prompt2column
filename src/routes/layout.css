@@ -166,6 +166,11 @@
 		color: inherit;
 	}
 
+	/* Text boxes grow with their content instead of showing a drag handle. */
+	textarea {
+		resize: none;
+	}
+
 	input::placeholder,
 	textarea::placeholder {
 		color: var(--text-3);

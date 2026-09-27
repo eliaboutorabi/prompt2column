@@ -89,3 +89,45 @@ describe('PromptEditor', () => {
 		expect(container.querySelectorAll('.token')).toHaveLength(1);
 	});
 });
+
+describe('PromptEditor sizing', () => {
+	it('has no resize handle', async () => {
+		mount();
+		const textarea = page.getByRole('combobox').element() as HTMLTextAreaElement;
+		expect(getComputedStyle(textarea).resize).toBe('none');
+	});
+
+	it('grows as lines are added', async () => {
+		mount();
+		const textarea = page.getByRole('combobox');
+		const element = textarea.element() as HTMLTextAreaElement;
+		const start = element.getBoundingClientRect().height;
+		await userEvent.click(textarea);
+		await userEvent.keyboard(
+			'one{Enter}two{Enter}three{Enter}four{Enter}five{Enter}six{Enter}seven'
+		);
+		await expect.poll(() => element.getBoundingClientRect().height).toBeGreaterThan(start);
+		expect(element.scrollHeight).toBeLessThanOrEqual(element.clientHeight + 1);
+	});
+
+	it('grows when the prompt is set from outside, as a preset does', async () => {
+		const { rerender } = mount('Short');
+		const element = page.getByRole('combobox').element() as HTMLTextAreaElement;
+		const start = element.getBoundingClientRect().height;
+		await rerender({
+			value: Array.from({ length: 10 }, (_, i) => `Line ${i}`).join('\n'),
+			columns
+		});
+		await expect.poll(() => element.getBoundingClientRect().height).toBeGreaterThan(start);
+	});
+
+	it('stops growing at its maximum and scrolls instead', async () => {
+		const long = Array.from({ length: 60 }, (_, i) => `Line ${i}`).join('\n');
+		mount(long);
+		const element = page.getByRole('combobox').element() as HTMLTextAreaElement;
+		const max = parseFloat(getComputedStyle(element).maxHeight);
+		await expect.poll(() => parseFloat(getComputedStyle(element).height)).toBeCloseTo(max, 0);
+		expect(element.scrollHeight).toBeGreaterThan(element.clientHeight);
+		expect(getComputedStyle(element).overflowY).toBe('auto');
+	});
+});

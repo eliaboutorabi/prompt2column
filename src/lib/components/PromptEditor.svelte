@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
 	import TemplateHighlight from './TemplateHighlight.svelte';
+	import { autogrow } from '$lib/actions/autogrow';
 	import { autocompleteContext, insertReference, rankColumns } from '$lib/core/template';
 	import type { Column } from '$lib/core/types';
 
@@ -19,7 +20,7 @@
 		placeholder = '',
 		id = 'prompt-editor',
 		disabled = false,
-		rows = 8
+		rows = 5
 	}: Props = $props();
 
 	let textarea = $state<HTMLTextAreaElement | null>(null);
@@ -175,6 +176,7 @@
 		spellcheck="false"
 		bind:this={textarea}
 		bind:value
+		use:autogrow={value}
 		oninput={syncSuggestions}
 		onclick={syncSuggestions}
 		onkeyup={(event) => {
@@ -254,12 +256,14 @@
 		position: relative;
 		display: block;
 		width: 100%;
-		resize: vertical;
+		resize: none;
 		background: transparent;
 		color: transparent;
 		caret-color: var(--text);
 		outline: none;
 		min-height: 6rem;
+		/* Grows with the prompt, then scrolls. */
+		max-height: 22rem;
 	}
 
 	.input::placeholder {
