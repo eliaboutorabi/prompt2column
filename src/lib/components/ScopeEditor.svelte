@@ -1,4 +1,13 @@
 <script lang="ts">
+	import {
+		ArrowDataTransferVerticalIcon,
+		CheckmarkSquare02Icon,
+		DashedLineCircleIcon,
+		LeftToRightListNumberIcon,
+		ListViewIcon
+	} from '@hugeicons/core-free-icons';
+	import type { IconSvgElement } from '@hugeicons/svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { RowScope, ScopeKind } from '$lib/core/types';
 
 	interface Props {
@@ -21,12 +30,12 @@
 		disabled = false
 	}: Props = $props();
 
-	const options: Array<{ id: ScopeKind; label: string }> = [
-		{ id: 'all', label: 'Every row' },
-		{ id: 'first', label: 'First few' },
-		{ id: 'range', label: 'A range' },
-		{ id: 'selected', label: 'Ticked rows' },
-		{ id: 'empty', label: 'Empty results' }
+	const options: Array<{ id: ScopeKind; label: string; icon: IconSvgElement }> = [
+		{ id: 'all', label: 'Every row', icon: ListViewIcon },
+		{ id: 'first', label: 'First few', icon: LeftToRightListNumberIcon },
+		{ id: 'range', label: 'A range', icon: ArrowDataTransferVerticalIcon },
+		{ id: 'selected', label: 'Ticked rows', icon: CheckmarkSquare02Icon },
+		{ id: 'empty', label: 'Empty results', icon: DashedLineCircleIcon }
 	];
 </script>
 
@@ -42,6 +51,7 @@
 				title={option.id === 'empty' && !hasTarget ? 'Available once the column exists' : undefined}
 				onclick={() => (scope.kind = option.id)}
 			>
+				<Icon icon={option.icon} size={13} />
 				{option.label}
 			</button>
 		{/each}
@@ -106,6 +116,9 @@
 
 <style>
 	.pill {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
 		border-radius: 999px;
 		border: 1px solid var(--line-strong);
 		background: var(--surface);

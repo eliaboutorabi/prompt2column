@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { FileCsv, UploadSimple } from 'phosphor-svelte';
+	import {
+		CustomerSupportIcon,
+		FileUploadIcon,
+		Invoice01Icon,
+		Note01Icon
+	} from '@hugeicons/core-free-icons';
+	import type { IconSvgElement } from '@hugeicons/svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import { parseCsv } from '$lib/core/csv';
 	import { SAMPLES, loadSample } from '$lib/core/samples';
 	import { presetById } from '$lib/core/presets';
@@ -12,6 +19,12 @@
 	}
 
 	let { onCreated }: Props = $props();
+
+	const sampleIcons: Record<string, IconSvgElement> = {
+		support: CustomerSupportIcon,
+		expenses: Invoice01Icon,
+		research: Note01Icon
+	};
 
 	let dragging = $state(false);
 	let busy = $state(false);
@@ -89,7 +102,7 @@
 			disabled={busy}
 			onchange={(event) => void handleFiles(event.currentTarget.files)}
 		/>
-		<UploadSimple size={22} weight="regular" class="text-ink-3" />
+		<Icon icon={FileUploadIcon} size={22} class="text-ink-3" />
 		<span class="text-sm font-medium text-ink">
 			{busy ? 'Reading the file' : 'Drop a CSV here or click to choose one'}
 		</span>
@@ -130,7 +143,7 @@
 						}
 					}}
 				>
-					<FileCsv size={17} weight="regular" class="text-ink-3" />
+					<Icon icon={sampleIcons[sample.id]} size={18} class="text-ink-3" />
 					<span class="text-[0.8125rem] font-medium text-ink">{sample.name}</span>
 					<span class="text-xs leading-snug text-ink-3">{sample.blurb}</span>
 					<span class="font-mono text-[0.6875rem] text-ink-3">{sample.rows} rows</span>

@@ -1,7 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { HTMLSelectAttributes } from 'svelte/elements';
-	import { CaretDown } from 'phosphor-svelte';
+	import { ArrowDown01Icon } from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
+	import type { IconSvgElement } from '@hugeicons/svelte';
 
 	interface Props extends Omit<HTMLSelectAttributes, 'value' | 'size' | 'class'> {
 		value?: string;
@@ -11,6 +13,8 @@
 		block?: boolean;
 		/** Classes for the wrapper, such as spacing utilities. */
 		class?: string;
+		/** Optional icon at the start, saying what the list chooses. */
+		icon?: IconSvgElement;
 		children: Snippet;
 	}
 
@@ -19,6 +23,7 @@
 		compact = false,
 		block = false,
 		class: className = '',
+		icon,
 		children,
 		...rest
 	}: Props = $props();
@@ -28,11 +33,14 @@
 	The browser's own arrow sits hard against the edge and can't be spaced or
 	coloured, so it is hidden and replaced by an icon with room around it.
 -->
-<span class={['select', compact && 'compact', block && 'block', className]}>
+<span class={['select', compact && 'compact', block && 'block', icon && 'lead', className]}>
+	{#if icon}
+		<Icon {icon} size={compact ? 13 : 15} class="lead-icon" />
+	{/if}
 	<select bind:value {...rest}>
 		{@render children()}
 	</select>
-	<CaretDown size={compact ? 11 : 12} weight="bold" class="chevron" aria-hidden="true" />
+	<Icon icon={ArrowDown01Icon} size={compact ? 11 : 12} class="chevron" strokeWidth={2} />
 </span>
 
 <style>
@@ -88,6 +96,25 @@
 	select:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.lead select {
+		padding-left: 2.1rem;
+	}
+
+	.lead.compact select {
+		padding-left: 1.85rem;
+	}
+
+	.select :global(.lead-icon) {
+		position: absolute;
+		left: 0.7rem;
+		color: var(--text-3);
+		pointer-events: none;
+	}
+
+	.compact :global(.lead-icon) {
+		left: 0.6rem;
 	}
 
 	.select :global(.chevron) {

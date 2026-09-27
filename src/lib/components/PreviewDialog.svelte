@@ -1,5 +1,12 @@
 <script lang="ts">
-	import { ArrowsClockwise, CaretLeft, CaretRight, Play, X } from 'phosphor-svelte';
+	import {
+		ArrowLeft01Icon,
+		ArrowRight01Icon,
+		Cancel01Icon,
+		PlayIcon,
+		Loading03Icon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import { renderTemplate } from '$lib/core/template';
 	import { buildSchema, buildSystemPrompt, coerce } from '$lib/core/output';
 	import { complete } from '$lib/core/ollama';
@@ -77,16 +84,16 @@
 		</div>
 		<div class="flex items-center gap-1">
 			<button class="btn btn-ghost px-2" onclick={() => move(-1)} aria-label="Previous row">
-				<CaretLeft size={15} />
+				<Icon icon={ArrowLeft01Icon} size={15} />
 			</button>
 			<span class="min-w-16 text-center font-mono text-xs text-ink-2">
 				{rows.length ? index + 1 : 0} / {rows.length}
 			</span>
 			<button class="btn btn-ghost px-2" onclick={() => move(1)} aria-label="Next row">
-				<CaretRight size={15} />
+				<Icon icon={ArrowRight01Icon} size={15} />
 			</button>
 			<button class="btn btn-ghost px-2" onclick={onClose} aria-label="Close preview">
-				<X size={15} />
+				<Icon icon={Cancel01Icon} size={15} />
 			</button>
 		</div>
 	</header>
@@ -113,9 +120,9 @@
 					<span class="cap">Answer</span>
 					<button class="btn btn-outline" onclick={test} disabled={testing || !config?.model}>
 						{#if testing}
-							<ArrowsClockwise size={14} class="spin" /> Running
+							<Icon icon={Loading03Icon} size={14} class="spin" /> Running
 						{:else}
-							<Play size={14} weight="fill" /> Test this row
+							<Icon icon={PlayIcon} size={14} /> Test this row
 						{/if}
 					</button>
 				</div>
@@ -208,15 +215,5 @@
 		background: var(--danger-soft);
 		border-color: var(--danger-line);
 		color: var(--danger);
-	}
-
-	:global(.spin) {
-		animation: spin 0.9s linear infinite;
-	}
-
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>

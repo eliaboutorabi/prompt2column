@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { ArrowRight, SignOut, Trash } from 'phosphor-svelte';
+	import {
+		ArrowRight02Icon,
+		Delete02Icon,
+		Logout03Icon,
+		Table02Icon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import AuthPanel from '$lib/components/AuthPanel.svelte';
 	import ImportPanel from '$lib/components/ImportPanel.svelte';
 	import TemplateHighlight from '$lib/components/TemplateHighlight.svelte';
@@ -57,7 +63,7 @@
 			{#if session.account}
 				<span class="mr-2 hidden text-xs text-ink-2 sm:inline">{session.account.username}</span>
 				<button class="btn btn-ghost" onclick={() => session.signOut()}>
-					<SignOut size={15} /> Sign out
+					<Icon icon={Logout03Icon} size={15} /> Sign out
 				</button>
 			{/if}
 			<ThemeToggle />
@@ -137,11 +143,16 @@
 						{#each session.projects as project (project.id)}
 							<li class="project">
 								<button class="project-open" onclick={() => open(project)}>
-									<span class="text-[0.9375rem] font-medium text-ink">{project.name}</span>
-									<span class="font-mono text-xs text-ink-3">
-										{project.rowCount} rows, {project.columnCount} columns, saved {formatDate(
-											project.updatedAt
-										)}
+									<span class="project-icon"><Icon icon={Table02Icon} size={17} /></span>
+									<span class="project-text">
+										<span class="truncate text-[0.9375rem] font-medium text-ink"
+											>{project.name}</span
+										>
+										<span class="font-mono text-xs text-ink-3">
+											{project.rowCount} rows, {project.columnCount} columns, saved {formatDate(
+												project.updatedAt
+											)}
+										</span>
 									</span>
 								</button>
 								{#if pendingDelete === project.id}
@@ -166,14 +177,14 @@
 											aria-label={`Delete ${project.name}`}
 											onclick={() => (pendingDelete = project.id)}
 										>
-											<Trash size={15} />
+											<Icon icon={Delete02Icon} size={15} />
 										</button>
 										<button
 											class="btn btn-ghost px-2"
 											onclick={() => open(project)}
 											aria-label={`Open ${project.name}`}
 										>
-											<ArrowRight size={15} />
+											<Icon icon={ArrowRight02Icon} size={15} />
 										</button>
 									</div>
 								{/if}
@@ -213,10 +224,28 @@
 	}
 
 	.project-open {
-		display: grid;
-		gap: 0.15rem;
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
 		flex: 1;
 		min-width: 0;
 		text-align: left;
+	}
+
+	.project-icon {
+		display: grid;
+		place-items: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		flex-shrink: 0;
+		border-radius: var(--radius-control);
+		background: var(--accent-soft);
+		color: var(--accent-text);
+	}
+
+	.project-text {
+		display: grid;
+		gap: 0.15rem;
+		min-width: 0;
 	}
 </style>

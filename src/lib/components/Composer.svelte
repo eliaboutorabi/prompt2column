@@ -1,5 +1,22 @@
 <script lang="ts">
-	import { ArrowsClockwise, Eye, Pause, Play, Stop, WarningCircle } from 'phosphor-svelte';
+	import {
+		AiChipIcon,
+		AlertCircleIcon,
+		ArrowDown01Icon,
+		PauseIcon,
+		PlayIcon,
+		QuillWrite02Icon,
+		RefreshIcon,
+		Settings02Icon,
+		StarIcon,
+		StopIcon,
+		Tag01Icon,
+		TextAlignLeftIcon,
+		ThumbsUpIcon,
+		ViewIcon
+	} from '@hugeicons/core-free-icons';
+	import type { IconSvgElement } from '@hugeicons/svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import PromptEditor from './PromptEditor.svelte';
 	import Select from './Select.svelte';
 	import OutputEditor from './OutputEditor.svelte';
@@ -20,6 +37,14 @@
 	let editor = $state<PromptEditor | null>(null);
 	let showPreview = $state(false);
 	let activePreset = $state('');
+
+	const presetIcons: Record<string, IconSvgElement> = {
+		classify: Tag01Icon,
+		decide: ThumbsUpIcon,
+		summarize: TextAlignLeftIcon,
+		score: StarIcon,
+		blank: QuillWrite02Icon
+	};
 
 	const config = $derived(ws.project!.config);
 	const issues = $derived(ws.templateIssues);
@@ -86,6 +111,7 @@
 						disabled={busy}
 						onclick={() => applyPreset(preset.id)}
 					>
+						<Icon icon={presetIcons[preset.id]} size={14} />
 						{preset.label}
 					</button>
 				{/each}
@@ -133,7 +159,7 @@
 			</div>
 			{#if issues.unknown.length}
 				<p class="warn" role="alert">
-					<WarningCircle size={14} weight="fill" />
+					<Icon icon={AlertCircleIcon} size={14} />
 					<span>
 						No column called {issues.unknown
 							.map((name) => (name === '' ? 'an empty reference' : `"${name}"`))
@@ -185,11 +211,12 @@
 					onclick={() => models.scan()}
 					disabled={models.loading}
 				>
-					<ArrowsClockwise size={13} class={models.loading ? 'spin' : ''} />
+					<Icon icon={RefreshIcon} size={13} class={models.loading ? 'spin' : ''} />
 					Rescan
 				</button>
 			</div>
 			<Select
+				icon={AiChipIcon}
 				id="model"
 				class="mt-1"
 				block
@@ -208,13 +235,17 @@
 			</Select>
 			{#if models.error}
 				<p class="warn" role="alert">
-					<WarningCircle size={14} weight="fill" />
+					<Icon icon={AlertCircleIcon} size={14} />
 					<span>{models.error}</span>
 				</p>
 			{/if}
 
 			<details class="advanced">
-				<summary>Advanced</summary>
+				<summary>
+					<Icon icon={Settings02Icon} size={14} />
+					Advanced
+					<Icon icon={ArrowDown01Icon} size={12} strokeWidth={2} class="chev" />
+				</summary>
 				<div class="grid gap-3 pt-3">
 					<div class="grid grid-cols-2 gap-2">
 						<div>
@@ -295,6 +326,7 @@
 				class="btn btn-outline w-full"
 				onclick={() => ws.retryFailed(models.host)}
 			>
+				<Icon icon={RefreshIcon} size={15} />
 				Retry {ws.runFailed} failed {ws.runFailed === 1 ? 'row' : 'rows'}
 			</button>
 		{/if}
@@ -306,22 +338,22 @@
 				onclick={() => (showPreview = true)}
 				disabled={!config.template.trim() || issues.unknown.length > 0}
 			>
-				<Eye size={15} /> Preview
+				<Icon icon={ViewIcon} size={15} /> Preview
 			</button>
 
 			{#if ws.runState === 'running'}
 				<button type="button" class="btn btn-outline flex-1" onclick={() => ws.pause()}>
-					<Pause size={15} weight="fill" /> Pause
+					<Icon icon={PauseIcon} size={15} /> Pause
 				</button>
 				<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
-					<Stop size={15} weight="fill" /> Stop
+					<Icon icon={StopIcon} size={15} /> Stop
 				</button>
 			{:else if ws.runState === 'paused'}
 				<button type="button" class="btn btn-primary flex-1" onclick={() => ws.resume()}>
-					<Play size={15} weight="fill" /> Resume
+					<Icon icon={PlayIcon} size={15} /> Resume
 				</button>
 				<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
-					<Stop size={15} weight="fill" /> Stop
+					<Icon icon={StopIcon} size={15} /> Stop
 				</button>
 			{:else}
 				<button
@@ -330,7 +362,7 @@
 					disabled={!ws.canRun}
 					onclick={() => ws.run(models.host)}
 				>
-					<Play size={15} weight="fill" />
+					<Icon icon={PlayIcon} size={15} />
 					Run on {matchCount}
 					{matchCount === 1 ? 'row' : 'rows'}
 				</button>
@@ -370,6 +402,9 @@
 	}
 
 	.preset {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
 		border-radius: 999px;
 		border: 1px solid var(--line-strong);
 		background: var(--surface);
@@ -437,23 +472,31 @@
 	}
 
 	.advanced summary {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
 		cursor: pointer;
 		font-size: 0.75rem;
 		color: var(--text-2);
 		list-style: none;
 	}
 
+	.advanced summary:hover {
+		color: var(--text);
+	}
+
 	.advanced summary::-webkit-details-marker {
 		display: none;
 	}
 
-	.advanced summary::before {
-		content: '+ ';
+	.advanced summary :global(.chev) {
+		margin-left: auto;
 		color: var(--text-3);
+		transition: transform 0.18s ease;
 	}
 
-	.advanced[open] summary::before {
-		content: '- ';
+	.advanced[open] summary :global(.chev) {
+		transform: rotate(180deg);
 	}
 
 	.runbar {

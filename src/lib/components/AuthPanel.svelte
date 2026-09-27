@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { ArrowRight, Info } from 'phosphor-svelte';
+	import {
+		ArrowRight02Icon,
+		SquareLock02Icon,
+		UserIcon,
+		LockIcon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import { hasAccounts } from '$lib/core/auth';
 	import { session } from '$lib/state/session.svelte';
 
@@ -42,26 +48,32 @@
 	<div class="grid gap-3">
 		<div>
 			<label class="label" for="auth-name">Name</label>
-			<input
-				id="auth-name"
-				class="field"
-				bind:value={username}
-				autocomplete="username"
-				placeholder="ines.moreau"
-				required
-			/>
+			<div class="with-icon">
+				<Icon icon={UserIcon} size={15} class="field-icon" />
+				<input
+					id="auth-name"
+					class="field"
+					bind:value={username}
+					autocomplete="username"
+					placeholder="ines.moreau"
+					required
+				/>
+			</div>
 		</div>
 		<div>
 			<label class="label" for="auth-pass">Passphrase</label>
-			<input
-				id="auth-pass"
-				class="field"
-				type="password"
-				bind:value={password}
-				autocomplete={mode === 'signin' ? 'current-password' : 'new-password'}
-				placeholder="At least 6 characters"
-				required
-			/>
+			<div class="with-icon">
+				<Icon icon={LockIcon} size={15} class="field-icon" />
+				<input
+					id="auth-pass"
+					class="field"
+					type="password"
+					bind:value={password}
+					autocomplete={mode === 'signin' ? 'current-password' : 'new-password'}
+					placeholder="At least 6 characters"
+					required
+				/>
+			</div>
 		</div>
 		<label class="flex items-center gap-2 text-[0.8125rem] text-ink-2">
 			<input type="checkbox" bind:checked={remember} class="size-3.5 accent-accent" />
@@ -80,7 +92,7 @@
 
 	<button class="btn btn-primary mt-5 w-full py-2.5" type="submit" disabled={session.busy}>
 		{session.busy ? 'Working' : mode === 'signin' ? 'Sign in' : 'Create workspace'}
-		<ArrowRight size={15} weight="bold" />
+		<Icon icon={ArrowRight02Icon} size={15} strokeWidth={2} />
 	</button>
 
 	<button type="button" class="btn btn-ghost mt-2 w-full" onclick={swap}>
@@ -88,10 +100,29 @@
 	</button>
 
 	<p class="mt-6 flex gap-2 text-xs leading-relaxed text-ink-3">
-		<Info size={14} weight="regular" class="mt-0.5 shrink-0" />
+		<Icon icon={SquareLock02Icon} size={14} class="mt-0.5 shrink-0" />
 		<span>
 			Accounts live in this browser only. They keep projects apart on a shared machine, they do not
 			encrypt the data on disk.
 		</span>
 	</p>
 </form>
+
+<style>
+	.with-icon {
+		position: relative;
+	}
+
+	.with-icon :global(.field-icon) {
+		position: absolute;
+		top: 50%;
+		left: 0.7rem;
+		transform: translateY(-50%);
+		color: var(--text-3);
+		pointer-events: none;
+	}
+
+	.with-icon .field {
+		padding-left: 2.1rem;
+	}
+</style>

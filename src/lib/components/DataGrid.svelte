@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { tick, untrack } from 'svelte';
-	import { DotsThree, PencilSimple, Plus, Trash, WarningCircle } from 'phosphor-svelte';
+	import {
+		Add01Icon,
+		AlertCircleIcon,
+		Delete02Icon,
+		MoreHorizontalIcon,
+		PencilEdit02Icon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 	import type { Column } from '$lib/core/types';
 	import { cellKey, excerpt, splitByRanges } from '$lib/core/search';
@@ -321,7 +328,7 @@
 						onclick={() => onInsert(column)}
 					>
 						<span class="truncate">{column.name}</span>
-						<Plus size={12} weight="bold" class="add-hint" />
+						<Icon icon={Add01Icon} size={12} class="add-hint" strokeWidth={2} />
 					</button>
 					<button
 						type="button"
@@ -329,14 +336,14 @@
 						aria-label={`Options for ${column.name}`}
 						onclick={() => toggleMenu(column.id)}
 					>
-						<DotsThree size={16} weight="bold" />
+						<Icon icon={MoreHorizontalIcon} size={16} strokeWidth={2} />
 					</button>
 				{/if}
 
 				{#if menuColumnId === column.id}
 					<div class="menu" role="menu" style:max-height="{menuMaxHeight}px">
 						<button type="button" role="menuitem" onclick={() => startRename(column)}>
-							<PencilSimple size={14} /> Rename
+							<Icon icon={PencilEdit02Icon} size={14} /> Rename
 						</button>
 						<button
 							type="button"
@@ -346,7 +353,7 @@
 								menuColumnId = null;
 							}}
 						>
-							<Plus size={14} /> Add to prompt
+							<Icon icon={Add01Icon} size={14} /> Add to prompt
 						</button>
 						<button
 							type="button"
@@ -358,7 +365,7 @@
 								menuColumnId = null;
 							}}
 						>
-							<Trash size={14} /> Delete column
+							<Icon icon={Delete02Icon} size={14} /> Delete column
 						</button>
 						{#if menuCounts}
 							<div class="divider" role="separator"></div>
@@ -473,7 +480,7 @@
 								<span class="queued">waiting</span>
 							{:else if tone === 'error'}
 								<span class="failed" title={ws.cellError.get(row.id) ?? 'Failed'}>
-									<WarningCircle size={13} weight="fill" />
+									<Icon icon={AlertCircleIcon} size={13} />
 									{ws.cellError.get(row.id) ?? 'Failed'}
 								</span>
 							{:else if match}

@@ -1,5 +1,11 @@
 <script lang="ts">
-	import { Check, Copy, WarningCircle, X } from 'phosphor-svelte';
+	import {
+		AlertCircleIcon,
+		Cancel01Icon,
+		Copy01Icon,
+		Tick02Icon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
 	interface Props {
@@ -94,11 +100,11 @@
 			aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
 		>
 			{#if shownCopyState === 'copied'}
-				<Check size={13} weight="bold" /> Copied
+				<Icon icon={Tick02Icon} size={13} strokeWidth={2} /> Copied
 			{:else if shownCopyState === 'failed'}
 				Copy failed
 			{:else}
-				<Copy size={13} /> Copy
+				<Icon icon={Copy01Icon} size={13} /> Copy
 			{/if}
 		</button>
 		<button
@@ -108,7 +114,7 @@
 			disabled={!cell}
 			onclick={() => ws.clearActiveCell()}
 		>
-			<X size={13} weight="bold" />
+			<Icon icon={Cancel01Icon} size={13} strokeWidth={2} />
 		</button>
 	</div>
 
@@ -127,7 +133,7 @@
 		{:else if cell.editing}
 			{#if cell.value}{cell.value}{:else}<span class="muted">Empty cell</span>{/if}
 		{:else if cell.error}
-			<span class="failed"><WarningCircle size={14} weight="fill" />{cell.error}</span>
+			<span class="failed"><Icon icon={AlertCircleIcon} size={14} />{cell.error}</span>
 		{:else if cell.status === 'running'}
 			<span class="muted">Generating</span>
 		{:else if cell.status === 'queued' && !cell.value}

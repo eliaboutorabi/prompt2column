@@ -1,5 +1,13 @@
 <script lang="ts">
-	import { CaretDown, CaretUp, CheckSquare, MagnifyingGlass, X } from 'phosphor-svelte';
+	import {
+		ArrowDown01Icon,
+		ArrowUp01Icon,
+		Cancel01Icon,
+		CheckmarkSquare02Icon,
+		FilterHorizontalIcon,
+		Search01Icon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import Select from './Select.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
@@ -40,7 +48,7 @@
 
 <div class="bar" role="search" style:padding-right="calc(0.6rem + {occludedRight}px)">
 	<div class="field-wrap">
-		<MagnifyingGlass size={14} class="icon" />
+		<Icon icon={Search01Icon} size={14} class="icon" />
 		<input
 			bind:this={input}
 			type="search"
@@ -63,7 +71,7 @@
 					input?.focus();
 				}}
 			>
-				<X size={12} weight="bold" />
+				<Icon icon={Cancel01Icon} size={12} strokeWidth={2} />
 			</button>
 		{:else}
 			<kbd class="hint">{shortcut}</kbd>
@@ -74,6 +82,7 @@
 		<Select
 			compact
 			block
+			icon={FilterHorizontalIcon}
 			aria-label="Column to search"
 			value={ws.searchColumnId ?? ''}
 			onchange={(event) => ws.setSearchColumn(event.currentTarget.value || null)}
@@ -107,7 +116,7 @@
 				disabled={!total}
 				onclick={() => ws.stepSearch(-1)}
 			>
-				<CaretUp size={14} weight="bold" />
+				<Icon icon={ArrowUp01Icon} size={14} strokeWidth={2} />
 			</button>
 			<button
 				type="button"
@@ -117,7 +126,7 @@
 				disabled={!total}
 				onclick={() => ws.stepSearch(1)}
 			>
-				<CaretDown size={14} weight="bold" />
+				<Icon icon={ArrowDown01Icon} size={14} strokeWidth={2} />
 			</button>
 		</div>
 
@@ -129,7 +138,7 @@
 				disabled={ws.isBusy}
 				onclick={() => ws.tickMatchingRows()}
 			>
-				<CheckSquare size={14} />
+				<Icon icon={CheckmarkSquare02Icon} size={14} />
 				Tick {ws.search.rowCount}
 				{ws.search.rowCount === 1 ? 'row' : 'rows'}
 			</button>

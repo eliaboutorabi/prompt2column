@@ -276,7 +276,7 @@ e2e/                 Playwright flows
 ```
 
 Built with SvelteKit (static adapter), Svelte 5, Tailwind CSS 4, Papa Parse and
-Phosphor icons.
+HugeIcons.
 
 ## Troubleshooting
 

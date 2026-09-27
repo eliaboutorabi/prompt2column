@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { tick } from 'svelte';
-	import { BracketsCurly, CaretDown, DownloadSimple, FileCsv } from 'phosphor-svelte';
+	import { ArrowDown01Icon, CodeIcon, Csv01Icon, Download04Icon } from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { ExportFormat } from '$lib/core/export';
 
 	interface Props {
@@ -81,8 +82,8 @@
 			}
 		}}
 	>
-		<DownloadSimple size={15} /> Export
-		<CaretDown size={11} weight="bold" class="caret" />
+		<Icon icon={Download04Icon} size={15} /> Export
+		<Icon icon={ArrowDown01Icon} size={11} class="caret" strokeWidth={2} />
 	</button>
 
 	{#if open}
@@ -96,9 +97,9 @@
 			{#each formats as format (format.id)}
 				<button type="button" role="menuitem" class="item" onclick={() => choose(format.id)}>
 					{#if format.id === 'csv'}
-						<FileCsv size={17} class="icon" />
+						<Icon icon={Csv01Icon} size={17} class="icon" />
 					{:else}
-						<BracketsCurly size={17} class="icon" />
+						<Icon icon={CodeIcon} size={17} class="icon" />
 					{/if}
 					<span class="text">
 						<span class="label">{format.label}</span>

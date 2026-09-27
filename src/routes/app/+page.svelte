@@ -4,7 +4,14 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { ArrowLeft, CheckCircle, Warning } from 'phosphor-svelte';
+	import {
+		AiMagicIcon,
+		Alert02Icon,
+		ArrowLeft02Icon,
+		CheckmarkCircle02Icon,
+		GridTableIcon
+	} from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import CellReader from '$lib/components/CellReader.svelte';
 	import Composer from '$lib/components/Composer.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
@@ -98,7 +105,7 @@
 <div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_1fr]">
 	<header class="flex items-center gap-3 border-b border-line bg-surface px-3">
 		<a href={resolve('/')} class="btn btn-ghost px-2" aria-label="Back to projects">
-			<ArrowLeft size={16} />
+			<Icon icon={ArrowLeft02Icon} size={16} />
 		</a>
 
 		{#if ws.project}
@@ -120,9 +127,9 @@
 				{#if models.loading}
 					Looking for Ollama
 				{:else if models.error}
-					<Warning size={13} weight="fill" class="text-danger" /> Ollama offline
+					<Icon icon={Alert02Icon} size={13} class="text-danger" /> Ollama offline
 				{:else}
-					<CheckCircle size={13} weight="fill" class="text-accent" />
+					<Icon icon={CheckmarkCircle02Icon} size={13} class="text-accent" />
 					{models.models.length}
 					{models.models.length === 1 ? 'model' : 'models'}
 				{/if}
@@ -146,8 +153,12 @@
 	{:else if ws.project}
 		<div class="workspace">
 			<div class="tabs">
-				<button class:on={view === 'sheet'} onclick={() => (view = 'sheet')}>Sheet</button>
-				<button class:on={view === 'prompt'} onclick={() => (view = 'prompt')}>Prompt</button>
+				<button class:on={view === 'sheet'} onclick={() => (view = 'sheet')}>
+					<Icon icon={GridTableIcon} size={15} /> Sheet
+				</button>
+				<button class:on={view === 'prompt'} onclick={() => (view = 'prompt')}>
+					<Icon icon={AiMagicIcon} size={15} /> Prompt
+				</button>
 			</div>
 
 			<div class="main">
@@ -221,6 +232,10 @@
 	}
 
 	.tabs button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.4rem;
 		padding: 0.5rem;
 		font-size: 0.8125rem;
 		color: var(--text-2);

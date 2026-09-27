@@ -284,6 +284,21 @@
 	}
 }
 
+/* HugeIcons: never squash an icon to make room in a flex row. */
+.hi {
+	flex-shrink: 0;
+}
+
+.spin {
+	animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,

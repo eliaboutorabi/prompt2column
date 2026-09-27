@@ -1,5 +1,14 @@
 <script lang="ts">
-	import { Plus, X } from 'phosphor-svelte';
+	import {
+		Add01Icon,
+		Cancel01Icon,
+		HashtagIcon,
+		Tag01Icon,
+		TextIcon,
+		ToggleOnIcon
+	} from '@hugeicons/core-free-icons';
+	import type { IconSvgElement } from '@hugeicons/svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { OutputKind, OutputSpec } from '$lib/core/types';
 
 	interface Props {
@@ -9,11 +18,11 @@
 
 	let { spec = $bindable(), disabled = false }: Props = $props();
 
-	const kinds: Array<{ id: OutputKind; label: string; hint: string }> = [
-		{ id: 'choice', label: 'Label', hint: 'One value from a list you define' },
-		{ id: 'boolean', label: 'Yes / no', hint: 'Two labels, nothing else' },
-		{ id: 'number', label: 'Number', hint: 'A number inside a range' },
-		{ id: 'text', label: 'Free text', hint: 'A short written answer' }
+	const kinds: Array<{ id: OutputKind; label: string; hint: string; icon: IconSvgElement }> = [
+		{ id: 'choice', label: 'Label', hint: 'One value from a list you define', icon: Tag01Icon },
+		{ id: 'boolean', label: 'Yes / no', hint: 'Two labels, nothing else', icon: ToggleOnIcon },
+		{ id: 'number', label: 'Number', hint: 'A number inside a range', icon: HashtagIcon },
+		{ id: 'text', label: 'Free text', hint: 'A short written answer', icon: TextIcon }
 	];
 
 	let draftChoice = $state('');
@@ -49,6 +58,7 @@
 					{disabled}
 					onclick={() => (spec.kind = kind.id)}
 				>
+					<Icon icon={kind.icon} size={13} />
 					{kind.label}
 				</button>
 			{/each}
@@ -69,7 +79,7 @@
 							{disabled}
 							onclick={() => removeChoice(choice)}
 						>
-							<X size={11} weight="bold" />
+							<Icon icon={Cancel01Icon} size={11} strokeWidth={2} />
 						</button>
 					</span>
 				{/each}
@@ -92,7 +102,7 @@
 					}}
 				/>
 				<button type="button" class="btn btn-outline" {disabled} onclick={addChoice}>
-					<Plus size={14} weight="bold" /> Add
+					<Icon icon={Add01Icon} size={14} strokeWidth={2} /> Add
 				</button>
 			</div>
 			<label class="mt-2 flex items-center gap-2 text-xs text-ink-2">
@@ -190,6 +200,10 @@
 	}
 
 	.seg {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.3rem;
 		padding: 0.3rem 0.25rem;
 		border-radius: 6px;
 		font-size: 0.75rem;

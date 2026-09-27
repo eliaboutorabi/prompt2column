@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { Desktop, Moon, Sun } from 'phosphor-svelte';
+	import { ComputerIcon, Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons';
+	import Icon from '$lib/components/Icon.svelte';
 	import { theme } from '$lib/state/theme.svelte';
 
 	const labels = { system: 'Match system', light: 'Light', dark: 'Dark' } as const;
@@ -13,10 +14,10 @@
 	aria-label={`Appearance: ${labels[theme.choice]}. Click to change.`}
 >
 	{#if theme.choice === 'system'}
-		<Desktop size={16} weight="regular" />
+		<Icon icon={ComputerIcon} size={16} />
 	{:else if theme.choice === 'light'}
-		<Sun size={16} weight="regular" />
+		<Icon icon={Sun03Icon} size={16} />
 	{:else}
-		<Moon size={16} weight="regular" />
+		<Icon icon={Moon02Icon} size={16} />
 	{/if}
 </button>
