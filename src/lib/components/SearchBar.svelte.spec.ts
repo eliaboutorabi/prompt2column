@@ -51,11 +51,29 @@ afterEach(() => {
 });
 
 describe('SearchBar', () => {
-	it('counts matching cells and rows as you type', async () => {
+	it('counts matches as you type, and offers to tick the rows they are in', async () => {
 		render(SearchBar, { props: { ws: makeWorkspace() } });
 		await userEvent.fill(page.getByRole('searchbox', { name: 'Find in sheet' }), 'billing');
-		await expect.element(page.getByText(/1\s+of 2/)).toBeVisible();
-		await expect.element(page.getByText('cells, 2 rows')).toBeVisible();
+		await expect.element(page.getByRole('search')).toHaveTextContent(/1\s*of 2/);
+		await expect.element(page.getByRole('button', { name: 'Tick 2 rows' })).toBeVisible();
+	});
+
+	it('stays quiet until it is used', async () => {
+		render(SearchBar, { props: { ws: makeWorkspace() } });
+		const search = page.getByRole('search');
+		expect(page.getByRole('combobox', { name: 'Column to search' }).elements()).toHaveLength(0);
+		expect(page.getByRole('button').elements()).toHaveLength(0);
+		const rest = search.element().getBoundingClientRect().width;
+		await userEvent.click(page.getByRole('searchbox'));
+		await expect.element(page.getByRole('combobox', { name: 'Column to search' })).toBeVisible();
+		await expect.poll(() => search.element().getBoundingClientRect().width).toBeGreaterThan(rest);
+	});
+
+	it('keeps its column picker open while focus moves into it', async () => {
+		render(SearchBar, { props: { ws: makeWorkspace() } });
+		await userEvent.click(page.getByRole('searchbox'));
+		await userEvent.click(page.getByRole('combobox', { name: 'Column to search' }));
+		await expect.element(page.getByRole('option', { name: 'Decision' })).toBeVisible();
 	});
 
 	it('says so when nothing matches', async () => {

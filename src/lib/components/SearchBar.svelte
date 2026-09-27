@@ -9,25 +9,33 @@
 	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
 	import Select from './Select.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
 	interface Props {
 		ws: Workspace;
-		/** Width of the sidebar floating over the right edge, kept clear of controls. */
-		occludedRight?: number;
 	}
 
-	let { ws, occludedRight = 0 }: Props = $props();
+	let { ws }: Props = $props();
 
+	let root = $state<HTMLDivElement | null>(null);
 	let input = $state<HTMLInputElement | null>(null);
+	let focused = $state(false);
 
 	const total = $derived(ws.search.matches.length);
 	const position = $derived(total ? Math.min(ws.searchIndex, total - 1) + 1 : 0);
 	const active = $derived(ws.searchQuery.trim() !== '');
-	const shortcut =
-		typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent)
-			? '⌘F'
-			: 'Ctrl F';
+	const rows = $derived(ws.search.rowCount);
+	const rowWord = $derived(rows === 1 ? 'row' : 'rows');
+	// Quiet until used: the extra controls only appear once there's something to act on.
+	const open = $derived(focused || active || ws.searchColumnId !== null);
+	const mac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
+	const shortcut = mac ? '⌘F' : 'Ctrl F';
+
+	const scopeOptions = $derived([
+		{ value: '', label: 'All columns' },
+		...ws.columns.map((column) => ({ value: column.id, label: column.name }))
+	]);
 
 	export function focus() {
 		input?.focus();
@@ -44,186 +52,181 @@
 			else input?.blur();
 		}
 	}
+
+	// Focus moving between the field's own controls (or into the column list) keeps it open.
+	function onFocusOut(event: FocusEvent) {
+		const next = event.relatedTarget as Node | null;
+		if (!next || !root?.contains(next)) focused = false;
+	}
 </script>
 
-<div class="bar" role="search" style:padding-right="calc(0.6rem + {occludedRight}px)">
-	<div class="field-wrap">
-		<Icon icon={Search01Icon} size={14} class="icon" />
-		<input
-			bind:this={input}
-			type="search"
-			class="query"
-			placeholder="Find in sheet"
-			aria-label="Find in sheet"
-			autocomplete="off"
-			spellcheck="false"
-			value={ws.searchQuery}
-			oninput={(event) => ws.setSearch(event.currentTarget.value)}
-			onkeydown={onKeydown}
-		/>
-		{#if active}
-			<button
-				type="button"
-				class="clear"
-				aria-label="Clear search"
-				onclick={() => {
-					ws.clearSearch();
-					input?.focus();
-				}}
-			>
-				<Icon icon={Cancel01Icon} size={12} strokeWidth={2} />
-			</button>
-		{:else}
-			<kbd class="hint">{shortcut}</kbd>
-		{/if}
-	</div>
-
-	<span class="scope">
-		<Select
-			compact
-			block
-			icon={FilterHorizontalIcon}
-			label="Column to search"
-			options={[
-				{ value: '', label: 'All columns' },
-				...ws.columns.map((column) => ({ value: column.id, label: column.name }))
-			]}
-			value={ws.searchColumnId ?? ''}
-			onchange={(value) => ws.setSearchColumn(value || null)}
-		/>
-	</span>
+<div
+	bind:this={root}
+	class={['search', open && 'open', active && 'active']}
+	role="search"
+	onfocusin={() => (focused = true)}
+	onfocusout={onFocusOut}
+>
+	<Icon icon={Search01Icon} size={14} class="glass" />
+	<input
+		bind:this={input}
+		type="search"
+		class="query"
+		placeholder="Find in sheet"
+		aria-label="Find in sheet"
+		autocomplete="off"
+		spellcheck="false"
+		value={ws.searchQuery}
+		oninput={(event) => ws.setSearch(event.currentTarget.value)}
+		onkeydown={onKeydown}
+	/>
 
 	{#if active}
 		<span class="count" aria-live="polite">
 			{#if total}
-				<strong>{position}</strong> of {total}
-				<span class="rows"
-					>{total === 1 ? 'cell' : 'cells'}, {ws.search.rowCount}
-					{ws.search.rowCount === 1 ? 'row' : 'rows'}</span
-				>
+				<b>{position}</b> of {total}
 			{:else}
 				No matches
 			{/if}
 		</span>
-
-		<div class="steps">
-			<button
-				type="button"
-				class="btn btn-ghost step"
-				aria-label="Previous match"
-				title="Previous match (Shift Enter)"
-				disabled={!total}
-				onclick={() => ws.stepSearch(-1)}
-			>
-				<Icon icon={ArrowUp01Icon} size={14} strokeWidth={2} />
-			</button>
-			<button
-				type="button"
-				class="btn btn-ghost step"
-				aria-label="Next match"
-				title="Next match (Enter)"
-				disabled={!total}
-				onclick={() => ws.stepSearch(1)}
-			>
-				<Icon icon={ArrowDown01Icon} size={14} strokeWidth={2} />
-			</button>
-		</div>
-
-		{#if total}
-			<button
-				type="button"
-				class="btn btn-ghost tick"
-				title="Tick these rows, then run the prompt on ticked rows only"
-				disabled={ws.isBusy}
-				onclick={() => ws.tickMatchingRows()}
-			>
-				<Icon icon={CheckmarkSquare02Icon} size={14} />
-				Tick {ws.search.rowCount}
-				{ws.search.rowCount === 1 ? 'row' : 'rows'}
-			</button>
-		{/if}
+		<button
+			type="button"
+			class="mini"
+			aria-label="Previous match"
+			disabled={!total}
+			use:tooltip={{ text: 'Previous match', kbd: '⇧↵' }}
+			onclick={() => ws.stepSearch(-1)}
+		>
+			<Icon icon={ArrowUp01Icon} size={13} strokeWidth={2} />
+		</button>
+		<button
+			type="button"
+			class="mini"
+			aria-label="Next match"
+			disabled={!total}
+			use:tooltip={{ text: 'Next match', kbd: '↵' }}
+			onclick={() => ws.stepSearch(1)}
+		>
+			<Icon icon={ArrowDown01Icon} size={13} strokeWidth={2} />
+		</button>
+	{:else if !open}
+		<kbd class="hint">{shortcut}</kbd>
 	{/if}
 
-	{#if ws.selected.size}
-		<span class="ticked" role="status">
-			<Icon icon={CheckmarkSquare02Icon} size={13} />
-			<b>{ws.selected.size}</b>
-			ticked
-			<button
-				type="button"
-				class="untick"
-				title="Untick every row"
-				aria-label="Untick every row"
-				disabled={ws.isBusy}
-				onclick={() => ws.selectAll(false)}
-			>
-				<Icon icon={Cancel01Icon} size={11} strokeWidth={2.2} />
-			</button>
+	{#if open}
+		<span class="divider" aria-hidden="true"></span>
+		<span class="scope">
+			<Select
+				variant="ghost"
+				compact
+				icon={FilterHorizontalIcon}
+				label="Column to search"
+				options={scopeOptions}
+				value={ws.searchColumnId ?? ''}
+				onchange={(value) => ws.setSearchColumn(value || null)}
+			/>
 		</span>
+	{/if}
+
+	{#if active && total}
+		<button
+			type="button"
+			class="mini tick"
+			aria-label="Tick {rows} {rowWord}"
+			disabled={ws.isBusy}
+			use:tooltip={`Tick the ${rows} ${rowWord} with a match, to run the prompt on just ${rows === 1 ? 'it' : 'them'}`}
+			onclick={() => ws.tickMatchingRows()}
+		>
+			<Icon icon={CheckmarkSquare02Icon} size={14} />
+		</button>
+	{/if}
+
+	{#if active}
+		<button
+			type="button"
+			class="mini"
+			aria-label="Clear search"
+			use:tooltip={{ text: 'Clear search', kbd: 'Esc' }}
+			onclick={() => {
+				ws.clearSearch();
+				input?.focus();
+			}}
+		>
+			<Icon icon={Cancel01Icon} size={12} strokeWidth={2} />
+		</button>
 	{/if}
 </div>
 
 <style>
-	.bar {
+	/* A quiet fill in the header that only asks for attention once it's in use. */
+	.search {
 		display: flex;
 		align-items: center;
-		gap: 0.5rem;
-		min-height: 2.75rem;
-		padding: 0.4rem 0.6rem;
-		background: var(--surface);
-		border-bottom: 1px solid var(--line);
-		overflow-x: auto;
-	}
-
-	.field-wrap {
-		position: relative;
-		display: flex;
-		align-items: center;
-		flex: 0 1 17rem;
-		min-width: 10rem;
-	}
-
-	.field-wrap :global(.icon) {
-		position: absolute;
-		left: 0.55rem;
+		gap: 0.2rem;
+		flex: 0 1 auto;
+		width: 14rem;
+		min-width: 9rem;
+		height: 2rem;
+		padding: 0 0.3rem 0 0.6rem;
+		border: 1px solid transparent;
+		border-radius: var(--radius-control);
+		background: var(--surface-2);
 		color: var(--text-3);
-		pointer-events: none;
+		transition:
+			width var(--dur) var(--ease-out),
+			background-color var(--dur-fast) ease,
+			border-color var(--dur-fast) ease,
+			box-shadow var(--dur-fast) ease;
+	}
+
+	.search:hover {
+		border-color: var(--line);
+	}
+
+	.search.open {
+		width: 25rem;
+	}
+
+	.search:focus-within {
+		background: var(--surface);
+		border-color: color-mix(in oklch, var(--accent) 70%, var(--line-strong));
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 16%, transparent);
+	}
+
+	.search :global(.glass) {
+		margin-right: 0.25rem;
+		transition: color var(--dur-fast) ease;
+	}
+
+	.search:focus-within :global(.glass),
+	.search.active :global(.glass) {
+		color: var(--text-2);
 	}
 
 	.query {
-		width: 100%;
-		height: 1.9rem;
-		padding: 0 2.6rem 0 1.85rem;
-		background: var(--surface-2);
-		border: 1px solid var(--line);
-		border-radius: var(--radius-control);
+		flex: 1;
+		min-width: 3rem;
+		height: 100%;
+		background: transparent;
+		border: 0;
 		font-size: 0.8125rem;
-		transition:
-			border-color 0.14s ease,
-			background-color 0.14s ease;
+		color: var(--text);
+	}
+
+	.query:focus {
+		outline: none;
 	}
 
 	.query::-webkit-search-cancel-button {
 		display: none;
 	}
 
-	.query:hover {
-		border-color: var(--line-strong);
-	}
-
-	.query:focus {
-		outline: none;
-		background: var(--surface);
-		border-color: var(--accent);
-		box-shadow: 0 0 0 3px var(--accent-soft);
-	}
-
 	.hint {
-		position: absolute;
-		right: 0.45rem;
+		margin-right: 0.2rem;
 		padding: 0 0.3rem;
-		border: 1px solid var(--line);
 		border-radius: 4px;
+		background: var(--surface);
+		box-shadow: inset 0 0 0 1px var(--line);
 		font-family: var(--font-mono);
 		font-size: 0.625rem;
 		line-height: 1.1rem;
@@ -231,94 +234,58 @@
 		pointer-events: none;
 	}
 
-	.query:focus ~ .hint {
-		display: none;
-	}
-
-	.clear {
-		position: absolute;
-		right: 0.35rem;
-		display: grid;
-		place-items: center;
-		width: 1.25rem;
-		height: 1.25rem;
-		border-radius: 4px;
+	.count {
+		flex-shrink: 0;
+		padding: 0 0.3rem;
+		font-size: 0.6875rem;
 		color: var(--text-3);
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
 	}
 
-	.clear:hover {
+	.count b {
+		font-weight: 600;
+		color: var(--text-2);
+	}
+
+	.mini {
+		display: grid;
+		flex-shrink: 0;
+		place-items: center;
+		width: 1.5rem;
+		height: 1.5rem;
+		border-radius: 5px;
+		color: var(--text-3);
+		transition:
+			background-color var(--dur-fast) ease,
+			color var(--dur-fast) ease;
+	}
+
+	.mini:hover:not(:disabled) {
 		background: var(--surface-3);
 		color: var(--text);
 	}
 
-	.scope {
-		flex: 0 1 11rem;
-		min-width: 7.5rem;
+	.mini:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 
-	.count {
-		font-size: 0.75rem;
-		color: var(--text-2);
-		white-space: nowrap;
-		font-variant-numeric: tabular-nums;
-	}
-
-	.count strong {
-		color: var(--text);
-		font-weight: 600;
-	}
-
-	.rows {
-		color: var(--text-3);
-		margin-left: 0.25rem;
-	}
-
-	.steps {
-		display: flex;
-	}
-
-	.step {
-		padding: 0.3rem;
-	}
-
-	.tick {
-		height: 1.9rem;
-		font-size: 0.75rem;
-	}
-
-	/* How many rows a "Ticked rows" run would take, with a quick way out. */
-	.ticked {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		flex-shrink: 0;
-		height: 1.6rem;
-		margin-left: auto;
-		padding: 0 0.25rem 0 0.55rem;
-		border-radius: 999px;
-		background: var(--accent-soft);
+	.tick:hover:not(:disabled) {
 		color: var(--accent-text);
-		font-size: 0.75rem;
-		white-space: nowrap;
 	}
 
-	.ticked b {
-		font-family: var(--font-mono);
-		font-weight: 600;
-		font-variant-numeric: tabular-nums;
+	.divider {
+		flex-shrink: 0;
+		width: 1px;
+		height: 0.9rem;
+		margin: 0 0.15rem;
+		background: var(--line-strong);
 	}
 
-	.untick {
-		display: grid;
-		place-items: center;
-		width: 1.2rem;
-		height: 1.2rem;
-		border-radius: 999px;
-		color: inherit;
-		transition: background-color var(--dur-fast) ease;
-	}
-
-	.untick:hover:not(:disabled) {
-		background: color-mix(in oklch, var(--accent) 30%, transparent);
+	.scope {
+		display: flex;
+		flex-shrink: 0;
+		animation: fade-in var(--dur) ease;
 	}
 </style>

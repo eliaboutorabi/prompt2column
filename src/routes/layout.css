@@ -71,6 +71,11 @@
 	--inner-highlight: inset 0 1px 0 oklch(1 0 0 / 0.55);
 	--ring: 0 0 0 3px color-mix(in oklch, var(--accent) 32%, transparent);
 
+	/* Tooltips invert the page: ink on paper becomes paper on ink. */
+	--tooltip-bg: oklch(0.24 0.01 110);
+	--tooltip-ink: oklch(0.97 0.004 110);
+	--tooltip-edge: transparent;
+
 	--radius-control: 8px;
 	--radius-panel: 12px;
 	--radius-large: 16px;
@@ -132,6 +137,10 @@
 		0 0 0 1px oklch(1 0 0 / 0.06), 0 4px 12px oklch(0.08 0 0 / 0.45),
 		0 20px 48px oklch(0.08 0 0 / 0.55);
 	--inner-highlight: inset 0 1px 0 oklch(1 0 0 / 0.06);
+
+	--tooltip-bg: oklch(0.31 0.009 110);
+	--tooltip-ink: oklch(0.96 0.004 110);
+	--tooltip-edge: oklch(1 0 0 / 0.08);
 }
 
 @theme inline {
@@ -390,6 +399,62 @@
 		line-height: 1;
 		color: var(--text-3);
 		background: var(--surface);
+	}
+}
+
+/* The one tooltip, moved between targets by the tooltip action. Top layer, so
+   nothing clips it. */
+.tooltip {
+	position: fixed;
+	inset: auto;
+	margin: 0;
+	max-width: 17rem;
+	padding: 0.3rem 0.5rem;
+	border: 1px solid var(--tooltip-edge);
+	border-radius: 6px;
+	background: var(--tooltip-bg);
+	color: var(--tooltip-ink);
+	box-shadow: 0 4px 14px oklch(0.1 0 0 / 0.22);
+	font-family: var(--font-sans);
+	font-size: 0.6875rem;
+	font-weight: 500;
+	line-height: 1.3;
+	letter-spacing: 0;
+	pointer-events: none;
+}
+
+.tooltip:popover-open {
+	display: flex;
+	align-items: center;
+	gap: 0.45rem;
+	animation: tooltip-in 140ms var(--ease-out);
+}
+
+.tooltip[data-side='below']:popover-open {
+	animation-name: tooltip-in-below;
+}
+
+.tooltip kbd {
+	padding: 0 0.25rem;
+	border-radius: 4px;
+	background: oklch(1 0 0 / 0.14);
+	font-family: var(--font-mono);
+	font-size: 0.625rem;
+	line-height: 1rem;
+	color: color-mix(in oklch, var(--tooltip-ink) 80%, transparent);
+}
+
+@keyframes tooltip-in {
+	from {
+		opacity: 0;
+		transform: translateY(2px);
+	}
+}
+
+@keyframes tooltip-in-below {
+	from {
+		opacity: 0;
+		transform: translateY(-2px);
 	}
 }
 

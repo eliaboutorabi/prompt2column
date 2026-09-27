@@ -4,7 +4,13 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { AiMagicIcon, ArrowRight01Icon, GridTableIcon } from '@hugeicons/core-free-icons';
+	import {
+		AiMagicIcon,
+		ArrowRight01Icon,
+		Cancel01Icon,
+		CheckmarkSquare02Icon,
+		GridTableIcon
+	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
 	import Brand from '$lib/components/Brand.svelte';
 	import CellReader from '$lib/components/CellReader.svelte';
@@ -15,6 +21,7 @@
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { toast } from '$lib/state/toast.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import { downloadFile, exportFilename, type ExportFormat } from '$lib/core/export';
 	import { Workspace } from '$lib/state/workspace.svelte';
 	import { models } from '$lib/state/models.svelte';
@@ -156,15 +163,38 @@
 			</div>
 		{/if}
 
+		{#if ws.selected.size}
+			<!-- How many rows a "Ticked rows" run would take, with a quick way out. -->
+			<span class="ticked" role="status">
+				<Icon icon={CheckmarkSquare02Icon} size={13} />
+				<b>{ws.selected.size}</b> ticked
+				<button
+					type="button"
+					class="untick"
+					aria-label="Untick every row"
+					disabled={ws.isBusy}
+					use:tooltip={'Untick every row'}
+					onclick={() => ws.selectAll(false)}
+				>
+					<Icon icon={Cancel01Icon} size={11} strokeWidth={2.2} />
+				</button>
+			</span>
+		{/if}
+
 		<div class="actions">
+			{#if ws.project}
+				<span class="find">
+					<SearchBar bind:this={searchBar} {ws} />
+				</span>
+			{/if}
 			<button
 				type="button"
 				class={['status', models.loading ? 'checking' : models.error ? 'offline' : 'online']}
 				onclick={() => models.scan()}
 				disabled={models.loading}
-				title={models.error
-					? `${models.error} Click to try again.`
-					: `Ollama at ${models.host}. Click to rescan models.`}
+				use:tooltip={models.error
+					? 'Ollama is not answering. Click to try again.'
+					: `Ollama at ${models.host.replace(/^https?:\/\//, '')}. Click to rescan.`}
 			>
 				<span class="dot" aria-hidden="true"></span>
 				<span class="status-text">
@@ -207,7 +237,6 @@
 
 			<div class="main">
 				<div class="pane sheet" inert={sheetCovered}>
-					<SearchBar bind:this={searchBar} {ws} {occludedRight} />
 					<CellReader {ws} {occludedRight} />
 					<DataGrid {ws} onInsert={insert} {occludedRight} />
 				</div>
@@ -393,15 +422,58 @@
 		}
 	}
 
-	@media (min-width: 900px) {
+	@media (min-width: 1100px) {
 		.stats {
 			display: flex;
 		}
 	}
 
+	.ticked {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		flex-shrink: 0;
+		height: 1.4rem;
+		padding: 0 0.2rem 0 0.5rem;
+		border-radius: 999px;
+		background: var(--accent-soft);
+		color: var(--accent-text);
+		font-size: 0.6875rem;
+		white-space: nowrap;
+		animation: pop-in var(--dur) var(--ease-out);
+	}
+
+	.ticked b {
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.untick {
+		display: grid;
+		place-items: center;
+		width: 1.05rem;
+		height: 1.05rem;
+		border-radius: 999px;
+		color: inherit;
+		transition: background-color var(--dur-fast) ease;
+	}
+
+	.untick:hover:not(:disabled) {
+		background: color-mix(in oklch, var(--accent) 30%, transparent);
+	}
+
+	.find {
+		display: flex;
+		min-width: 0;
+	}
+
+	/* A desktop app first (Ollama doesn't run on phones); a narrow window just
+	   drops the extras rather than scrolling sideways. */
 	@media (max-width: 639px) {
 		.crumb,
-		.crumbs :global(.sep) {
+		.crumbs :global(.sep),
+		.find {
 			display: none;
 		}
 	}
@@ -459,11 +531,11 @@
 		grid-area: 1 / 1;
 	}
 
-	/* Search bar, cell reader, then the grid. */
+	/* Cell reader, then the grid. */
 	.pane.sheet {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: auto auto minmax(0, 1fr);
+		grid-template-rows: auto minmax(0, 1fr);
 	}
 
 	.pane.side {
