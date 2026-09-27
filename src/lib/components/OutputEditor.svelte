@@ -8,6 +8,7 @@
 		ToggleOnIcon
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
+	import { labelTone } from '$lib/core/columns';
 	import Icon from '$lib/components/Icon.svelte';
 	import type { OutputKind, OutputSpec } from '$lib/core/types';
 
@@ -70,11 +71,11 @@
 			<span class="label">Allowed labels</span>
 			<div class="flex flex-wrap items-center gap-1.5">
 				{#each spec.choices as choice (choice)}
-					<span class="chip border border-line-strong bg-surface-2 text-ink">
+					<span class="tag choice tone-{labelTone(choice)}">
 						{choice}
 						<button
 							type="button"
-							class="text-ink-3 hover:text-danger"
+							class="remove"
 							aria-label={`Remove ${choice}`}
 							{disabled}
 							onclick={() => removeChoice(choice)}
@@ -204,13 +205,15 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.3rem;
-		padding: 0.3rem 0.25rem;
+		height: 1.85rem;
+		padding: 0 0.25rem;
 		border-radius: 6px;
 		font-size: 0.75rem;
 		color: var(--text-2);
 		transition:
-			background-color 0.14s ease,
-			color 0.14s ease;
+			background-color var(--dur-fast) ease,
+			color var(--dur-fast) ease,
+			box-shadow var(--dur-fast) ease;
 	}
 
 	.seg:hover:not(.on):not(:disabled) {
@@ -221,7 +224,40 @@
 		background: var(--surface);
 		color: var(--text);
 		font-weight: 500;
-		box-shadow: var(--shadow-panel);
+		box-shadow:
+			var(--inner-highlight),
+			0 0 0 1px var(--line),
+			var(--elev-1);
+	}
+
+	.seg.on :global(.hi) {
+		color: var(--accent-text);
+	}
+
+	/* The allowed labels, coloured as they will be in the grid. */
+	.choice {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding-right: 0.3rem;
+	}
+
+	.remove {
+		display: grid;
+		place-items: center;
+		width: 1rem;
+		height: 1rem;
+		border-radius: 999px;
+		color: inherit;
+		opacity: 0.6;
+		transition:
+			opacity var(--dur-fast) ease,
+			background-color var(--dur-fast) ease;
+	}
+
+	.remove:hover:not(:disabled) {
+		opacity: 1;
+		background: color-mix(in oklch, currentColor 15%, transparent);
 	}
 
 	.seg:disabled {

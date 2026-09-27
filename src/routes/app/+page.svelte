@@ -72,7 +72,8 @@
 
 	/**
 	 * The grid only renders rows on screen, so the browser's own find would miss
-	 * most of the sheet. Take over its shortcuts while a sheet is open.
+	 * most of the sheet. Take over its shortcuts while a sheet is open, and add
+	 * ⌘↵ / Ctrl ↵ to run the prompt.
 	 */
 	async function onShortcut(event: KeyboardEvent) {
 		if (!ws.project || !(event.metaKey || event.ctrlKey) || event.altKey) return;
@@ -85,6 +86,9 @@
 		} else if (key === 'g' && ws.searchQuery.trim()) {
 			event.preventDefault();
 			ws.stepSearch(event.shiftKey ? -1 : 1);
+		} else if (key === 'enter' && !ws.isBusy) {
+			event.preventDefault();
+			composer?.run();
 		}
 	}
 

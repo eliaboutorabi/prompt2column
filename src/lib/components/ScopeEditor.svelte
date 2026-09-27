@@ -105,11 +105,9 @@
 		Replace values that are already there
 	</label>
 
-	<p
-		class="rounded-[var(--radius-control)] border border-line bg-surface-2 px-2.5 py-1.5 text-xs text-ink-2"
-	>
+	<p class="touch">
 		This run will touch
-		<strong class="font-mono text-ink">{matchCount}</strong>
+		<strong>{matchCount}</strong>
 		{matchCount === 1 ? 'row' : 'rows'}.
 	</p>
 </div>
@@ -119,16 +117,18 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
+		height: 1.8rem;
 		border-radius: 999px;
 		border: 1px solid var(--line-strong);
 		background: var(--surface);
-		padding: 0.2rem 0.6rem;
+		padding: 0 0.7rem 0 0.6rem;
 		font-size: 0.75rem;
 		color: var(--text-2);
+		box-shadow: var(--elev-1);
 		transition:
-			background-color 0.14s ease,
-			color 0.14s ease,
-			border-color 0.14s ease;
+			background-color var(--dur-fast) ease,
+			color var(--dur-fast) ease,
+			border-color var(--dur-fast) ease;
 	}
 
 	.pill:hover:not(.on):not(:disabled) {
@@ -136,11 +136,24 @@
 		color: var(--text);
 	}
 
+	/* Soft, like the presets: the Run button stays the only solid accent in the panel. */
 	.pill.on {
-		background: var(--accent);
-		border-color: var(--accent);
-		color: var(--accent-ink);
+		background: var(--accent-soft);
+		border-color: var(--accent-line);
+		color: var(--accent-text);
 		font-weight: 500;
+	}
+
+	.touch {
+		font-size: 0.75rem;
+		color: var(--text-3);
+	}
+
+	.touch strong {
+		font-family: var(--font-mono);
+		font-weight: 600;
+		color: var(--text);
+		font-variant-numeric: tabular-nums;
 	}
 
 	.pill:disabled {

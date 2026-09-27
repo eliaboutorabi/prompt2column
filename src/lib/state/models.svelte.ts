@@ -1,5 +1,5 @@
 /** Models found on the machine running Ollama. */
-import { DEFAULT_HOST, listModels, type OllamaModel } from '$lib/core/ollama';
+import { DEFAULT_HOST, listModels, OllamaError, type OllamaModel } from '$lib/core/ollama';
 
 const HOST_KEY = 'prompt2column:host';
 
@@ -8,6 +8,8 @@ class ModelStore {
 	models = $state<OllamaModel[]>([]);
 	loading = $state(false);
 	error = $state('');
+	/** Why there is nothing to run with, so the UI can say what to do about it. */
+	problem = $state<'offline' | 'empty' | 'other' | null>(null);
 	checkedAt = $state(0);
 
 	constructor() {
@@ -28,14 +30,17 @@ class ModelStore {
 	async scan(): Promise<void> {
 		this.loading = true;
 		this.error = '';
+		this.problem = null;
 		try {
 			this.models = await listModels(this.host);
 			if (!this.models.length) {
 				this.error = 'Ollama is running but has no models. Pull one with "ollama pull llama3.2".';
+				this.problem = 'empty';
 			}
 		} catch (error) {
 			this.models = [];
 			this.error = error instanceof Error ? error.message : String(error);
+			this.problem = error instanceof OllamaError && error.kind === 'offline' ? 'offline' : 'other';
 		} finally {
 			this.checkedAt = Date.now();
 			this.loading = false;

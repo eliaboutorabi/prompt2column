@@ -333,6 +333,48 @@
 		white-space: nowrap;
 	}
 
+	/* Answer labels (Approve, negative, billing), coloured by meaning. Shared by the grid and composer. */
+	.tag {
+		display: inline-block;
+		max-width: 100%;
+		height: 1.35rem;
+		line-height: 1.35rem;
+		padding: 0 0.55rem;
+		border-radius: 999px;
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.tone-1 {
+		background: var(--tag-1);
+		color: var(--tag-ink-1);
+	}
+
+	.tone-2 {
+		background: var(--tag-2);
+		color: var(--tag-ink-2);
+	}
+
+	.tone-3 {
+		background: var(--tag-3);
+		color: var(--tag-ink-3);
+	}
+
+	.tone-4 {
+		background: var(--tag-4);
+		color: var(--tag-ink-4);
+	}
+
+	.tone-5 {
+		background: var(--tag-5);
+		color: var(--tag-ink-5);
+	}
+
+	.tone-6 {
+		background: var(--tag-6);
+		color: var(--tag-ink-6);
+	}
+
 	/* Keyboard hint, like ⌘F. */
 	.kbd {
 		display: inline-flex;

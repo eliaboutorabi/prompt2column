@@ -144,8 +144,8 @@
 		}
 	}
 
-	/** Typing "@" is a shortcut for opening a reference. */
-	async function openPalette() {
+	/** Typing "@" is a shortcut for opening a reference; the composer's Insert button uses it too. */
+	export async function openPalette() {
 		if (!textarea) return;
 		const caret = textarea.selectionStart ?? value.length;
 		value = `${value.slice(0, caret)}{{}}${value.slice(caret)}`;

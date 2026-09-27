@@ -381,3 +381,37 @@ test('double-clicking a cell on a fresh sheet edits that cell and rings it', asy
 	await expect(editor).toHaveCount(0);
 	await expect(page.locator('.cell.active')).toHaveText('Freya Lindqvist (Stockholm)');
 });
+
+test('says why Run is disabled, and runs from the keyboard', async ({ page }) => {
+	await mockOllama(page);
+	await signUp(page, 'diego.b');
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+
+	const run = page.getByRole('button', { name: /Run on 15 rows/ });
+	await page.getByLabel('Column name').fill('');
+	await expect(run).toBeDisabled();
+	await expect(page.getByText('Name the new column to run')).toBeVisible();
+
+	await page.getByLabel('Column name').fill('Sentiment');
+	await expect(run).toBeEnabled();
+	await expect(page.getByText('Name the new column to run')).toHaveCount(0);
+
+	await page.getByRole('grid').click();
+	await page.keyboard.press('ControlOrMeta+Enter');
+	await expect(page.getByText('15 / 15 rows')).toBeVisible({ timeout: 30_000 });
+	await expect(page.locator('.cell.generated .tag').first()).toHaveText(
+		/positive|neutral|negative/
+	);
+});
+
+test('shows how to start Ollama when it is offline', async ({ page }) => {
+	await mockOllama(page, { offline: true });
+	await signUp(page, 'ndeye.f');
+	await page.getByRole('button', { name: /Research notes/ }).click();
+
+	const callout = page.getByRole('alert').filter({ hasText: "Ollama isn't reachable" });
+	await expect(callout).toBeVisible();
+	await expect(callout.locator('code')).toHaveText('ollama serve');
+	await expect(page.getByRole('button', { name: 'Start Ollama to run' })).toBeVisible();
+	await expect(page.getByLabel('Model', { exact: true })).toHaveValue('');
+});
