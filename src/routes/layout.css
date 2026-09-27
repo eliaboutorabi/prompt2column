@@ -393,6 +393,37 @@
 	}
 }
 
+/* Entrances for things that appear on request: menus, popovers, dialogs.
+   Short and settling, and switched off by the reduced-motion rule below. */
+@keyframes pop-in {
+	from {
+		opacity: 0;
+		transform: translateY(-4px) scale(0.98);
+	}
+}
+
+@keyframes rise-in {
+	from {
+		opacity: 0;
+		transform: translateY(8px) scale(0.985);
+	}
+}
+
+@keyframes fade-in {
+	from {
+		opacity: 0;
+	}
+}
+
+.pop {
+	animation: pop-in var(--dur) var(--ease-out);
+	transform-origin: top right;
+}
+
+.pop-left {
+	transform-origin: top left;
+}
+
 /* HugeIcons: never squash an icon to make room in a flex row. */
 .hi {
 	flex-shrink: 0;

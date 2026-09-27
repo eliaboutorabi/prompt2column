@@ -192,7 +192,7 @@
 
 	{#if open}
 		<ul
-			class="popup"
+			class="popup pop pop-left"
 			id={listId}
 			role="listbox"
 			style="left:{caretLeft}px; top:{caretTop}px"

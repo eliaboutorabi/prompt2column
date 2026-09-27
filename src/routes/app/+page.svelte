@@ -13,6 +13,8 @@
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import Toast from '$lib/components/Toast.svelte';
+	import { toast } from '$lib/state/toast.svelte';
 	import { downloadFile, exportFilename, type ExportFormat } from '$lib/core/export';
 	import { Workspace } from '$lib/state/workspace.svelte';
 	import { models } from '$lib/state/models.svelte';
@@ -57,12 +59,28 @@
 		if (!known) project.config.model = models.models[0].name;
 	});
 
-	onDestroy(() => ws.dispose());
+	onDestroy(() => {
+		ws.dispose();
+		toast.dismiss();
+	});
+
+	// On a phone looking at the sheet, the run panel is out of sight: say when a run ends.
+	let previousRunState = ws.runState;
+	$effect(() => {
+		const state = ws.runState;
+		const ended = previousRunState === 'running' && (state === 'done' || state === 'stopped');
+		previousRunState = state;
+		if (!ended || overlay.current || view !== 'sheet') return;
+		const column = ws.columns.find((candidate) => candidate.id === ws.lastRunColumnId)?.name;
+		const written = `${ws.runDone} ${ws.runDone === 1 ? 'row' : 'rows'} written`;
+		toast.show(column ? `${written} to ${column}` : written, ws.runFailed ? 'info' : 'success');
+	});
 
 	function exportSheet(format: ExportFormat) {
 		if (!ws.project) return;
 		const filename = exportFilename(ws.project.name, ws.project.fileName, format);
 		downloadFile(filename, format, ws.exportAs(format));
+		toast.show(`Exported ${filename}`);
 	}
 
 	function insert(column: Column) {
@@ -99,6 +117,8 @@
 </script>
 
 <svelte:window onkeydown={onShortcut} />
+
+<Toast />
 
 <svelte:head>
 	<title>{ws.project ? `${ws.project.name} | prompt2column` : 'prompt2column'}</title>

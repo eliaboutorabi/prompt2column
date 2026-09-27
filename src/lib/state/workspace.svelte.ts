@@ -19,6 +19,8 @@ export class Workspace {
 	selected = new SvelteSet<string>();
 	cellStatus = new SvelteMap<string, CellStatus>();
 	cellError = new SvelteMap<string, string>();
+	/** Rows whose answer arrived a moment ago, so the grid can show it landing. */
+	recentlyWritten = new SvelteSet<string>();
 
 	runState = $state<RunState>('idle');
 	runTotal = $state(0);
@@ -271,6 +273,8 @@ export class Workspace {
 	private applyOutcome(columnId: string, outcome: RowOutcome): void {
 		if (outcome.ok) {
 			this.setCell(outcome.rowId, columnId, outcome.value);
+			this.recentlyWritten.add(outcome.rowId);
+			setTimeout(() => this.recentlyWritten.delete(outcome.rowId), 900);
 			this.cellStatus.set(outcome.rowId, 'done');
 			this.cellError.delete(outcome.rowId);
 			this.runDone += 1;

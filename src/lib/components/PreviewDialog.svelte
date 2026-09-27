@@ -10,6 +10,7 @@
 	import { renderTemplate } from '$lib/core/template';
 	import { buildSchema, buildSystemPrompt, coerce } from '$lib/core/output';
 	import { complete } from '$lib/core/ollama';
+	import { labelTone } from '$lib/core/columns';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
 	interface Props {
@@ -127,7 +128,14 @@
 					</button>
 				</div>
 				{#if result}
-					<p class="answer">{result}</p>
+					<!-- A label or yes/no answer shows the way it will in the grid. -->
+					{#if config?.output.kind === 'choice' || config?.output.kind === 'boolean'}
+						<p class="answer label-answer">
+							<span class="tag tone-{labelTone(result)}">{result}</span>
+						</p>
+					{:else}
+						<p class="answer">{result}</p>
+					{/if}
 					<p class="mt-1 font-mono text-xs text-ink-3">{(durationMs / 1000).toFixed(1)}s</p>
 				{:else if resultError}
 					<p class="answer failed">{resultError}</p>
@@ -150,14 +158,21 @@
 		background: var(--surface);
 		color: var(--text);
 		border: 1px solid var(--line-strong);
-		border-radius: var(--radius-panel);
+		border-radius: var(--radius-large);
 		box-shadow: var(--shadow-pop);
 		overflow: hidden;
+		animation: rise-in 220ms var(--ease-out);
 	}
 
 	.sheet::backdrop {
-		background: oklch(0.2 0.01 110 / 0.45);
-		backdrop-filter: blur(2px);
+		background: oklch(0.16 0.01 110 / 0.5);
+		backdrop-filter: blur(3px);
+		animation: fade-in 200ms ease;
+	}
+
+	.label-answer {
+		background: var(--surface-2);
+		border-color: var(--line);
 	}
 
 	header {

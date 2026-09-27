@@ -512,3 +512,27 @@ describe('grid dressing', () => {
 		}
 	});
 });
+
+describe('answers landing', () => {
+	it('glows a freshly written answer, then lets it settle', async () => {
+		const ws = makeWorkspace();
+		ws.lastRunColumnId = 'c3';
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await expect.element(page.getByText('Ines Moreau')).toBeVisible();
+		ws.recentlyWritten.add('r1');
+		await expect.poll(() => container.querySelectorAll('.cell.landed').length).toBe(1);
+		expect(container.querySelector('.cell.landed')?.textContent?.trim()).toBe('negative');
+		ws.recentlyWritten.delete('r1');
+		await expect.poll(() => container.querySelectorAll('.cell.landed').length).toBe(0);
+	});
+
+	it('only glows the column the run is writing', async () => {
+		const ws = makeWorkspace();
+		ws.lastRunColumnId = 'c3';
+		ws.recentlyWritten.add('r2');
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await expect.poll(() => container.querySelectorAll('.cell.landed').length).toBe(1);
+		const landed = container.querySelector('.cell.landed')!;
+		expect(landed.classList.contains('generated')).toBe(true);
+	});
+});

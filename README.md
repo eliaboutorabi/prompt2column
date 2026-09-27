@@ -132,6 +132,10 @@ titled **Answers** on generated columns and **Values** on imported ones.
   A column where every value is different (IDs, free text) collapses to a note.
 - The counts are live, so opening the menu during a run shows its progress.
 
+In the grid, short answers like these show as coloured labels: approve, yes and
+positive in green, reject, no and negative in red, neutral in amber, and any other
+label in a colour of its own.
+
 ## Reading a cell
 
 Cells are one line tall, so long notes and summaries get cut off. Click a cell, or
@@ -184,6 +188,7 @@ Files are named after the project, for example `expense-requests-enriched.json`.
 | -------------- | ------------------------- | ----------------------------- |
 | In a sheet     | ⌘F / Ctrl F               | Go to the search bar          |
 | In a sheet     | ⌘G / Ctrl G, add Shift    | Next or previous match        |
+| In a sheet     | ⌘↵ / Ctrl ↵               | Run the prompt                |
 | Search bar     | Enter / Shift Enter       | Next or previous match        |
 | Search bar     | Esc                       | Clear the search              |
 | Prompt editor  | `{{`, `@` or Ctrl Space   | Suggest columns               |

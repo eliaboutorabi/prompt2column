@@ -415,3 +415,27 @@ test('shows how to start Ollama when it is offline', async ({ page }) => {
 	await expect(page.getByRole('button', { name: 'Start Ollama to run' })).toBeVisible();
 	await expect(page.getByLabel('Model', { exact: true })).toHaveValue('');
 });
+
+test('confirms an export, and a finished run on a phone, with a toast', async ({ page }) => {
+	await mockOllama(page);
+	await signUp(page, 'chiara.t');
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+	await page.getByRole('grid').waitFor();
+
+	await page.getByRole('button', { name: 'Export' }).click();
+	await Promise.all([
+		page.waitForEvent('download'),
+		page.getByRole('menuitem', { name: /^CSV/ }).click()
+	]);
+	await expect(page.getByRole('status').filter({ hasText: 'Exported' })).toContainText(
+		'Exported support-tickets-enriched.csv'
+	);
+
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.getByRole('button', { name: 'Sheet', exact: true }).click();
+	await page.getByRole('grid').click();
+	await page.keyboard.press('ControlOrMeta+Enter');
+	await expect(page.getByRole('status').filter({ hasText: 'written' })).toContainText(
+		'15 rows written to Category'
+	);
+});

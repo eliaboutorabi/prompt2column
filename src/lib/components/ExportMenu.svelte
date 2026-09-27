@@ -88,7 +88,7 @@
 
 	{#if open}
 		<div
-			class="menu"
+			class="menu pop"
 			role="menu"
 			aria-label="Export format"
 			tabindex="-1"

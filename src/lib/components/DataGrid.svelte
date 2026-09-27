@@ -386,7 +386,7 @@
 				{/if}
 
 				{#if menuColumnId === column.id}
-					<div class="menu" role="menu" style:max-height="{menuMaxHeight}px">
+					<div class="menu pop" role="menu" style:max-height="{menuMaxHeight}px">
 						<button type="button" role="menuitem" onclick={() => startRename(column)}>
 							<Icon icon={PencilEdit02Icon} size={14} /> Rename
 						</button>
@@ -485,7 +485,8 @@
 								match && match === currentMatch && 'current',
 								meta[columnIndex]?.kind === 'number' && 'numeric',
 								activeCell?.rowId === row.id && activeCell.columnId === column.id && 'active',
-								ws.isEditing(row.id, column.id) && 'editing'
+								ws.isEditing(row.id, column.id) && 'editing',
+								column.id === ws.lastRunColumnId && ws.recentlyWritten.has(row.id) && 'landed'
 							]}
 							role="gridcell"
 							data-cell={`${rowIndex}-${columnIndex}`}
@@ -726,6 +727,27 @@
 	/* The prompt's column carries a faint wash of the accent, top to bottom. */
 	.cell.generated {
 		background: color-mix(in oklch, var(--accent-soft) 45%, transparent);
+	}
+
+	/* An answer arriving glows for a moment, then settles into the column's wash. */
+	/* An overlay rather than the cell's own shadow, so selection rings stay put. */
+	.cell.landed {
+		position: relative;
+	}
+
+	.cell.landed::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: color-mix(in oklch, var(--accent) 38%, transparent);
+		pointer-events: none;
+		animation: land 900ms var(--ease-out) forwards;
+	}
+
+	@keyframes land {
+		to {
+			opacity: 0;
+		}
 	}
 
 	.cell.numeric {
