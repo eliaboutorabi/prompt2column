@@ -76,7 +76,7 @@ test('signs up, imports a sample, runs a prompt and exports the result', async (
 	// The sample arrives with the classify preset already filled in.
 	await expect(page.getByLabel('Column name')).toHaveValue('Category');
 	await page.getByLabel('Column name').fill('Sentiment');
-	await expect(page.getByLabel('Model', { exact: true })).toHaveValue('gemma4:e2b-mlx');
+	await expect(page.getByLabel('Model', { exact: true })).toHaveText(/gemma4:e2b-mlx/);
 
 	await page.getByRole('button', { name: /Run on 15 rows/ }).click();
 	await expect(page.getByRole('button', { name: /Run on/ })).toBeEnabled({ timeout: 30_000 });
@@ -413,7 +413,7 @@ test('shows how to start Ollama when it is offline', async ({ page }) => {
 	await expect(callout).toBeVisible();
 	await expect(callout.locator('code')).toHaveText('ollama serve');
 	await expect(page.getByRole('button', { name: 'Start Ollama to run' })).toBeVisible();
-	await expect(page.getByLabel('Model', { exact: true })).toHaveValue('');
+	await expect(page.getByLabel('Model', { exact: true })).toHaveText(/No models found/);
 });
 
 test('confirms an export, and a finished run on a phone, with a toast', async ({ page }) => {

@@ -101,28 +101,10 @@ describe('SearchBar', () => {
 		render(SearchBar, { props: { ws } });
 		await userEvent.fill(page.getByRole('searchbox'), 'a');
 		const everywhere = ws.search.matches.length;
-		await userEvent.selectOptions(
-			page.getByRole('combobox', { name: 'Column to search' }),
-			'Decision'
-		);
+		await userEvent.click(page.getByRole('combobox', { name: 'Column to search' }));
+		await userEvent.click(page.getByRole('option', { name: 'Decision' }));
 		expect(ws.search.matches.length).toBeLessThan(everywhere);
 		expect(ws.search.matches.every((match) => match.columnId === 'c3')).toBe(true);
-	});
-
-	it('gives the column picker its own arrow, with room around it', async () => {
-		render(SearchBar, { props: { ws: makeWorkspace() } });
-		const select = page.getByRole('combobox', { name: 'Column to search' }).element();
-		const chevron = select.parentElement!.querySelector<SVGElement>('.chevron')!;
-		expect(getComputedStyle(select).appearance).toBe('none');
-		const box = select.getBoundingClientRect();
-		const arrow = chevron.getBoundingClientRect();
-		const gapRight = box.right - arrow.right;
-		expect(gapRight).toBeGreaterThanOrEqual(8);
-		expect(arrow.top).toBeGreaterThanOrEqual(box.top);
-		expect(arrow.bottom).toBeLessThanOrEqual(box.bottom);
-		// The text stops before the arrow instead of running underneath it.
-		const padding = parseFloat(getComputedStyle(select).paddingRight);
-		expect(padding).toBeGreaterThanOrEqual(gapRight + arrow.width + 4);
 	});
 
 	it('clears the search on Escape', async () => {

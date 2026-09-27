@@ -83,15 +83,14 @@
 			compact
 			block
 			icon={FilterHorizontalIcon}
-			aria-label="Column to search"
+			label="Column to search"
+			options={[
+				{ value: '', label: 'All columns' },
+				...ws.columns.map((column) => ({ value: column.id, label: column.name }))
+			]}
 			value={ws.searchColumnId ?? ''}
-			onchange={(event) => ws.setSearchColumn(event.currentTarget.value || null)}
-		>
-			<option value="">All columns</option>
-			{#each ws.columns as column (column.id)}
-				<option value={column.id}>{column.name}</option>
-			{/each}
-		</Select>
+			onchange={(value) => ws.setSearchColumn(value || null)}
+		/>
 	</span>
 
 	{#if active}

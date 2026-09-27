@@ -74,6 +74,15 @@
 	const remainingMs = $derived(perRowMs * Math.max(0, ws.runTotal - finished));
 	const columnKinds = $derived(ws.columns.map((column) => detectKind(column, ws.rows)));
 	const modelKnown = $derived(models.models.some((model) => model.name === config.model));
+	// What the model list can say at a glance: size, and whether it reasons or sees images.
+	const modelOptions = $derived(
+		models.models.map((model) => ({
+			value: model.name,
+			label: model.name,
+			hint: formatModelSize(model.size),
+			badges: model.capabilities.filter((capability) => ['thinking', 'vision'].includes(capability))
+		}))
+	);
 
 	/** The one thing standing between the user and a run, said plainly. */
 	const blocker = $derived.by(() => {
@@ -336,24 +345,15 @@
 				icon={AiChipIcon}
 				id="model"
 				block
+				options={modelOptions}
 				value={modelKnown ? config.model : ''}
+				placeholder={models.models.length ? 'Choose a model' : 'No models found'}
 				disabled={busy || !models.models.length}
-				onchange={(event) => {
-					config.model = event.currentTarget.value;
+				onchange={(value) => {
+					config.model = value;
 					ws.touch();
 				}}
-			>
-				{#if !models.models.length}
-					<option value="">No models found</option>
-				{:else if !modelKnown}
-					<option value="">Choose a model</option>
-				{/if}
-				{#each models.models as model (model.name)}
-					<option value={model.name}>
-						{model.name}{model.size ? ` (${formatModelSize(model.size)})` : ''}
-					</option>
-				{/each}
-			</Select>
+			/>
 			{#if models.problem}
 				<button type="button" class="warn link" onclick={showNotice}>
 					<Icon icon={AlertCircleIcon} size={14} />
