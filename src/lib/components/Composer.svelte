@@ -839,6 +839,29 @@
 		transform: rotate(180deg);
 	}
 
+	/* Opens and closes with a short slide where the browser can animate to auto
+	   height; elsewhere it simply snaps, as before. The clip margin keeps focus
+	   rings inside from being shaved off. */
+	.advanced {
+		interpolate-size: allow-keywords;
+	}
+
+	.advanced::details-content {
+		block-size: 0;
+		opacity: 0;
+		overflow: clip;
+		overflow-clip-margin: 4px;
+		transition:
+			block-size var(--dur) var(--ease-out),
+			opacity var(--dur) ease,
+			content-visibility var(--dur) allow-discrete;
+	}
+
+	.advanced[open]::details-content {
+		block-size: auto;
+		opacity: 1;
+	}
+
 	.runbar {
 		display: grid;
 		gap: 0.65rem;
