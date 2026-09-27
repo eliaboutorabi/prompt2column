@@ -4,6 +4,7 @@
 	import type { Workspace } from '$lib/state/workspace.svelte';
 	import type { Column } from '$lib/core/types';
 	import { cellKey, excerpt, splitByRanges } from '$lib/core/search';
+	import { countValues, formatShare, type ValueCount } from '$lib/core/counts';
 
 	interface Props {
 		ws: Workspace;
@@ -62,6 +63,37 @@
 	const visible = $derived(rows.slice(firstVisible, firstVisible + visibleCount));
 	const allSelected = $derived(rows.length > 0 && ws.selected.size === rows.length);
 	const currentMatch = $derived(ws.currentMatch);
+
+	// Tallied only while a column menu is open, and live, so it shows a run's progress.
+	const menuCounts = $derived(menuColumnId ? countValues(rows, menuColumnId) : null);
+	// When every value is different (IDs, free text) a tally says nothing, so past a
+	// handful of values it collapses to a note.
+	const countsUseful = $derived(
+		menuCounts !== null &&
+			(menuCounts.values.some((entry) => entry.count > 1) ||
+				menuCounts.values.length + menuCounts.others.distinct <= 3)
+	);
+
+	/**
+	 * The menu lives in the sticky header, so anything past the grid's bottom edge
+	 * can't be scrolled to. Cap it at the room the grid actually has.
+	 */
+	let menuMaxHeight = $state(420);
+
+	function toggleMenu(columnId: string) {
+		if (menuColumnId === columnId) {
+			menuColumnId = null;
+			return;
+		}
+		const room = (scroller?.clientHeight ?? 460) - HEADER_HEIGHT - 12;
+		menuMaxHeight = Math.max(140, room);
+		menuColumnId = columnId;
+	}
+
+	function tickValue(entry: ValueCount) {
+		ws.tickRows(entry.rowIds);
+		menuColumnId = null;
+	}
 
 	// Scroll to the current match only when the search asks for it, not every time
 	// the data changes underneath (a run writing cells would otherwise yank the view).
@@ -206,6 +238,24 @@
 	}
 </script>
 
+{#snippet countItem(entry: ValueCount, label: string, total: number)}
+	{@const share = formatShare(entry.count, total)}
+	{@const rowWord = entry.count === 1 ? 'row' : 'rows'}
+	<button
+		type="button"
+		role="menuitem"
+		class={['count', !label && 'empty']}
+		title={`Tick ${entry.count === 1 ? 'this row' : `these ${entry.count} rows`}`}
+		aria-label={`${label || 'Empty'}: ${entry.count} ${rowWord}, ${share}. Tick them.`}
+		disabled={ws.isBusy}
+		onclick={() => tickValue(entry)}
+	>
+		<span class="value">{label || 'Empty'}</span>
+		<span class="num">{entry.count}</span>
+		<span class="share">{share}</span>
+	</button>
+{/snippet}
+
 <svelte:window
 	onkeydown={(event) => {
 		if (event.key === 'Escape') {
@@ -267,14 +317,14 @@
 						type="button"
 						class="head-menu"
 						aria-label={`Options for ${column.name}`}
-						onclick={() => (menuColumnId = menuColumnId === column.id ? null : column.id)}
+						onclick={() => toggleMenu(column.id)}
 					>
 						<DotsThree size={16} weight="bold" />
 					</button>
 				{/if}
 
 				{#if menuColumnId === column.id}
-					<div class="menu" role="menu">
+					<div class="menu" role="menu" style:max-height="{menuMaxHeight}px">
 						<button type="button" role="menuitem" onclick={() => startRename(column)}>
 							<PencilSimple size={14} /> Rename
 						</button>
@@ -300,6 +350,34 @@
 						>
 							<Trash size={14} /> Delete column
 						</button>
+						{#if menuCounts}
+							<div class="divider" role="separator"></div>
+							<div class="counts-head">
+								<span>{column.generated ? 'Answers' : 'Values'}</span>
+								<span>{menuCounts.total} {menuCounts.total === 1 ? 'row' : 'rows'}</span>
+							</div>
+							<!-- The actions above stay put; a long tally scrolls on its own. -->
+							<div class="counts">
+								{#if countsUseful}
+									{#each menuCounts.values as entry (entry.value)}
+										{@render countItem(entry, entry.value, menuCounts.total)}
+									{/each}
+									{#if menuCounts.others.distinct}
+										<p class="counts-note">
+											{menuCounts.others.distinct} other
+											{menuCounts.others.distinct === 1 ? 'value' : 'values'},
+											{menuCounts.others.count}
+											{menuCounts.others.count === 1 ? 'row' : 'rows'}
+										</p>
+									{/if}
+								{:else}
+									<p class="counts-note">Every row has a different value.</p>
+								{/if}
+								{#if menuCounts.empty}
+									{@render countItem(menuCounts.empty, '', menuCounts.total)}
+								{/if}
+							</div>
+						{/if}
 					</div>
 				{/if}
 			</div>
@@ -650,8 +728,10 @@
 		top: 34px;
 		right: 0;
 		z-index: 20;
-		display: grid;
-		min-width: 11rem;
+		display: flex;
+		flex-direction: column;
+		min-width: 14rem;
+		max-width: 18rem;
 		padding: 0.25rem;
 		background: var(--surface);
 		border: 1px solid var(--line-strong);
@@ -677,6 +757,61 @@
 
 	.menu button:disabled {
 		opacity: 0.4;
+	}
+
+	.counts {
+		display: grid;
+		min-height: 0;
+		overflow-y: auto;
+	}
+
+	.divider {
+		height: 1px;
+		margin: 0.25rem 0.2rem;
+		background: var(--line);
+	}
+
+	.counts-head {
+		display: flex;
+		justify-content: space-between;
+		padding: 0.25rem 0.45rem 0.2rem;
+		font-size: 0.6875rem;
+		color: var(--text-3);
+	}
+
+	.menu .count {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto 2.75rem;
+		gap: 0.75rem;
+	}
+
+	.count .value {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.count.empty .value {
+		color: var(--text-3);
+	}
+
+	.count .num,
+	.count .share {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		font-variant-numeric: tabular-nums;
+		text-align: right;
+	}
+
+	.count .share {
+		color: var(--text-3);
+	}
+
+	.counts-note {
+		padding: 0.25rem 0.45rem 0.3rem;
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: var(--text-3);
 	}
 
 	.menu .danger {

@@ -96,13 +96,13 @@ the row is marked as failed and shows the reason.
 
 ## Choosing rows
 
-| Option            | Runs on                                                        |
-| ----------------- | -------------------------------------------------------------- |
-| **Every row**     | The whole sheet                                                |
-| **First few**     | The first N rows, handy for a trial run                        |
-| **A range**       | Rows _from_ to _to_, inclusive                                 |
-| **Ticked rows**   | Rows you ticked in the sheet or with search                    |
-| **Empty results** | Rows whose result cell is still blank, to finish a stopped run |
+| Option            | Runs on                                                         |
+| ----------------- | --------------------------------------------------------------- |
+| **Every row**     | The whole sheet                                                 |
+| **First few**     | The first N rows, handy for a trial run                         |
+| **A range**       | Rows _from_ to _to_, inclusive                                  |
+| **Ticked rows**   | Rows you ticked in the sheet, with search or from answer counts |
+| **Empty results** | Rows whose result cell is still blank, to finish a stopped run  |
 
 Untick **Replace values that are already there** to leave filled cells alone. The
 composer always shows how many rows the run will touch before you start it.
@@ -118,6 +118,19 @@ the grid hasn't drawn yet (the browser's own find can't see those).
   view. In long text cells, the cell shows the part around the match.
 - **Tick N rows** ticks every row with a match. Switch the run to **Ticked rows**
   to run the prompt on exactly those rows.
+
+## Answer counts
+
+Open a column's **⋯** menu to see how it came out: each distinct value with its
+count and share of the sheet, for example _Approve 9 (60%), Reject 6 (40%)_. It's
+titled **Answers** on generated columns and **Values** on imported ones.
+
+- Click a value to tick every row that has it. Switch the run to **Ticked rows**
+  to re-run just those rows, say the rejects with a stricter prompt.
+- Blank cells get their own **Empty** entry, which you can tick too.
+- Long lists show the eight most common values and roll the rest into one line.
+  A column where every value is different (IDs, free text) collapses to a note.
+- The counts are live, so opening the menu during a run shows its progress.
 
 ## Reading a cell
 

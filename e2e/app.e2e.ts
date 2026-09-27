@@ -328,3 +328,30 @@ test('reads a long cell in full and copies it', async ({ page, context }) => {
 	await expect(reader).toBeVisible();
 	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
 });
+
+test("tallies a run's answers and re-runs just one of them", async ({ page }) => {
+	await mockOllama(page, { answers: ['positive', 'negative', 'negative'] });
+	await signUp(page, 'joonas.p');
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+	await page.getByLabel('Column name').fill('Sentiment');
+	await page.getByRole('button', { name: /Run on 15 rows/ }).click();
+	await expect(page.getByText('15 / 15 rows')).toBeVisible({ timeout: 30_000 });
+
+	await page.getByRole('button', { name: 'Options for Sentiment' }).click();
+	const menu = page.getByRole('menu');
+	await expect(menu).toContainText('Answers');
+	await expect(menu).toContainText('15 rows');
+	await expect(
+		page.getByRole('menuitem', { name: 'negative: 10 rows, 67%. Tick them.' })
+	).toBeVisible();
+	await expect(
+		page.getByRole('menuitem', { name: 'positive: 5 rows, 33%. Tick them.' })
+	).toBeVisible();
+
+	await page.getByRole('menuitem', { name: /^positive:/ }).click();
+	await expect(menu).toBeHidden();
+	await expect(page.locator('.row.selected')).toHaveCount(5);
+
+	await page.getByRole('button', { name: 'Ticked rows' }).click();
+	await expect(page.getByRole('button', { name: /Run on 5 rows/ })).toBeEnabled();
+});

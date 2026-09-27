@@ -361,8 +361,13 @@ export class Workspace {
 
 	/** Ticks every row holding a match, so a run can target exactly those rows. */
 	tickMatchingRows(): void {
+		this.tickRows(this.search.matches.map((match) => match.rowId));
+	}
+
+	/** Replaces the ticked rows, ready for a run on "Ticked rows". */
+	tickRows(rowIds: Iterable<string>): void {
 		this.selected.clear();
-		for (const match of this.search.matches) this.selected.add(match.rowId);
+		for (const rowId of rowIds) this.selected.add(rowId);
 	}
 
 	exportAs(format: ExportFormat): string {

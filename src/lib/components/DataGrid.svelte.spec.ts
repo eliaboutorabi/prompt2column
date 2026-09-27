@@ -124,3 +124,149 @@ describe('generated column styling', () => {
 		expect(container.querySelectorAll('.cell.generated').length).toBe(3);
 	});
 });
+
+describe('answer counts in the column menu', () => {
+	const decisionColumns: Column[] = [
+		{ id: 'req', name: 'Request', generated: false },
+		{ id: 'team', name: 'Team', generated: false },
+		{ id: 'dec', name: 'Decision', generated: true }
+	];
+	const decisions = ['Approve', 'Reject', 'Approve', '', 'Approve', 'Reject'];
+	const teams = ['Design', 'Sales', 'Design', 'Sales', 'Research', 'Design'];
+
+	function countsWorkspace(): Workspace {
+		const ws = new Workspace();
+		ws.project = {
+			id: 'p2',
+			ownerId: 'u1',
+			name: 'Expense requests',
+			fileName: null,
+			createdAt: 0,
+			updatedAt: 0,
+			columns: decisionColumns.map((column) => ({ ...column })),
+			rows: decisions.map((decision, index) => ({
+				id: `r${index}`,
+				cells: { req: `EXP-09${10 + index}`, team: teams[index], dec: decision }
+			})),
+			config: defaultConfig()
+		};
+		ws.loading = false;
+		ws.touch = () => {};
+		return ws;
+	}
+
+	const openMenu = (name: string) =>
+		userEvent.click(page.getByRole('button', { name: `Options for ${name}` }));
+	const menu = () => page.getByRole('menu');
+
+	it('tallies a generated column as answers, most common first', async () => {
+		render(DataGrid, { props: { ws: countsWorkspace(), onInsert: () => {} } });
+		await openMenu('Decision');
+		await expect.element(menu()).toHaveTextContent(/Answers\s*6 rows/);
+		const items = page.getByRole('menuitem', { name: /rows?, \d+%/ });
+		expect(items.elements().map((item) => item.getAttribute('aria-label'))).toEqual([
+			'Approve: 3 rows, 50%. Tick them.',
+			'Reject: 2 rows, 33%. Tick them.',
+			'Empty: 1 row, 17%. Tick them.'
+		]);
+	});
+
+	it('calls them values for an imported column', async () => {
+		render(DataGrid, { props: { ws: countsWorkspace(), onInsert: () => {} } });
+		await openMenu('Team');
+		await expect.element(menu()).toHaveTextContent(/Values\s*6 rows/);
+		await expect
+			.element(page.getByRole('menuitem', { name: 'Design: 3 rows, 50%. Tick them.' }))
+			.toBeVisible();
+	});
+
+	it('ticks exactly the rows holding a value, then closes', async () => {
+		const ws = countsWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		await userEvent.click(page.getByRole('menuitem', { name: /^Reject:/ }));
+		expect([...ws.selected].sort()).toEqual(['r1', 'r5']);
+		await expect.element(menu()).not.toBeInTheDocument();
+	});
+
+	it('ticks the blank rows from the Empty entry', async () => {
+		const ws = countsWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		await userEvent.click(page.getByRole('menuitem', { name: /^Empty:/ }));
+		expect([...ws.selected]).toEqual(['r3']);
+	});
+
+	it('replaces the ticked rows rather than adding to them', async () => {
+		const ws = countsWorkspace();
+		ws.tickRows(['r0', 'r2']);
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		await userEvent.click(page.getByRole('menuitem', { name: /^Reject:/ }));
+		expect([...ws.selected].sort()).toEqual(['r1', 'r5']);
+	});
+
+	it('collapses a column of all-different values to a note', async () => {
+		render(DataGrid, { props: { ws: countsWorkspace(), onInsert: () => {} } });
+		await openMenu('Request');
+		await expect.element(menu()).toHaveTextContent('Every row has a different value.');
+		expect(page.getByRole('menuitem', { name: /Tick them/ }).elements()).toHaveLength(0);
+	});
+
+	it('keeps the list short when there are many values', async () => {
+		const ws = countsWorkspace();
+		const labels = ['a', 'a', 'b', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'];
+		ws.project!.rows = labels.map((label, index) => ({
+			id: `m${index}`,
+			cells: { req: `EXP-${index}`, team: 'Design', dec: label }
+		}));
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		await expect.element(menu()).toHaveTextContent('3 other values, 3 rows');
+		expect(page.getByRole('menuitem', { name: /Tick them/ }).elements()).toHaveLength(8);
+	});
+
+	it('updates while the menu is open, as a run fills cells in', async () => {
+		const ws = countsWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		ws.setCell('r3', 'dec', 'Reject');
+		await expect
+			.element(page.getByRole('menuitem', { name: 'Reject: 3 rows, 50%. Tick them.' }))
+			.toBeVisible();
+		expect(page.getByRole('menuitem', { name: /^Empty:/ }).elements()).toHaveLength(0);
+	});
+
+	it('fits a long tally inside a short grid, keeping Delete in reach', async () => {
+		const ws = countsWorkspace();
+		const labels = ['a', 'a', 'b', 'b', 'c', 'c', 'd', 'd', 'e', 'e', 'f', 'f', 'g', 'g', 'h', 'h'];
+		ws.project!.rows = labels.map((label, index) => ({
+			id: `m${index}`,
+			cells: { req: `EXP-${index}`, team: 'Design', dec: label }
+		}));
+		const target = document.createElement('div');
+		target.style.cssText = 'height: 240px; width: 700px;';
+		document.body.append(target);
+		try {
+			render(DataGrid, { props: { ws, onInsert: () => {} }, target });
+			await openMenu('Decision');
+			const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+			const menuBox = document.querySelector<HTMLElement>('.menu')!.getBoundingClientRect();
+			expect(menuBox.bottom).toBeLessThanOrEqual(grid.getBoundingClientRect().bottom + 1);
+			const counts = document.querySelector<HTMLElement>('.menu .counts')!;
+			expect(counts.scrollHeight).toBeGreaterThan(counts.clientHeight);
+			await userEvent.click(page.getByRole('menuitem', { name: 'Delete column' }));
+			expect(ws.columns.map((column) => column.name)).toEqual(['Request', 'Team']);
+		} finally {
+			target.remove();
+		}
+	});
+
+	it('shows the counts during a run but leaves the ticks alone', async () => {
+		const ws = countsWorkspace();
+		ws.runState = 'running';
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await openMenu('Decision');
+		await expect.element(page.getByRole('menuitem', { name: /^Approve:/ })).toBeDisabled();
+	});
+});
