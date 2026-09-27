@@ -2,7 +2,6 @@
 	import {
 		Add01Icon,
 		AiChipIcon,
-		AiMagicIcon,
 		AlertCircleIcon,
 		ArrowDown01Icon,
 		CheckmarkCircle02Icon,
@@ -24,6 +23,7 @@
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import Brand from '$lib/components/Brand.svelte';
 	import PromptEditor from './PromptEditor.svelte';
 	import { autogrow } from '$lib/actions/autogrow';
 	import Select from './Select.svelte';
@@ -170,7 +170,7 @@
 	<div class="scroll">
 		<header class="intro">
 			<div class="title-row">
-				<span class="badge"><Icon icon={AiMagicIcon} size={17} /></span>
+				<Brand markOnly size={34} />
 				<div>
 					<h2 class="title">Add a column</h2>
 					<p class="subtitle">One prompt, run once on every row.</p>
@@ -561,18 +561,6 @@
 		display: flex;
 		align-items: center;
 		gap: 0.7rem;
-	}
-
-	.badge {
-		display: grid;
-		place-items: center;
-		width: 2.1rem;
-		height: 2.1rem;
-		flex-shrink: 0;
-		border-radius: 10px;
-		background: var(--accent-soft);
-		color: var(--accent-text);
-		box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent) 30%, transparent);
 	}
 
 	.title {
