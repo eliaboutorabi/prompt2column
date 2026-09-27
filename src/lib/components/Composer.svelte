@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowsClockwise, Eye, Pause, Play, Stop, WarningCircle } from 'phosphor-svelte';
 	import PromptEditor from './PromptEditor.svelte';
+	import Select from './Select.svelte';
 	import OutputEditor from './OutputEditor.svelte';
 	import ScopeEditor from './ScopeEditor.svelte';
 	import PreviewDialog from './PreviewDialog.svelte';
@@ -188,9 +189,10 @@
 					Rescan
 				</button>
 			</div>
-			<select
+			<Select
 				id="model"
-				class="field mt-1"
+				class="mt-1"
+				block
 				bind:value={config.model}
 				disabled={busy || !models.models.length}
 				onchange={() => ws.touch()}
@@ -203,7 +205,7 @@
 						{model.name}{model.size ? ` (${formatModelSize(model.size)})` : ''}
 					</option>
 				{/each}
-			</select>
+			</Select>
 			{#if models.error}
 				<p class="warn" role="alert">
 					<WarningCircle size={14} weight="fill" />

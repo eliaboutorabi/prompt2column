@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { CaretDown, CaretUp, CheckSquare, MagnifyingGlass, X } from 'phosphor-svelte';
+	import Select from './Select.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
 	interface Props {
@@ -69,17 +70,20 @@
 		{/if}
 	</div>
 
-	<select
-		class="scope"
-		aria-label="Column to search"
-		value={ws.searchColumnId ?? ''}
-		onchange={(event) => ws.setSearchColumn(event.currentTarget.value || null)}
-	>
-		<option value="">All columns</option>
-		{#each ws.columns as column (column.id)}
-			<option value={column.id}>{column.name}</option>
-		{/each}
-	</select>
+	<span class="scope">
+		<Select
+			compact
+			block
+			aria-label="Column to search"
+			value={ws.searchColumnId ?? ''}
+			onchange={(event) => ws.setSearchColumn(event.currentTarget.value || null)}
+		>
+			<option value="">All columns</option>
+			{#each ws.columns as column (column.id)}
+				<option value={column.id}>{column.name}</option>
+			{/each}
+		</Select>
+	</span>
 
 	{#if active}
 		<span class="count" aria-live="polite">
@@ -222,19 +226,8 @@
 	}
 
 	.scope {
-		height: 1.9rem;
-		max-width: 11rem;
-		padding: 0 0.45rem;
-		background: var(--surface);
-		border: 1px solid var(--line);
-		border-radius: var(--radius-control);
-		font-size: 0.75rem;
-		color: var(--text-2);
-	}
-
-	.scope:focus {
-		outline: none;
-		border-color: var(--accent);
+		flex: 0 1 11rem;
+		min-width: 7.5rem;
 	}
 
 	.count {
