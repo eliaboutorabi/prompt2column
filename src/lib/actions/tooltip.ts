@@ -16,6 +16,14 @@ let tip: HTMLDivElement | null = null;
 let owner: HTMLElement | null = null;
 let timer: ReturnType<typeof setTimeout> | undefined;
 let hiddenAt = 0;
+let listening = false;
+
+/** One listener for the whole page: any scroll hides whatever tooltip is up. */
+function listen() {
+	if (listening) return;
+	listening = true;
+	window.addEventListener('scroll', () => hide(), true);
+}
 
 function element(): HTMLDivElement {
 	if (tip?.isConnected) return tip;
@@ -103,15 +111,13 @@ export const tooltip: Action<HTMLElement, TooltipParam> = (node, param) => {
 	const onKeydown = (event: KeyboardEvent) => {
 		if (event.key === 'Escape' && owner === node) hide(node);
 	};
-	const onScroll = () => hide(node);
-
 	node.addEventListener('pointerenter', onPointerEnter);
 	node.addEventListener('pointerleave', onLeave);
 	node.addEventListener('pointerdown', onLeave);
 	node.addEventListener('focus', onFocus);
 	node.addEventListener('blur', onLeave);
 	node.addEventListener('keydown', onKeydown);
-	window.addEventListener('scroll', onScroll, true);
+	listen();
 
 	return {
 		update(next) {
@@ -129,7 +135,6 @@ export const tooltip: Action<HTMLElement, TooltipParam> = (node, param) => {
 			node.removeEventListener('focus', onFocus);
 			node.removeEventListener('blur', onLeave);
 			node.removeEventListener('keydown', onKeydown);
-			window.removeEventListener('scroll', onScroll, true);
 		}
 	};
 };

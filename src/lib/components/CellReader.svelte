@@ -6,6 +6,7 @@
 		Tick02Icon
 	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
 	interface Props {
@@ -127,7 +128,7 @@
 			class={['btn btn-ghost action', shownCopyState !== 'idle' && 'wide']}
 			disabled={!cell?.value}
 			onclick={copy}
-			title="Copy the full text"
+			use:tooltip={'Copy the full text'}
 			aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
 		>
 			{#if shownCopyState === 'copied'}
@@ -141,7 +142,7 @@
 		<button
 			type="button"
 			class="btn btn-ghost action"
-			title="Clear selection"
+			use:tooltip={{ text: 'Clear selection', kbd: 'Esc' }}
 			aria-label="Clear selection"
 			disabled={!cell}
 			onclick={() => ws.clearActiveCell()}

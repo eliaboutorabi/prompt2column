@@ -12,6 +12,7 @@
 		SquareLock02Icon
 	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import Brand from '$lib/components/Brand.svelte';
 	import AuthPanel from '$lib/components/AuthPanel.svelte';
 	import ImportPanel from '$lib/components/ImportPanel.svelte';
@@ -94,7 +95,7 @@
 		</a>
 		<div class="flex items-center gap-1">
 			{#if session.account}
-				<span class="user" title={`Signed in as ${session.account.username}`}>
+				<span class="user">
 					<span class="avatar" aria-hidden="true">
 						{session.account.username.slice(0, 1).toUpperCase()}
 					</span>
@@ -102,7 +103,7 @@
 				</span>
 				<button
 					class="btn btn-ghost btn-icon"
-					title="Sign out"
+					use:tooltip={'Sign out'}
 					aria-label="Sign out"
 					onclick={() => session.signOut()}
 				>
@@ -236,7 +237,7 @@
 									<div class="card-actions">
 										<button
 											class="btn btn-ghost btn-icon"
-											title="Delete"
+											use:tooltip={'Delete'}
 											aria-label={`Delete ${project.name}`}
 											onclick={() => (pendingDelete = project.id)}
 										>
@@ -244,7 +245,7 @@
 										</button>
 										<button
 											class="btn btn-ghost btn-icon"
-											title="Open"
+											use:tooltip={'Open'}
 											onclick={() => open(project)}
 											aria-label={`Open ${project.name}`}
 										>

@@ -23,6 +23,7 @@
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import Brand from '$lib/components/Brand.svelte';
 	import PromptEditor from './PromptEditor.svelte';
 	import NumberField from './NumberField.svelte';
@@ -158,7 +159,7 @@
 		<button
 			type="button"
 			class="command-copy"
-			title="Copy the command"
+			use:tooltip={copiedCommand === text ? 'Copied' : 'Copy the command'}
 			aria-label={copiedCommand === text ? 'Command copied' : `Copy ${text}`}
 			onclick={() => copyCommand(text)}
 		>
@@ -183,7 +184,7 @@
 						type="button"
 						class="preset"
 						class:on={activePreset === preset.id}
-						title={preset.blurb}
+						use:tooltip={preset.blurb}
 						disabled={busy}
 						onclick={() => applyPreset(preset.id)}
 					>
@@ -253,7 +254,7 @@
 					class="head-action"
 					disabled={busy}
 					onclick={() => editor?.openPalette()}
-					title="Insert a column reference at the cursor (or type {'{{'} or @)"
+					use:tooltip={{ text: 'Insert a column at the cursor, or type', kbd: '{{' }}
 				>
 					<Icon icon={Add01Icon} size={13} strokeWidth={2} />
 					Insert column
@@ -502,13 +503,7 @@
 					<Icon icon={StopIcon} size={15} /> Stop
 				</button>
 			{:else}
-				<button
-					type="button"
-					class="btn btn-primary run grow"
-					disabled={!runnable}
-					onclick={run}
-					title={isMac ? 'Run (⌘ Return)' : 'Run (Ctrl Enter)'}
-				>
+				<button type="button" class="btn btn-primary run grow" disabled={!runnable} onclick={run}>
 					<Icon icon={PlayIcon} size={15} />
 					Run on {matchCount}
 					{matchCount === 1 ? 'row' : 'rows'}

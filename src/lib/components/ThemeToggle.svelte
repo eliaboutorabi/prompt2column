@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ComputerIcon, Moon02Icon, Sun03Icon } from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import { theme } from '$lib/state/theme.svelte';
 
 	const labels = { system: 'Match system', light: 'Light', dark: 'Dark' } as const;
@@ -10,7 +11,7 @@
 	type="button"
 	class="btn btn-ghost btn-icon"
 	onclick={() => theme.cycle()}
-	title={labels[theme.choice]}
+	use:tooltip={`Theme: ${labels[theme.choice]}`}
 	aria-label={`Appearance: ${labels[theme.choice]}. Click to change.`}
 >
 	{#if theme.choice === 'system'}

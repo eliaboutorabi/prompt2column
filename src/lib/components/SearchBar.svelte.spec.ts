@@ -203,9 +203,6 @@ describe('search in the grid', () => {
 		await expect
 			.poll(() => container.querySelector('.cell.hit .value')?.textContent)
 			.toBe('…change in seat count.');
-		expect(container.querySelector('.cell.hit .value')?.getAttribute('title')).toContain(
-			'Renewal quote'
-		);
 	});
 });
 

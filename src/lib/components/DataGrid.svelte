@@ -8,6 +8,7 @@
 		PencilEdit02Icon
 	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 	import type { Column } from '$lib/core/types';
 	import { cellKey, excerpt, splitByRanges } from '$lib/core/search';
@@ -293,7 +294,6 @@
 		type="button"
 		role="menuitem"
 		class={['count', !label && 'empty']}
-		title={`Tick ${entry.count === 1 ? 'this row' : `these ${entry.count} rows`}`}
 		aria-label={`${label || 'Empty'}: ${entry.count} ${rowWord}, ${share}. Tick them.`}
 		disabled={ws.isBusy}
 		onclick={() => tickValue(entry)}
@@ -366,10 +366,10 @@
 					<button
 						type="button"
 						class="head-name"
-						title={`Add {{${column.name}}} to the prompt`}
+						use:tooltip={`${kindNames[kind]}. Click to add {{${column.name}}} to the prompt.`}
 						onclick={() => onInsert(column)}
 					>
-						<span class="kind" title={kindNames[kind]}>
+						<span class="kind">
 							<Icon icon={kindIcons[kind]} size={13} />
 						</span>
 						<span class="truncate">{column.name}</span>
@@ -526,23 +526,21 @@
 							{:else if tone === 'queued' && value === ''}
 								<span class="queued">waiting</span>
 							{:else if tone === 'error'}
-								<span class="failed" title={ws.cellError.get(row.id) ?? 'Failed'}>
+								<span class="failed" use:tooltip={ws.cellError.get(row.id) ?? 'Failed'}>
 									<Icon icon={AlertCircleIcon} size={13} />
 									{ws.cellError.get(row.id) ?? 'Failed'}
 								</span>
 							{:else if match}
 								{@const shown = excerpt(value, match.ranges)}
-								<span
-									class={['value', meta[columnIndex]?.labels && `tag tone-${labelTone(value)}`]}
-									title={value}
+								<span class={['value', meta[columnIndex]?.labels && `tag tone-${labelTone(value)}`]}
 									>{#each splitByRanges(shown.text, shown.ranges) as piece, index (index)}{#if piece.hit}<mark
 												>{piece.text}</mark
 											>{:else}{piece.text}{/if}{/each}</span
 								>
 							{:else if meta[columnIndex]?.labels && value}
-								<span class="value tag tone-{labelTone(value)}" title={value}>{value}</span>
+								<span class="value tag tone-{labelTone(value)}">{value}</span>
 							{:else}
-								<span class="value" title={value}>{value}</span>
+								<span class="value">{value}</span>
 							{/if}
 						</div>
 					{/each}

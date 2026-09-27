@@ -10,6 +10,7 @@
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import { labelTone } from '$lib/core/columns';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import NumberField from './NumberField.svelte';
 	import type { OutputKind, OutputSpec } from '$lib/core/types';
 
@@ -56,7 +57,7 @@
 					aria-checked={spec.kind === kind.id}
 					class="seg"
 					class:on={spec.kind === kind.id}
-					title={kind.hint}
+					use:tooltip={kind.hint}
 					{disabled}
 					onclick={() => (spec.kind = kind.id)}
 				>

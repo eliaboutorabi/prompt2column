@@ -8,6 +8,7 @@
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 	import NumberField from './NumberField.svelte';
 	import type { RowScope, ScopeKind } from '$lib/core/types';
 
@@ -54,17 +55,23 @@
 	<span class="label">Rows to run</span>
 	<div class="flex flex-wrap gap-1.5">
 		{#each options as option (option.id)}
-			<button
-				type="button"
-				class="pill"
-				class:on={scope.kind === option.id}
-				disabled={disabled || (option.id === 'empty' && !hasTarget)}
-				title={option.id === 'empty' && !hasTarget ? 'Available once the column exists' : undefined}
-				onclick={() => pick(option.id)}
+			{@const unavailable = option.id === 'empty' && !hasTarget}
+			<!-- A disabled button gets no hover, so the reason lives on its wrapper. -->
+			<span
+				class="pill-wrap"
+				use:tooltip={unavailable ? 'Available once the column exists' : undefined}
 			>
-				<Icon icon={option.icon} size={13} />
-				{option.label}
-			</button>
+				<button
+					type="button"
+					class="pill"
+					class:on={scope.kind === option.id}
+					disabled={disabled || unavailable}
+					onclick={() => pick(option.id)}
+				>
+					<Icon icon={option.icon} size={13} />
+					{option.label}
+				</button>
+			</span>
 		{/each}
 	</div>
 
@@ -169,6 +176,14 @@
 
 	.pill:disabled {
 		opacity: 0.45;
+		pointer-events: none;
+	}
+
+	.pill-wrap {
+		display: inline-flex;
+	}
+
+	.pill-wrap:has(.pill:disabled) {
 		cursor: not-allowed;
 	}
 </style>

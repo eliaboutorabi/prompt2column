@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { tooltip } from './tooltip';
+
+const sources = import.meta.glob('/src/**/*.svelte', {
+	query: '?raw',
+	import: 'default',
+	eager: true
+});
 import '../../routes/layout.css';
 
 const cleanups: Array<() => void> = [];
@@ -71,5 +77,14 @@ describe('tooltip', () => {
 		await expect.element(tip()).toHaveTextContent('localhost');
 		action?.update?.('Ollama is not answering');
 		await expect.element(tip()).toHaveTextContent('Ollama is not answering');
+	});
+
+	it('is the only tooltip: no component falls back to the browser title bubble', () => {
+		const offenders = Object.entries(sources)
+			.filter(([, source]) =>
+				/(^|\s)title=/m.test(String(source).replace(/<title>[\s\S]*?<\/title>/g, ''))
+			)
+			.map(([path]) => path);
+		expect(offenders).toEqual([]);
 	});
 });
