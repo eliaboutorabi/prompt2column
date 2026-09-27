@@ -89,6 +89,10 @@ export interface ProjectSummary {
 	updatedAt: number;
 	rowCount: number;
 	columnCount: number;
+	/** How many columns a prompt has filled. */
+	generatedCount: number;
+	/** The first few column names, for a glance at what the sheet holds. */
+	columnNames: string[];
 }
 
 export type CellStatus = 'idle' | 'queued' | 'running' | 'done' | 'error';

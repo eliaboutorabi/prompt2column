@@ -104,7 +104,9 @@ export async function listProjects(ownerId: string): Promise<ProjectSummary[]> {
 			createdAt: project.createdAt,
 			updatedAt: project.updatedAt,
 			rowCount: project.rows.length,
-			columnCount: project.columns.length
+			columnCount: project.columns.length,
+			generatedCount: project.columns.filter((column) => column.generated).length,
+			columnNames: project.columns.slice(0, 6).map((column) => column.name)
 		}))
 		.sort((a, b) => b.updatedAt - a.updatedAt);
 }
