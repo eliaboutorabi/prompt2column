@@ -144,6 +144,24 @@
 			</button>
 		{/if}
 	{/if}
+
+	{#if ws.selected.size}
+		<span class="ticked" role="status">
+			<Icon icon={CheckmarkSquare02Icon} size={13} />
+			<b>{ws.selected.size}</b>
+			ticked
+			<button
+				type="button"
+				class="untick"
+				title="Untick every row"
+				aria-label="Untick every row"
+				disabled={ws.isBusy}
+				onclick={() => ws.selectAll(false)}
+			>
+				<Icon icon={Cancel01Icon} size={11} strokeWidth={2.2} />
+			</button>
+		</span>
+	{/if}
 </div>
 
 <style>
@@ -265,7 +283,43 @@
 	}
 
 	.tick {
-		margin-left: auto;
+		height: 1.9rem;
 		font-size: 0.75rem;
+	}
+
+	/* How many rows a "Ticked rows" run would take, with a quick way out. */
+	.ticked {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		flex-shrink: 0;
+		height: 1.6rem;
+		margin-left: auto;
+		padding: 0 0.25rem 0 0.55rem;
+		border-radius: 999px;
+		background: var(--accent-soft);
+		color: var(--accent-text);
+		font-size: 0.75rem;
+		white-space: nowrap;
+	}
+
+	.ticked b {
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.untick {
+		display: grid;
+		place-items: center;
+		width: 1.2rem;
+		height: 1.2rem;
+		border-radius: 999px;
+		color: inherit;
+		transition: background-color var(--dur-fast) ease;
+	}
+
+	.untick:hover:not(:disabled) {
+		background: color-mix(in oklch, var(--accent) 30%, transparent);
 	}
 </style>

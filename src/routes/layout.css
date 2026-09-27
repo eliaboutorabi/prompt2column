@@ -54,7 +54,13 @@
 	--tag-4: oklch(0.93 0.045 330);
 	--tag-5: oklch(0.93 0.045 285);
 	--tag-6: oklch(0.93 0.045 25);
-	--tag-ink: oklch(0.34 0.06 var(--tag-hue, 230));
+	/* Label text per tone. A token can't take a hue from the element using it. */
+	--tag-ink-1: oklch(0.4 0.09 230);
+	--tag-ink-2: oklch(0.4 0.09 145);
+	--tag-ink-3: oklch(0.4 0.09 60);
+	--tag-ink-4: oklch(0.4 0.09 330);
+	--tag-ink-5: oklch(0.4 0.09 285);
+	--tag-ink-6: oklch(0.4 0.09 25);
 
 	/* Elevation, tinted with the page hue rather than pure black. */
 	--elev-1: 0 1px 1px oklch(0.22 0.01 110 / 0.04), 0 1px 3px oklch(0.22 0.01 110 / 0.06);
@@ -113,7 +119,12 @@
 	--tag-4: oklch(0.34 0.055 330);
 	--tag-5: oklch(0.34 0.055 285);
 	--tag-6: oklch(0.34 0.055 25);
-	--tag-ink: oklch(0.92 0.05 var(--tag-hue, 230));
+	--tag-ink-1: oklch(0.88 0.08 230);
+	--tag-ink-2: oklch(0.88 0.08 145);
+	--tag-ink-3: oklch(0.88 0.08 60);
+	--tag-ink-4: oklch(0.88 0.08 330);
+	--tag-ink-5: oklch(0.88 0.08 285);
+	--tag-ink-6: oklch(0.88 0.08 25);
 
 	--elev-1: 0 1px 2px oklch(0.08 0 0 / 0.4);
 	--shadow-panel: 0 1px 2px oklch(0.08 0 0 / 0.5), 0 8px 24px oklch(0.08 0 0 / 0.4);

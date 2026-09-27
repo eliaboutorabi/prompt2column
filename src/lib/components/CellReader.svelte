@@ -68,62 +68,33 @@
 </script>
 
 <!--
-	Always on screen at a fixed height, like a spreadsheet's formula bar. If it only
-	appeared once a cell was picked, it would push the sheet down under the pointer
-	and send the second click of a double-click to a different row.
+	A formula bar: always on screen at one height, so picking a cell never moves the
+	sheet (if it appeared on the first click, the second click of a double-click
+	would land on a different row).
 -->
 <section
 	class="reader"
 	aria-label="Cell reader"
 	style:padding-right="calc(0.75rem + {occludedRight}px)"
 >
-	<div class="meta">
-		<span class="where">
-			{#if cell}
-				<strong>{cell.column.name}</strong>
+	<div class={['address', cell?.editing && 'editing-now']}>
+		{#if cell}
+			<strong class="column">{cell.column.name}</strong>
+			<span class="where">
 				<span class="row">row {cell.rowIndex + 1}</span>
 				{#if cell.editing}
 					<span class="editing">Editing</span>
-					<span class="hint">Enter saves, Esc cancels</span>
-				{:else if cell.words && !cell.error}
-					<span class="words">{cell.words} {cell.words === 1 ? 'word' : 'words'}</span>
 				{/if}
-			{:else}
-				<span>No cell selected</span>
-			{/if}
-		</span>
-		<button
-			type="button"
-			class="btn btn-ghost action"
-			disabled={!cell?.value}
-			onclick={copy}
-			aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
-		>
-			{#if shownCopyState === 'copied'}
-				<Icon icon={Tick02Icon} size={13} strokeWidth={2} /> Copied
-			{:else if shownCopyState === 'failed'}
-				Copy failed
-			{:else}
-				<Icon icon={Copy01Icon} size={13} /> Copy
-			{/if}
-		</button>
-		<button
-			type="button"
-			class="btn btn-ghost action close"
-			aria-label="Clear selection"
-			disabled={!cell}
-			onclick={() => ws.clearActiveCell()}
-		>
-			<Icon icon={Cancel01Icon} size={13} strokeWidth={2} />
-		</button>
+			</span>
+		{:else}
+			<span class="column none">No cell selected</span>
+		{/if}
 	</div>
 
-	<!-- Fixed height, scrolls inside: stepping through cells never shifts the grid.
-	     Focusable so a long cell can be scrolled from the keyboard. -->
+	<!-- Fixed height, scrolls inside. Focusable so a long cell can be scrolled from the keyboard. -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
 		class="text"
-		class:mono={cell?.column.generated}
 		tabindex="0"
 		role="region"
 		aria-label={cell ? `${cell.column.name}, row ${cell.rowIndex + 1}` : 'No cell selected'}
@@ -144,61 +115,113 @@
 			<span class="muted">Empty cell</span>
 		{/if}
 	</div>
+
+	<div class="side">
+		{#if cell?.editing}
+			<span class="note">Enter saves, Esc cancels</span>
+		{:else if cell?.words && !cell.error}
+			<span class="note mono">{cell.words} {cell.words === 1 ? 'word' : 'words'}</span>
+		{/if}
+		<button
+			type="button"
+			class={['btn btn-ghost action', shownCopyState !== 'idle' && 'wide']}
+			disabled={!cell?.value}
+			onclick={copy}
+			title="Copy the full text"
+			aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
+		>
+			{#if shownCopyState === 'copied'}
+				<Icon icon={Tick02Icon} size={15} strokeWidth={2} /> Copied
+			{:else if shownCopyState === 'failed'}
+				Copy failed
+			{:else}
+				<Icon icon={Copy01Icon} size={15} />
+			{/if}
+		</button>
+		<button
+			type="button"
+			class="btn btn-ghost action"
+			title="Clear selection"
+			aria-label="Clear selection"
+			disabled={!cell}
+			onclick={() => ws.clearActiveCell()}
+		>
+			<Icon icon={Cancel01Icon} size={14} strokeWidth={2} />
+		</button>
+	</div>
 </section>
 
 <style>
 	.reader {
 		display: grid;
-		gap: 0.3rem;
-		padding: 0.5rem 0.75rem 0.6rem;
+		grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) auto;
+		align-items: start;
+		gap: 0.85rem;
+		padding: 0.55rem 0.75rem;
 		background: var(--surface);
 		border-bottom: 1px solid var(--line);
 	}
 
-	.meta {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
+	/* The name box: which cell this is, in a quiet inset like a spreadsheet's. */
+	.address {
+		display: grid;
+		align-content: center;
+		gap: 0.1rem;
+		height: 2.55rem;
+		padding: 0 0.65rem;
+		border-radius: var(--radius-control);
+		background: var(--surface-2);
+		box-shadow: inset 0 0 0 1px var(--line);
 		min-width: 0;
+		transition:
+			background-color var(--dur) ease,
+			box-shadow var(--dur) ease;
+	}
+
+	.address.editing-now {
+		background: var(--accent-soft);
+		box-shadow: inset 0 0 0 1px var(--accent-line);
+	}
+
+	.column {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 0.75rem;
+		font-weight: 600;
+		color: var(--text);
+	}
+
+	.column.none {
+		font-weight: 500;
+		line-height: 1.25;
+		white-space: normal;
+		color: var(--text-3);
 	}
 
 	.where {
 		display: flex;
-		align-items: baseline;
-		gap: 0.5rem;
-		min-width: 0;
-		flex: 1;
-		font-size: 0.75rem;
-		color: var(--text-3);
+		align-items: center;
+		gap: 0.4rem;
 		white-space: nowrap;
-		overflow: hidden;
 	}
 
-	.where strong {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		font-weight: 600;
-		color: var(--text-2);
-	}
-
-	.row,
-	.words {
+	.row {
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
+		color: var(--text-3);
 		font-variant-numeric: tabular-nums;
 	}
 
-	.action {
-		padding: 0.2rem 0.45rem;
-		font-size: 0.75rem;
-	}
-
-	.close {
-		padding: 0.2rem 0.3rem;
+	.editing {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		color: var(--accent-text);
 	}
 
 	.text {
-		height: calc(0.8125rem * 1.55 * 3);
+		height: calc(0.8125rem * 1.55 * 2);
+		margin-top: 0.3rem;
 		overflow-y: auto;
 		font-size: 0.8125rem;
 		line-height: 1.55;
@@ -208,36 +231,40 @@
 		user-select: text;
 	}
 
-	.text.mono {
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-	}
-
 	.text:focus-visible {
 		outline: 2px solid var(--accent);
-		outline-offset: 2px;
+		outline-offset: 3px;
+		border-radius: 4px;
 	}
 
-	.editing {
-		align-self: center;
-		padding: 0 0.45rem;
-		border-radius: 999px;
-		background: var(--accent-soft);
-		color: var(--accent-text);
+	.side {
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
+		height: 2.55rem;
+	}
+
+	.note {
+		margin-right: 0.4rem;
 		font-size: 0.6875rem;
-		font-weight: 600;
-		line-height: 1.35rem;
+		color: var(--text-3);
+		white-space: nowrap;
 	}
 
-	.hint {
-		overflow: hidden;
-		text-overflow: ellipsis;
+	.mono {
+		font-family: var(--font-mono);
+		font-variant-numeric: tabular-nums;
 	}
 
-	@media (max-width: 640px) {
-		.hint {
-			display: none;
-		}
+	.action {
+		width: 2rem;
+		padding: 0;
+	}
+
+	.action.wide {
+		width: auto;
+		padding: 0 0.55rem;
+		font-size: 0.75rem;
 	}
 
 	.muted {
@@ -251,8 +278,18 @@
 		color: var(--danger);
 	}
 
-	.failed :global(svg) {
-		flex-shrink: 0;
+	.failed :global(.hi) {
 		margin-top: 0.15rem;
+	}
+
+	@media (max-width: 640px) {
+		.reader {
+			grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) auto;
+			gap: 0.6rem;
+		}
+
+		.note {
+			display: none;
+		}
 	}
 </style>

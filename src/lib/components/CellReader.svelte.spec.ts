@@ -100,12 +100,6 @@ describe('CellReader', () => {
 		await expect.element(reader()).toHaveTextContent(/row 2/);
 	});
 
-	it('sets generated text in the same monospace face as the grid', async () => {
-		mount(makeWorkspace());
-		await userEvent.click(page.getByText('Struggled with onboarding.'));
-		await expect.poll(() => readerText()?.classList.contains('mono')).toBe(true);
-	});
-
 	it('says so when the cell is empty, and has nothing to copy', async () => {
 		const ws = makeWorkspace();
 		mount(ws);
