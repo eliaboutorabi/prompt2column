@@ -8,7 +8,7 @@
 
 <button
 	type="button"
-	class="btn btn-ghost px-2"
+	class="btn btn-ghost btn-icon"
 	onclick={() => theme.cycle()}
 	title={labels[theme.choice]}
 	aria-label={`Appearance: ${labels[theme.choice]}. Click to change.`}

@@ -4,10 +4,11 @@
 	import {
 		ArrowRight02Icon,
 		Delete02Icon,
-		Logout03Icon,
-		Table02Icon
+		LayoutTable01Icon,
+		Logout03Icon
 	} from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import Brand from '$lib/components/Brand.svelte';
 	import AuthPanel from '$lib/components/AuthPanel.svelte';
 	import ImportPanel from '$lib/components/ImportPanel.svelte';
 	import TemplateHighlight from '$lib/components/TemplateHighlight.svelte';
@@ -54,16 +55,25 @@
 </svelte:head>
 
 <div class="min-h-[100dvh]">
-	<header class="flex h-16 items-center justify-between border-b border-line px-5 lg:px-8">
-		<a href={resolve('/')} class="flex items-baseline gap-1.5">
-			<span class="text-[0.95rem] font-semibold tracking-tight text-ink">prompt2column</span>
-			<span class="hidden font-mono text-xs text-ink-3 sm:inline">local</span>
+	<header class="topbar">
+		<a href={resolve('/')} class="home-link" aria-label="prompt2column home">
+			<Brand />
 		</a>
 		<div class="flex items-center gap-1">
 			{#if session.account}
-				<span class="mr-2 hidden text-xs text-ink-2 sm:inline">{session.account.username}</span>
-				<button class="btn btn-ghost" onclick={() => session.signOut()}>
-					<Icon icon={Logout03Icon} size={15} /> Sign out
+				<span class="user" title={`Signed in as ${session.account.username}`}>
+					<span class="avatar" aria-hidden="true">
+						{session.account.username.slice(0, 1).toUpperCase()}
+					</span>
+					<span class="user-name">{session.account.username}</span>
+				</span>
+				<button
+					class="btn btn-ghost btn-icon"
+					title="Sign out"
+					aria-label="Sign out"
+					onclick={() => session.signOut()}
+				>
+					<Icon icon={Logout03Icon} size={16} />
 				</button>
 			{/if}
 			<ThemeToggle />
@@ -143,7 +153,7 @@
 						{#each session.projects as project (project.id)}
 							<li class="project">
 								<button class="project-open" onclick={() => open(project)}>
-									<span class="project-icon"><Icon icon={Table02Icon} size={17} /></span>
+									<span class="project-icon"><Icon icon={LayoutTable01Icon} size={17} /></span>
 									<span class="project-text">
 										<span class="truncate text-[0.9375rem] font-medium text-ink"
 											>{project.name}</span
@@ -198,6 +208,53 @@
 </div>
 
 <style>
+	.topbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		height: 3.5rem;
+		padding: 0 0.9rem 0 1.25rem;
+		border-bottom: 1px solid var(--line);
+		background: color-mix(in oklch, var(--surface) 70%, transparent);
+	}
+
+	.home-link {
+		display: flex;
+		align-items: center;
+		border-radius: 8px;
+	}
+
+	.user {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-right: 0.35rem;
+		font-size: 0.8125rem;
+		color: var(--text-2);
+	}
+
+	.avatar {
+		display: grid;
+		place-items: center;
+		width: 1.6rem;
+		height: 1.6rem;
+		border-radius: 999px;
+		background: var(--accent-soft);
+		color: var(--accent-text);
+		font-size: 0.75rem;
+		font-weight: 600;
+	}
+
+	.user-name {
+		display: none;
+	}
+
+	@media (min-width: 640px) {
+		.user-name {
+			display: inline;
+		}
+	}
+
 	.demo-prompt {
 		font-family: var(--font-mono);
 		font-size: 0.75rem;

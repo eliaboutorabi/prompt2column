@@ -4,14 +4,9 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import {
-		AiMagicIcon,
-		Alert02Icon,
-		ArrowLeft02Icon,
-		CheckmarkCircle02Icon,
-		GridTableIcon
-	} from '@hugeicons/core-free-icons';
+	import { AiMagicIcon, ArrowRight01Icon, GridTableIcon } from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import Brand from '$lib/components/Brand.svelte';
 	import CellReader from '$lib/components/CellReader.svelte';
 	import Composer from '$lib/components/Composer.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
@@ -93,6 +88,9 @@
 		}
 	}
 
+	// The name field sizes itself to the name where the browser can; elsewhere, a close guess.
+	const fitsContent = typeof CSS !== 'undefined' && CSS.supports('field-sizing', 'content');
+
 	const generatedCount = $derived(ws.columns.filter((column) => column.generated).length);
 </script>
 
@@ -103,37 +101,59 @@
 </svelte:head>
 
 <div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_1fr]">
-	<header class="flex items-center gap-3 border-b border-line bg-surface px-3">
-		<a href={resolve('/')} class="btn btn-ghost px-2" aria-label="Back to projects">
-			<Icon icon={ArrowLeft02Icon} size={16} />
+	<header class="topbar">
+		<a href={resolve('/')} class="home" aria-label="Back to projects">
+			<Brand markOnly />
 		</a>
+		<nav class="crumbs" aria-label="Breadcrumb">
+			<a href={resolve('/')} class="crumb">Projects</a>
+			<Icon icon={ArrowRight01Icon} size={12} strokeWidth={2} class="sep" />
+			{#if ws.project}
+				<input
+					class="name"
+					value={ws.project.name}
+					style:width={fitsContent ? undefined : `${Math.min(ws.project.name.length + 2, 34)}ch`}
+					aria-label="Project name"
+					onchange={(event) => ws.rename(event.currentTarget.value)}
+				/>
+			{/if}
+		</nav>
 
 		{#if ws.project}
-			<input
-				class="name"
-				value={ws.project.name}
-				aria-label="Project name"
-				onchange={(event) => ws.rename(event.currentTarget.value)}
-			/>
-			<span class="hidden font-mono text-xs text-ink-3 md:inline">
-				{ws.rows.length} rows, {ws.columns.length} columns{generatedCount
-					? `, ${generatedCount} generated`
-					: ''}
-			</span>
+			<div class="stats" aria-label="Sheet size">
+				<span class="stat"><b>{ws.rows.length}</b> rows</span>
+				<span class="stat"><b>{ws.columns.length}</b> columns</span>
+				{#if generatedCount}
+					<span class="stat generated">
+						<Icon icon={AiMagicIcon} size={12} />
+						<b>{generatedCount}</b> generated
+					</span>
+				{/if}
+			</div>
 		{/if}
 
-		<div class="ml-auto flex items-center gap-1">
-			<span class="hidden items-center gap-1.5 text-xs text-ink-3 sm:flex">
-				{#if models.loading}
-					Looking for Ollama
-				{:else if models.error}
-					<Icon icon={Alert02Icon} size={13} class="text-danger" /> Ollama offline
-				{:else}
-					<Icon icon={CheckmarkCircle02Icon} size={13} class="text-accent" />
-					{models.models.length}
-					{models.models.length === 1 ? 'model' : 'models'}
-				{/if}
-			</span>
+		<div class="actions">
+			<button
+				type="button"
+				class={['status', models.loading ? 'checking' : models.error ? 'offline' : 'online']}
+				onclick={() => models.scan()}
+				disabled={models.loading}
+				title={models.error
+					? `${models.error} Click to try again.`
+					: `Ollama at ${models.host}. Click to rescan models.`}
+			>
+				<span class="dot" aria-hidden="true"></span>
+				<span class="status-text">
+					{#if models.loading}
+						Connecting
+					{:else if models.error}
+						Ollama offline
+					{:else}
+						{models.models.length}
+						{models.models.length === 1 ? 'model' : 'models'}
+					{/if}
+				</span>
+			</button>
 			<ExportMenu disabled={!ws.project} onExport={exportSheet} />
 			<ThemeToggle />
 		</div>
@@ -176,28 +196,190 @@
 </div>
 
 <style>
+	.topbar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		min-width: 0;
+		padding: 0 0.75rem 0 0.9rem;
+		background: var(--surface);
+		border-bottom: 1px solid var(--line);
+	}
+
+	.home {
+		display: grid;
+		place-items: center;
+		border-radius: 7px;
+	}
+
+	.crumbs {
+		display: flex;
+		align-items: center;
+		gap: 0.3rem;
+		min-width: 0;
+	}
+
+	.crumb {
+		padding: 0.2rem 0.35rem;
+		border-radius: 6px;
+		font-size: 0.8125rem;
+		color: var(--text-3);
+		transition:
+			color var(--dur-fast) ease,
+			background-color var(--dur-fast) ease;
+	}
+
+	.crumb:hover {
+		color: var(--text);
+		background: var(--surface-2);
+	}
+
+	.crumbs :global(.sep) {
+		color: var(--text-3);
+		opacity: 0.6;
+	}
+
 	/* Shrinks on phones so the header never pushes the page wider than the screen. */
 	.name {
-		flex: 0 1 12rem;
-		width: 0;
-		min-width: 5rem;
+		field-sizing: content;
+		flex: 0 1 auto;
+		min-width: 4rem;
+		max-width: 20rem;
 		background: transparent;
 		border: 1px solid transparent;
 		border-radius: 6px;
 		padding: 0.2rem 0.4rem;
 		font-size: 0.875rem;
-		font-weight: 500;
+		font-weight: 600;
+		letter-spacing: -0.01em;
 		text-overflow: ellipsis;
+		transition:
+			border-color var(--dur-fast) ease,
+			background-color var(--dur-fast) ease;
 	}
 
 	.name:hover {
-		border-color: var(--line);
+		background: var(--surface-2);
 	}
 
 	.name:focus {
 		outline: none;
 		border-color: var(--accent);
 		background: var(--surface);
+		box-shadow: var(--ring);
+	}
+
+	.stats {
+		display: none;
+		align-items: center;
+		gap: 0.35rem;
+	}
+
+	.stat {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+		height: 1.4rem;
+		padding: 0 0.5rem;
+		border-radius: 999px;
+		background: var(--surface-2);
+		font-size: 0.6875rem;
+		color: var(--text-3);
+		white-space: nowrap;
+	}
+
+	.stat b {
+		font-family: var(--font-mono);
+		font-weight: 500;
+		color: var(--text-2);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.stat.generated {
+		background: var(--accent-soft);
+		color: var(--accent-text);
+	}
+
+	.stat.generated b {
+		color: var(--accent-text);
+	}
+
+	.actions {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		margin-left: auto;
+	}
+
+	/* Live connection state: the dot carries meaning, so it earns its colour. */
+	.status {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		height: 2rem;
+		padding: 0 0.6rem;
+		border-radius: var(--radius-control);
+		font-size: 0.75rem;
+		color: var(--text-2);
+		transition: background-color var(--dur-fast) ease;
+	}
+
+	.status:hover:not(:disabled) {
+		background: var(--surface-2);
+	}
+
+	.dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 999px;
+		background: var(--text-3);
+	}
+
+	.online .dot {
+		background: var(--accent);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 22%, transparent);
+	}
+
+	.offline {
+		color: var(--danger);
+	}
+
+	.offline .dot {
+		background: var(--danger);
+		box-shadow: 0 0 0 3px color-mix(in oklch, var(--danger) 20%, transparent);
+	}
+
+	.checking .dot {
+		animation: pulse 1s ease-in-out infinite;
+	}
+
+	@keyframes pulse {
+		50% {
+			opacity: 0.3;
+		}
+	}
+
+	.status-text {
+		display: none;
+	}
+
+	@media (min-width: 640px) {
+		.status-text {
+			display: inline;
+		}
+	}
+
+	@media (min-width: 900px) {
+		.stats {
+			display: flex;
+		}
+	}
+
+	@media (max-width: 639px) {
+		.crumb,
+		.crumbs :global(.sep) {
+			display: none;
+		}
 	}
 
 	/* minmax(0, 1fr) columns stop any child's natural width from widening the
