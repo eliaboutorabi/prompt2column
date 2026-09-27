@@ -241,6 +241,24 @@ describe('answer counts in the column menu', () => {
 		expect([...ws.selected]).toEqual(['r3']);
 	});
 
+	it('shows answers as coloured tags on bars as long as their share', async () => {
+		render(DataGrid, { props: { ws: countsWorkspace(), onInsert: () => {} } });
+		await openMenu('Decision');
+		const approve = page.getByRole('menuitem', { name: /^Approve:/ }).element() as HTMLElement;
+		expect(approve.querySelector('.tag')?.className).toMatch(/tone-2/);
+		expect(Number(approve.style.getPropertyValue('--share'))).toBeCloseTo(0.5);
+		const bar = parseFloat(getComputedStyle(approve, '::before').width);
+		expect(bar).toBeGreaterThan(approve.clientWidth * 0.4);
+		expect(bar).toBeLessThan(approve.clientWidth * 0.6);
+	});
+
+	it('keeps plain values plain', async () => {
+		render(DataGrid, { props: { ws: countsWorkspace(), onInsert: () => {} } });
+		await openMenu('Team');
+		const design = page.getByRole('menuitem', { name: /^Design:/ }).element();
+		expect(design.querySelector('.tag')).toBeNull();
+	});
+
 	it('replaces the ticked rows rather than adding to them', async () => {
 		const ws = countsWorkspace();
 		ws.tickRows(['r0', 'r2']);

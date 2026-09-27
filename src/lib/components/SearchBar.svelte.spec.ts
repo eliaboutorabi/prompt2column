@@ -272,6 +272,18 @@ describe('grid under the frosted sidebar', () => {
 		);
 	});
 
+	it('gives the frozen gutter an edge once the sheet scrolls sideways', async () => {
+		const ws = workspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget(420) });
+		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
+		const gutter = document.querySelector<HTMLElement>('.cell.gutter')!;
+		const edge = () => Number(getComputedStyle(gutter, '::after').opacity);
+		await expect.poll(edge).toBe(0);
+		grid.scrollLeft = 120;
+		grid.dispatchEvent(new Event('scroll'));
+		await expect.poll(edge).toBe(1);
+	});
+
 	it('leaves the layout alone when nothing floats over the grid', async () => {
 		const ws = workspace();
 		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget() });

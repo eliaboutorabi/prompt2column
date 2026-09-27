@@ -89,6 +89,7 @@
 	);
 
 	let scrolled = $state(false);
+	let scrolledX = $state(false);
 
 	// A run puts its answers in a column that may sit off to the right, even under the
 	// sidebar. Bring it into view as the run starts so the answers can be watched.
@@ -287,18 +288,25 @@
 	}
 </script>
 
-{#snippet countItem(entry: ValueCount, label: string, total: number)}
+{#snippet countItem(entry: ValueCount, label: string, total: number, tagged = false)}
 	{@const share = formatShare(entry.count, total)}
 	{@const rowWord = entry.count === 1 ? 'row' : 'rows'}
 	<button
 		type="button"
 		role="menuitem"
 		class={['count', !label && 'empty']}
+		style:--share={total ? entry.count / total : 0}
 		aria-label={`${label || 'Empty'}: ${entry.count} ${rowWord}, ${share}. Tick them.`}
 		disabled={ws.isBusy}
 		onclick={() => tickValue(entry)}
 	>
-		<span class="value">{label || 'Empty'}</span>
+		<span class="value">
+			{#if label && tagged}
+				<span class="tag tone-{labelTone(label)}">{label}</span>
+			{:else}
+				{label || 'Empty'}
+			{/if}
+		</span>
 		<span class="num">{entry.count}</span>
 		<span class="share">{share}</span>
 	</button>
@@ -324,9 +332,11 @@
 	bind:this={scroller}
 	use:measure
 	class:scrolled
+	class:scrolled-x={scrolledX}
 	onscroll={() => {
 		scrollTop = scroller?.scrollTop ?? 0;
 		scrolled = scrollTop > 0;
+		scrolledX = (scroller?.scrollLeft ?? 0) > 0;
 	}}
 	onkeydown={onGridKeydown}
 >
@@ -423,7 +433,12 @@
 							<div class="counts">
 								{#if countsUseful}
 									{#each menuCounts.values as entry (entry.value)}
-										{@render countItem(entry, entry.value, menuCounts.total)}
+										{@render countItem(
+											entry,
+											entry.value,
+											menuCounts.total,
+											Boolean(meta[columnIndex]?.labels)
+										)}
 									{/each}
 									{#if menuCounts.others.distinct}
 										<p class="counts-note">
@@ -700,7 +715,7 @@
 	.row {
 		display: grid;
 		min-width: min-content;
-		border-bottom: 1px solid var(--line);
+		border-bottom: 1px solid var(--grid-line);
 	}
 
 	.row:hover {
@@ -717,7 +732,7 @@
 		gap: 0.4rem;
 		min-width: 0;
 		padding-inline: 0.5rem;
-		border-right: 1px solid var(--line);
+		border-right: 1px solid var(--grid-line);
 		font-size: 0.8125rem;
 		color: var(--text);
 	}
@@ -770,6 +785,25 @@
 
 	.gutter > :global(*) {
 		grid-area: 1 / 1;
+	}
+
+	/* Once the sheet scrolls sideways, the frozen gutter casts a soft edge so the
+	   columns read as sliding under it rather than being cut off. */
+	.gutter::after {
+		content: '';
+		position: absolute;
+		top: 0;
+		right: -10px;
+		bottom: 0;
+		width: 10px;
+		background: linear-gradient(to right, oklch(0.1 0 0 / 0.14), transparent);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity var(--dur) ease;
+	}
+
+	.scrolled-x .gutter::after {
+		opacity: 1;
 	}
 
 	.cell.gutter input,
@@ -1003,10 +1037,33 @@
 		color: var(--text-3);
 	}
 
+	/* Each value sits on a faint bar as long as its share of the rows. */
 	.menu .count {
+		position: relative;
+		isolation: isolate;
 		display: grid;
 		grid-template-columns: minmax(0, 1fr) auto 2.75rem;
 		gap: 0.75rem;
+		min-height: 2rem;
+	}
+
+	.count::before {
+		content: '';
+		position: absolute;
+		top: 3px;
+		bottom: 3px;
+		left: 3px;
+		z-index: -1;
+		width: calc((100% - 6px) * var(--share, 0));
+		border-radius: 5px;
+		background: color-mix(in oklch, var(--text) 6%, transparent);
+	}
+
+	.count .tag {
+		max-width: 100%;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		vertical-align: middle;
 	}
 
 	.count .value {

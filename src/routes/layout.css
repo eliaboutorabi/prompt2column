@@ -20,6 +20,8 @@
 	--surface-3: oklch(0.93 0.006 110);
 	--line: oklch(0.915 0.005 110);
 	--line-strong: oklch(0.86 0.007 110);
+	/* The sheet's own rules, a step softer than panel lines so data leads. */
+	--grid-line: oklch(0.935 0.004 110);
 	--text: oklch(0.22 0.01 110);
 	--text-2: oklch(0.47 0.01 110);
 	--text-3: oklch(0.6 0.008 110);
@@ -95,6 +97,7 @@
 	--surface-3: oklch(0.275 0.009 110);
 	--line: oklch(0.272 0.008 110);
 	--line-strong: oklch(0.345 0.01 110);
+	--grid-line: oklch(0.245 0.007 110);
 	--text: oklch(0.96 0.004 110);
 	--text-2: oklch(0.74 0.008 110);
 	--text-3: oklch(0.6 0.008 110);
