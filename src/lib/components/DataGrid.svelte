@@ -73,13 +73,24 @@
 			if (!match) return;
 			focusRow = match.rowIndex;
 			focusCol = match.columnIndex;
+			ws.setActiveCell(match.rowId, match.columnId);
 			reveal(match.rowIndex, match.columnIndex);
 		});
 	});
 
 	function measure(node: HTMLDivElement) {
 		const observer = new ResizeObserver(() => {
+			const previous = viewportHeight;
 			viewportHeight = node.clientHeight;
+			// The cell reader opening above the grid makes it shorter. If the selected
+			// row was on screen, keep it there instead of letting it drop out of view.
+			if (viewportHeight >= previous) return;
+			const top = focusRow * ROW_HEIGHT;
+			const bottom = top + ROW_HEIGHT;
+			const wasVisible =
+				top >= node.scrollTop && bottom <= node.scrollTop + previous - HEADER_HEIGHT;
+			const bodyHeight = viewportHeight - HEADER_HEIGHT;
+			if (wasVisible && bottom > node.scrollTop + bodyHeight) node.scrollTop = bottom - bodyHeight;
 		});
 		observer.observe(node);
 		viewportHeight = node.clientHeight;
@@ -340,6 +351,7 @@
 							onfocus={() => {
 								focusRow = rowIndex;
 								focusCol = columnIndex;
+								ws.setActiveCell(row.id, column.id);
 							}}
 							ondblclick={() => startEdit(row.id, column.id, value)}
 						>

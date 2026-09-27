@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
 	import { ArrowLeft, CheckCircle, Warning } from 'phosphor-svelte';
+	import CellReader from '$lib/components/CellReader.svelte';
 	import Composer from '$lib/components/Composer.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
@@ -152,6 +153,7 @@
 			<div class="main">
 				<div class="pane sheet" inert={sheetCovered}>
 					<SearchBar bind:this={searchBar} {ws} {occludedRight} />
+					<CellReader {ws} {occludedRight} />
 					<DataGrid {ws} onInsert={insert} {occludedRight} />
 				</div>
 				<div class={['pane', 'side', view !== 'prompt' && 'hide']} bind:offsetWidth={sidebarWidth}>
@@ -236,10 +238,11 @@
 		grid-area: 1 / 1;
 	}
 
+	/* Search bar, cell reader (empty until a cell is picked), then the grid. */
 	.pane.sheet {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: auto minmax(0, 1fr);
+		grid-template-rows: auto auto minmax(0, 1fr);
 	}
 
 	.pane.side {

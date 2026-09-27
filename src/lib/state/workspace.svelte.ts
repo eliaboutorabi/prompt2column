@@ -29,6 +29,9 @@ export class Workspace {
 	runMessage = $state('');
 	lastRunColumnId = $state<string | null>(null);
 
+	/** The cell the reader shows: the last one focused in the grid or reached by search. */
+	activeCell = $state<{ rowId: string; columnId: string } | null>(null);
+
 	searchQuery = $state('');
 	/** Null searches every column. */
 	searchColumnId = $state<string | null>(null);
@@ -110,6 +113,7 @@ export class Workspace {
 			this.project = project;
 			this.clearSearch();
 			this.searchColumnId = null;
+			this.activeCell = null;
 			this.selected.clear();
 			this.cellStatus.clear();
 			this.cellError.clear();
@@ -177,6 +181,7 @@ export class Workspace {
 		for (const row of this.project.rows) delete row.cells[columnId];
 		if (this.lastRunColumnId === columnId) this.lastRunColumnId = null;
 		if (this.searchColumnId === columnId) this.searchColumnId = null;
+		if (this.activeCell?.columnId === columnId) this.activeCell = null;
 		this.touch();
 	}
 
@@ -311,6 +316,16 @@ export class Workspace {
 		if (this.tickTimer) clearInterval(this.tickTimer);
 		this.tickTimer = null;
 		if (this.runStartedAt) this.runElapsedMs = Date.now() - this.runStartedAt;
+	}
+
+	setActiveCell(rowId: string, columnId: string): void {
+		const current = this.activeCell;
+		if (current?.rowId === rowId && current.columnId === columnId) return;
+		this.activeCell = { rowId, columnId };
+	}
+
+	clearActiveCell(): void {
+		this.activeCell = null;
 	}
 
 	get currentMatch(): CellMatch | null {

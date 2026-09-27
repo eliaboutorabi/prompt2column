@@ -119,6 +119,20 @@ the grid hasn't drawn yet (the browser's own find can't see those).
 - **Tick N rows** ticks every row with a match. Switch the run to **Ticked rows**
   to run the prompt on exactly those rows.
 
+## Reading a cell
+
+Cells are one line tall, so long notes and summaries get cut off. Click a cell, or
+move to it with the arrow keys, and the **cell reader** above the sheet shows its
+full text, with the column, the row number and a word count (handy for checking a
+summary against its word budget).
+
+- **Copy** puts the cell's text on the clipboard.
+- A failed row shows its complete error message, which the grid cuts short.
+- It follows the selection, so you can arrow down a column and read each answer in
+  turn. Search moves it to each match as well.
+- It stays the same height, scrolling inside for very long text, so stepping from
+  cell to cell never shifts the sheet. Close it with its × button.
+
 ## Exporting
 
 **Export**, at the top right of the workspace, saves the whole sheet, generated
@@ -271,5 +285,3 @@ on a different port.
 
 - Excel files (`.xlsx`) for import and export. `src/lib/core/csv.ts` and
   `src/lib/core/export.ts` are where that will go.
-- A way to read a long generated cell in full. For now it's shown in the cell's
-  tooltip.

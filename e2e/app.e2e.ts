@@ -287,3 +287,44 @@ test('floats the composer over the sheet as frosted glass on wide screens and ph
 	await expect(page.getByRole('complementary')).toBeHidden();
 	expect(await sheet.evaluate((el) => (el as HTMLElement).inert)).toBe(false);
 });
+
+test('reads a long cell in full and copies it', async ({ page, context }) => {
+	await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+	await mockOllama(page);
+	await signUp(page, 'kwame.b');
+	await page.getByRole('button', { name: /Research notes/ }).click();
+
+	const reader = page.getByRole('region', { name: 'Cell reader' });
+	await expect(reader).toBeHidden();
+
+	await page.getByText(/^Signed up on a phone during a shift/).click();
+	await expect(reader).toBeVisible();
+	await expect(reader).toContainText('Raw notes');
+	await expect(reader).toContainText('row 1');
+	// The grid cuts this note off; the reader shows it through to its last words.
+	await expect(reader).toContainText('said it felt like 30.');
+
+	// On a wide screen the text wraps before the frosted sidebar, not under it.
+	const text = (await reader.locator('.text').boundingBox())!;
+	const sidebar = (await page.locator('.pane.side').boundingBox())!;
+	expect(text.x + text.width).toBeLessThanOrEqual(sidebar.x + 1);
+
+	await reader.getByRole('button', { name: 'Copy cell text' }).click();
+	await expect(reader.getByRole('button', { name: 'Copied' })).toBeVisible();
+	expect(await page.evaluate(() => navigator.clipboard.readText())).toMatch(
+		/^Signed up on a phone during a shift\..*said it felt like 30\.$/
+	);
+
+	await page.getByText(/^Very comfortable with spreadsheets/).click();
+	await expect(reader).toContainText('row 2');
+	await expect(reader).toContainText('ran the whole sheet.');
+
+	await reader.getByRole('button', { name: 'Close cell reader' }).click();
+	await expect(reader).toBeHidden();
+
+	// Phones get the same reader under the search bar, inside the screen width.
+	await page.setViewportSize({ width: 390, height: 844 });
+	await page.getByText(/^Signed up on a phone during a shift/).click();
+	await expect(reader).toBeVisible();
+	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+});
