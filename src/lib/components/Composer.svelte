@@ -409,14 +409,9 @@
 							}}
 						/>
 					</div>
-					<label class="check">
-						<input
-							type="checkbox"
-							class="size-3.5 accent-accent"
-							bind:checked={config.think}
-							disabled={busy}
-						/>
+					<label class="toggle">
 						Let thinking models reason first (slower)
+						<input type="checkbox" role="switch" bind:checked={config.think} disabled={busy} />
 					</label>
 				</div>
 			</details>
@@ -728,14 +723,6 @@
 		color: var(--text-3);
 		font-size: 0.75rem;
 		line-height: 1.5;
-	}
-
-	.check {
-		display: flex;
-		align-items: center;
-		gap: 0.5rem;
-		font-size: 0.75rem;
-		color: var(--text-2);
 	}
 
 	/* Something to do, not just something wrong: what happened and the fix. */

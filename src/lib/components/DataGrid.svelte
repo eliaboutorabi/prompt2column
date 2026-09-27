@@ -65,7 +65,7 @@
 
 	const gridTemplate = $derived(
 		[
-			'3.5rem',
+			'2.75rem',
 			...widths.map((width) => `${width}px`),
 			...(occludedRight > 0 ? [`${Math.round(occludedRight)}px`] : [])
 		].join(' ')
@@ -75,6 +75,7 @@
 	const visibleCount = $derived(Math.ceil(viewportHeight / ROW_HEIGHT) + OVERSCAN * 2);
 	const visible = $derived(rows.slice(firstVisible, firstVisible + visibleCount));
 	const allSelected = $derived(rows.length > 0 && ws.selected.size === rows.length);
+	const someSelected = $derived(ws.selected.size > 0 && !allSelected);
 	const currentMatch = $derived(ws.currentMatch);
 	const activeCell = $derived(ws.activeCell);
 
@@ -333,8 +334,8 @@
 		<div class="head-cell gutter" role="columnheader">
 			<input
 				type="checkbox"
-				class="size-3.5 accent-accent"
 				checked={allSelected}
+				indeterminate={someSelected}
 				onchange={(event) => ws.selectAll(event.currentTarget.checked)}
 				aria-label="Select every row"
 			/>
@@ -464,7 +465,6 @@
 					<div class="cell gutter" role="gridcell" class:active-row={activeCell?.rowId === row.id}>
 						<input
 							type="checkbox"
-							class="size-3.5 accent-accent"
 							checked={ws.selected.has(row.id)}
 							onchange={() => ws.toggleRow(row.id)}
 							aria-label={`Select row ${rowIndex + 1}`}
@@ -755,23 +755,64 @@
 		font-variant-numeric: tabular-nums;
 	}
 
+	/* Row numbers, with each row's checkbox waiting underneath: it shows on hover or
+	   keyboard focus, and stays once the row is ticked. */
 	.gutter {
 		position: sticky;
 		left: 0;
 		z-index: 8;
-		justify-content: space-between;
+		display: grid;
+		place-items: center;
+		padding: 0;
 		background: var(--surface-2);
 		color: var(--text-3);
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
 	}
 
+	.gutter > :global(*) {
+		grid-area: 1 / 1;
+	}
+
+	.cell.gutter input,
+	.rownum {
+		transition: opacity var(--dur-fast) ease;
+	}
+
+	.cell.gutter input {
+		opacity: 0;
+	}
+
+	.row:hover .gutter input,
+	.gutter input:checked,
+	.gutter input:focus-visible {
+		opacity: 1;
+	}
+
+	.row:hover .rownum,
+	.gutter:has(input:checked) .rownum,
+	.gutter:has(input:focus-visible) .rownum {
+		opacity: 0;
+	}
+
+	@media (hover: none) {
+		.cell.gutter input {
+			opacity: 1;
+		}
+
+		.rownum {
+			display: none;
+		}
+	}
+
 	.row.selected .gutter {
 		background: var(--accent-soft);
 	}
 
+	/* Drawn over the checkbox, so clicks must pass through the number to reach it. */
 	.rownum {
 		font-variant-numeric: tabular-nums;
+		pointer-events: none;
 	}
 
 	.value {

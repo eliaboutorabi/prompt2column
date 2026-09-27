@@ -76,7 +76,7 @@
 			</div>
 		</div>
 		<label class="flex items-center gap-2 text-[0.8125rem] text-ink-2">
-			<input type="checkbox" bind:checked={remember} class="size-3.5 accent-accent" />
+			<input type="checkbox" bind:checked={remember} />
 			Stay signed in on this computer
 		</label>
 	</div>

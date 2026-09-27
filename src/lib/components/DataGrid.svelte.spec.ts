@@ -66,6 +66,48 @@ describe('DataGrid', () => {
 		expect([...ws.selected]).toEqual(['r2']);
 	});
 
+	it('shows row numbers, and a row checkbox only on hover or once ticked', async () => {
+		const ws = makeWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		const box = page.getByRole('checkbox', { name: 'Select row 2' });
+		const number = box.element().parentElement!.querySelector('.rownum')!;
+		const opacity = (element: Element) => Number(getComputedStyle(element).opacity);
+		await expect.poll(() => opacity(box.element())).toBe(0);
+		expect(opacity(number)).toBe(1);
+		await userEvent.hover(page.getByText('Kwame Boateng'));
+		await expect.poll(() => opacity(box.element())).toBe(1);
+		await expect.poll(() => opacity(number)).toBe(0);
+		await userEvent.click(box);
+		await userEvent.hover(page.getByRole('columnheader', { name: /Customer/ }));
+		await expect.poll(() => opacity(box.element())).toBe(1);
+	});
+
+	it('marks the header checkbox as partly ticked when only some rows are', async () => {
+		const ws = makeWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		const all = page.getByRole('checkbox', { name: 'Select every row' });
+		ws.toggleRow('r2');
+		await expect.poll(() => (all.element() as HTMLInputElement).indeterminate).toBe(true);
+		ws.selectAll(true);
+		await expect.poll(() => (all.element() as HTMLInputElement).indeterminate).toBe(false);
+		await expect.element(all).toBeChecked();
+	});
+
+	it('draws its checkboxes in the app style, filled with the accent when ticked', async () => {
+		const ws = makeWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		const all = page.getByRole('checkbox', { name: 'Select every row' }).element();
+		expect(getComputedStyle(all).appearance).toBe('none');
+		const accent = document.createElement('span');
+		accent.style.color = 'var(--accent)';
+		document.body.append(accent);
+		const filled = getComputedStyle(accent).color;
+		accent.remove();
+		expect(getComputedStyle(all).backgroundColor).not.toBe(filled);
+		await userEvent.click(all);
+		await expect.poll(() => getComputedStyle(all).backgroundColor).toBe(filled);
+	});
+
 	it('renames a column and rewrites the prompt that referenced it', async () => {
 		const ws = makeWorkspace();
 		render(DataGrid, { props: { ws, onInsert: () => {} } });

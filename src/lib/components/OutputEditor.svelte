@@ -106,14 +106,9 @@
 					<Icon icon={Add01Icon} size={14} strokeWidth={2} /> Add
 				</button>
 			</div>
-			<label class="mt-2 flex items-center gap-2 text-xs text-ink-2">
-				<input
-					type="checkbox"
-					class="size-3.5 accent-accent"
-					bind:checked={spec.allowOther}
-					{disabled}
-				/>
-				Accept an answer outside this list instead of failing the row
+			<label class="toggle mt-2.5">
+				Accept answers outside this list
+				<input type="checkbox" role="switch" bind:checked={spec.allowOther} {disabled} />
 			</label>
 		</div>
 	{:else if spec.kind === 'boolean'}
@@ -158,12 +153,7 @@
 			<div>
 				<span class="label">Rounding</span>
 				<label class="flex h-[2.05rem] items-center gap-2 text-xs text-ink-2">
-					<input
-						type="checkbox"
-						class="size-3.5 accent-accent"
-						bind:checked={spec.integer}
-						{disabled}
-					/>
+					<input type="checkbox" role="switch" bind:checked={spec.integer} {disabled} />
 					Whole numbers
 				</label>
 			</div>

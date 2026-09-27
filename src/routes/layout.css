@@ -213,6 +213,117 @@
 		color: var(--text-3);
 	}
 
+	/* Checkboxes drawn by the app, not the OS: a soft box that fills with the
+	   accent and draws its tick in. Still real inputs, so keyboard and forms work. */
+	input[type='checkbox'] {
+		appearance: none;
+		display: inline-grid;
+		place-content: center;
+		flex-shrink: 0;
+		width: 1rem;
+		height: 1rem;
+		margin: 0;
+		border: 1px solid var(--line-strong);
+		border-radius: 5px;
+		background: var(--surface);
+		box-shadow: var(--elev-1);
+		cursor: pointer;
+		transition:
+			background-color var(--dur-fast) ease,
+			border-color var(--dur-fast) ease,
+			box-shadow var(--dur-fast) ease;
+	}
+
+	input[type='checkbox']::before {
+		content: '';
+		width: 0.75rem;
+		height: 0.75rem;
+		background: var(--accent-ink);
+		mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3 4.9 8.6 9.5 3.6' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+			center / contain no-repeat;
+		transform: scale(0.4);
+		opacity: 0;
+		transition:
+			transform var(--dur) var(--ease-out),
+			opacity var(--dur-fast) ease;
+	}
+
+	input[type='checkbox']:hover:not(:disabled) {
+		border-color: color-mix(in oklch, var(--text-3) 70%, var(--line-strong));
+	}
+
+	input[type='checkbox']:checked,
+	input[type='checkbox']:indeterminate {
+		background: var(--accent);
+		border-color: color-mix(in oklch, var(--accent) 80%, var(--accent-ink));
+	}
+
+	input[type='checkbox']:checked::before,
+	input[type='checkbox']:indeterminate::before {
+		transform: scale(1);
+		opacity: 1;
+	}
+
+	input[type='checkbox']:indeterminate::before {
+		mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M3 6h6' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round'/%3E%3C/svg%3E");
+	}
+
+	input[type='checkbox']:focus-visible {
+		outline: none;
+		border-color: var(--accent);
+		box-shadow: var(--ring);
+	}
+
+	input[type='checkbox']:disabled {
+		opacity: 0.45;
+		cursor: not-allowed;
+	}
+
+	/* A checkbox with role="switch" becomes a switch: a track and a sliding knob. */
+	input[type='checkbox'][role='switch'] {
+		display: inline-block;
+		width: 1.75rem;
+		height: 1rem;
+		padding: 0;
+		border: 0;
+		border-radius: 999px;
+		background: var(--surface-3);
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--text) 8%, transparent);
+	}
+
+	input[type='checkbox'][role='switch']::before {
+		display: block;
+		width: 0.75rem;
+		height: 0.75rem;
+		margin: 0.125rem;
+		border-radius: 999px;
+		background: oklch(1 0 0);
+		mask: none;
+		opacity: 1;
+		transform: none;
+		box-shadow:
+			0 1px 2px oklch(0.2 0 0 / 0.25),
+			0 0 0 0.5px oklch(0.2 0 0 / 0.06);
+		transition: translate var(--dur) var(--ease-out);
+	}
+
+	input[type='checkbox'][role='switch']:hover:not(:disabled) {
+		background: color-mix(in oklch, var(--text-3) 35%, var(--surface-3));
+	}
+
+	input[type='checkbox'][role='switch']:checked {
+		background: var(--accent);
+		box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--accent-ink) 12%, transparent);
+	}
+
+	input[type='checkbox'][role='switch']:checked::before {
+		translate: 0.75rem 0;
+	}
+
+	input[type='checkbox'][role='switch']:focus-visible {
+		box-shadow: var(--ring);
+	}
+
 	/* Scrollbars styled so the dense grid does not look like a raw browser table. */
 	* {
 		scrollbar-width: thin;
@@ -382,6 +493,23 @@
 	.tone-6 {
 		background: var(--tag-6);
 		color: var(--tag-ink-6);
+	}
+
+	/* A setting that turns on and off: what it does on the left, the switch on the right. */
+	.toggle {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		font-size: 0.75rem;
+		line-height: 1.35;
+		color: var(--text-2);
+		cursor: pointer;
+		user-select: none;
+	}
+
+	.toggle:has(input:disabled) {
+		cursor: not-allowed;
 	}
 
 	/* Keyboard hint, like ⌘F. */

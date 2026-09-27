@@ -100,9 +100,9 @@
 		</p>
 	{/if}
 
-	<label class="flex items-center gap-2 text-xs text-ink-2" class:hidden={scope.kind === 'empty'}>
-		<input type="checkbox" class="size-3.5 accent-accent" bind:checked={overwrite} {disabled} />
+	<label class="toggle" class:hidden={scope.kind === 'empty'}>
 		Replace values that are already there
+		<input type="checkbox" role="switch" bind:checked={overwrite} {disabled} />
 	</label>
 
 	<p class="touch">
