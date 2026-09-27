@@ -25,6 +25,7 @@
 	import Icon from '$lib/components/Icon.svelte';
 	import Brand from '$lib/components/Brand.svelte';
 	import PromptEditor from './PromptEditor.svelte';
+	import NumberField from './NumberField.svelte';
 	import { autogrow } from '$lib/actions/autogrow';
 	import Select from './Select.svelte';
 	import OutputEditor from './OutputEditor.svelte';
@@ -372,25 +373,21 @@
 					<div class="grid grid-cols-2 gap-2">
 						<div>
 							<label class="label" for="concurrency">Rows at once</label>
-							<input
+							<NumberField
 								id="concurrency"
-								type="number"
-								min="1"
-								max="8"
-								class="field"
+								min={1}
+								max={8}
 								bind:value={config.concurrency}
 								disabled={busy}
 							/>
 						</div>
 						<div>
 							<label class="label" for="temperature">Temperature</label>
-							<input
+							<NumberField
 								id="temperature"
-								type="number"
-								min="0"
-								max="1"
-								step="0.1"
-								class="field"
+								min={0}
+								max={1}
+								step={0.1}
 								bind:value={config.temperature}
 								disabled={busy}
 							/>

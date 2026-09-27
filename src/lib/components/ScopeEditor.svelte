@@ -8,6 +8,7 @@
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import NumberField from './NumberField.svelte';
 	import type { RowScope, ScopeKind } from '$lib/core/types';
 
 	interface Props {
@@ -37,6 +38,16 @@
 		{ id: 'selected', label: 'Ticked rows', icon: CheckmarkSquare02Icon },
 		{ id: 'empty', label: 'Empty results', icon: DashedLineCircleIcon }
 	];
+
+	// The saved counts don't know the sheet's size; fit them to it when picked.
+	function pick(kind: ScopeKind) {
+		scope.kind = kind;
+		if (kind === 'first') scope.count = Math.max(1, Math.min(scope.count, rowCount));
+		if (kind === 'range') {
+			scope.to = Math.max(1, Math.min(scope.to, rowCount));
+			scope.from = Math.max(1, Math.min(scope.from, scope.to));
+		}
+	}
 </script>
 
 <div class="grid gap-2">
@@ -49,7 +60,7 @@
 				class:on={scope.kind === option.id}
 				disabled={disabled || (option.id === 'empty' && !hasTarget)}
 				title={option.id === 'empty' && !hasTarget ? 'Available once the column exists' : undefined}
-				onclick={() => (scope.kind = option.id)}
+				onclick={() => pick(option.id)}
 			>
 				<Icon icon={option.icon} size={13} />
 				{option.label}
@@ -59,38 +70,38 @@
 
 	{#if scope.kind === 'first'}
 		<div class="flex items-center gap-2">
-			<input
-				type="number"
-				min="1"
-				max={rowCount}
-				class="field w-24"
-				bind:value={scope.count}
-				{disabled}
-				aria-label="How many rows from the top"
-			/>
+			<div class="w-24">
+				<NumberField
+					min={1}
+					max={rowCount}
+					bind:value={scope.count}
+					{disabled}
+					label="How many rows from the top"
+				/>
+			</div>
 			<span class="text-xs text-ink-3">rows from the top</span>
 		</div>
 	{:else if scope.kind === 'range'}
 		<div class="flex items-center gap-2">
-			<input
-				type="number"
-				min="1"
-				max={rowCount}
-				class="field w-20"
-				bind:value={scope.from}
-				{disabled}
-				aria-label="First row in the range"
-			/>
+			<div class="w-24">
+				<NumberField
+					min={1}
+					max={rowCount}
+					bind:value={scope.from}
+					{disabled}
+					label="First row in the range"
+				/>
+			</div>
 			<span class="text-xs text-ink-3">to</span>
-			<input
-				type="number"
-				min="1"
-				max={rowCount}
-				class="field w-20"
-				bind:value={scope.to}
-				{disabled}
-				aria-label="Last row in the range"
-			/>
+			<div class="w-24">
+				<NumberField
+					min={1}
+					max={rowCount}
+					bind:value={scope.to}
+					{disabled}
+					label="Last row in the range"
+				/>
+			</div>
 		</div>
 	{:else if scope.kind === 'selected'}
 		<p class="text-xs text-ink-3">

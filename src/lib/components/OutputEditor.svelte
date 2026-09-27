@@ -10,6 +10,7 @@
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import { labelTone } from '$lib/core/columns';
 	import Icon from '$lib/components/Icon.svelte';
+	import NumberField from './NumberField.svelte';
 	import type { OutputKind, OutputSpec } from '$lib/core/types';
 
 	interface Props {
@@ -126,33 +127,15 @@
 		<div class="grid grid-cols-3 gap-2">
 			<div>
 				<label class="label" for="num-min">Lowest</label>
-				<input
-					id="num-min"
-					type="number"
-					class="field"
-					value={spec.min ?? ''}
-					{disabled}
-					oninput={(event) =>
-						(spec.min =
-							event.currentTarget.value === '' ? null : Number(event.currentTarget.value))}
-				/>
+				<NumberField id="num-min" optional bind:value={spec.min} {disabled} />
 			</div>
 			<div>
 				<label class="label" for="num-max">Highest</label>
-				<input
-					id="num-max"
-					type="number"
-					class="field"
-					value={spec.max ?? ''}
-					{disabled}
-					oninput={(event) =>
-						(spec.max =
-							event.currentTarget.value === '' ? null : Number(event.currentTarget.value))}
-				/>
+				<NumberField id="num-max" optional bind:value={spec.max} {disabled} />
 			</div>
 			<div>
 				<span class="label">Rounding</span>
-				<label class="flex h-[2.05rem] items-center gap-2 text-xs text-ink-2">
+				<label class="flex h-9 items-center gap-2 text-xs text-ink-2">
 					<input type="checkbox" role="switch" bind:checked={spec.integer} {disabled} />
 					Whole numbers
 				</label>
@@ -162,17 +145,9 @@
 		<div>
 			<label class="label" for="max-words">Length budget</label>
 			<div class="flex items-center gap-2">
-				<input
-					id="max-words"
-					type="number"
-					min="1"
-					class="field w-24"
-					value={spec.maxWords ?? ''}
-					{disabled}
-					oninput={(event) =>
-						(spec.maxWords =
-							event.currentTarget.value === '' ? null : Number(event.currentTarget.value))}
-				/>
+				<div class="w-24 shrink-0">
+					<NumberField id="max-words" optional min={1} bind:value={spec.maxWords} {disabled} />
+				</div>
 				<span class="text-xs text-ink-3">words at most. Leave empty for no limit.</span>
 			</div>
 		</div>
