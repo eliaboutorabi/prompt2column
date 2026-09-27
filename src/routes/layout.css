@@ -621,6 +621,14 @@
 	transform-origin: top left;
 }
 
+/* While the sidebar is being resized, the cursor holds wherever the pointer
+   wanders and nothing gets text-selected along the way. */
+:root.resizing-sidebar,
+:root.resizing-sidebar * {
+	cursor: col-resize !important;
+	user-select: none !important;
+}
+
 /* HugeIcons: never squash an icon to make room in a flex row. */
 .hi {
 	flex-shrink: 0;

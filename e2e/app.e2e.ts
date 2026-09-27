@@ -439,3 +439,37 @@ test('confirms an export, and a finished run on a phone, with a toast', async ({
 		'15 rows written to Category'
 	);
 });
+
+test('lets the sidebar be dragged wider, keeps the sheet in step, and remembers it', async ({
+	page
+}) => {
+	await page.setViewportSize({ width: 1440, height: 900 });
+	await mockOllama(page);
+	await signUp(page, 'sanne.wide');
+	await page.getByRole('button', { name: /Expense requests/ }).click();
+	await expect(page.getByRole('grid')).toBeVisible();
+
+	const sidebar = page.locator('.pane.side');
+	const handle = page.getByRole('separator', { name: 'Resize sidebar' });
+	const lastTrack = () =>
+		page.locator('.head').evaluate((head) => head.style.gridTemplateColumns.split(' ').at(-1));
+	await expect(handle).toHaveAttribute('aria-valuenow', '384');
+	expect(await lastTrack()).toBe('384px');
+
+	const box = (await handle.boundingBox())!;
+	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+	await page.mouse.down();
+	await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2, { steps: 5 });
+	await page.mouse.up();
+
+	await expect(sidebar).toHaveJSProperty('offsetWidth', 534);
+	// The sheet's spare room past its last column grows with the sidebar floating over it.
+	await expect.poll(lastTrack).toBe('534px');
+
+	await page.reload();
+	await expect(page.getByRole('grid')).toBeVisible();
+	await expect(sidebar).toHaveJSProperty('offsetWidth', 534);
+
+	await page.getByRole('separator', { name: 'Resize sidebar' }).dblclick();
+	await expect(sidebar).toHaveJSProperty('offsetWidth', 384);
+});

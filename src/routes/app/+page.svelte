@@ -18,6 +18,7 @@
 	import DataGrid from '$lib/components/DataGrid.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
+	import SidebarResizer from '$lib/components/SidebarResizer.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 	import Toast from '$lib/components/Toast.svelte';
 	import { toast } from '$lib/state/toast.svelte';
@@ -26,6 +27,7 @@
 	import { Workspace } from '$lib/state/workspace.svelte';
 	import { models } from '$lib/state/models.svelte';
 	import { session } from '$lib/state/session.svelte';
+	import { sidebar } from '$lib/state/sidebar.svelte';
 	import type { Column } from '$lib/core/types';
 
 	const ws = new Workspace();
@@ -45,6 +47,7 @@
 
 	$effect(() => {
 		void session.init();
+		sidebar.load();
 	});
 
 	$effect(() => {
@@ -240,7 +243,14 @@
 					<CellReader {ws} {occludedRight} />
 					<DataGrid {ws} onInsert={insert} {occludedRight} />
 				</div>
-				<div class={['pane', 'side', view !== 'prompt' && 'hide']} bind:offsetWidth={sidebarWidth}>
+				<div
+					class={['pane', 'side', view !== 'prompt' && 'hide']}
+					style:--side-width="{sidebar.shown}px"
+					bind:offsetWidth={sidebarWidth}
+				>
+					{#if overlay.current}
+						<SidebarResizer />
+					{/if}
 					<Composer bind:this={composer} {ws} />
 				</div>
 			</div>
@@ -567,8 +577,9 @@
 		}
 
 		.pane.side {
+			position: relative;
 			justify-self: end;
-			width: 24rem;
+			width: var(--side-width, 24rem);
 			border-left: 1px solid var(--line);
 		}
 
