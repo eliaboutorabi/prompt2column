@@ -17,12 +17,24 @@
 		const rowIndex = ws.rows.findIndex((row) => row.id === active.rowId);
 		const column = ws.columns.find((candidate) => candidate.id === active.columnId);
 		if (rowIndex === -1 || !column) return null;
-		const value = ws.rows[rowIndex].cells[column.id] ?? '';
+		// While the cell is open for typing, show the draft as it is typed.
+		const editing = ws.isEditing(active.rowId, column.id);
+		const value = editing ? ws.editDraft : (ws.rows[rowIndex].cells[column.id] ?? '');
 		const status =
 			column.id === ws.lastRunColumnId ? (ws.cellStatus.get(active.rowId) ?? 'idle') : 'idle';
-		const error = status === 'error' ? (ws.cellError.get(active.rowId) ?? 'Failed.') : '';
+		const error =
+			!editing && status === 'error' ? (ws.cellError.get(active.rowId) ?? 'Failed.') : '';
 		const words = value.trim() ? value.trim().split(/\s+/).length : 0;
-		return { key: `${active.rowId}:${column.id}`, rowIndex, column, value, status, error, words };
+		return {
+			key: `${active.rowId}:${column.id}`,
+			rowIndex,
+			column,
+			value,
+			editing,
+			status,
+			error,
+			words
+		};
 	});
 
 	let copyState = $state<'idle' | 'copied' | 'failed'>('idle');
@@ -49,72 +61,84 @@
 	$effect(() => () => clearTimeout(resetTimer));
 </script>
 
-<!-- Always present so the sheet's grid rows stay put; empty until a cell is picked. -->
-<div class="slot">
-	{#if cell}
-		<section
-			class="reader"
-			aria-label="Cell reader"
-			style:padding-right="calc(0.75rem + {occludedRight}px)"
-		>
-			<div class="meta">
-				<span class="where">
-					<strong>{cell.column.name}</strong>
-					<span class="row">row {cell.rowIndex + 1}</span>
-					{#if cell.words && !cell.error}
-						<span class="words">{cell.words} {cell.words === 1 ? 'word' : 'words'}</span>
-					{/if}
-				</span>
-				<button
-					type="button"
-					class="btn btn-ghost action"
-					disabled={!cell.value}
-					onclick={copy}
-					aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
-				>
-					{#if shownCopyState === 'copied'}
-						<Check size={13} weight="bold" /> Copied
-					{:else if shownCopyState === 'failed'}
-						Copy failed
-					{:else}
-						<Copy size={13} /> Copy
-					{/if}
-				</button>
-				<button
-					type="button"
-					class="btn btn-ghost action close"
-					aria-label="Close cell reader"
-					onclick={() => ws.clearActiveCell()}
-				>
-					<X size={13} weight="bold" />
-				</button>
-			</div>
-
-			<!-- Fixed height, scrolls inside: stepping through cells never shifts the grid.
-			     Focusable so a long cell can be scrolled from the keyboard. -->
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div
-				class="text"
-				class:mono={cell.column.generated}
-				tabindex="0"
-				role="region"
-				aria-label={`${cell.column.name}, row ${cell.rowIndex + 1}`}
-			>
-				{#if cell.error}
-					<span class="failed"><WarningCircle size={14} weight="fill" />{cell.error}</span>
-				{:else if cell.status === 'running'}
-					<span class="muted">Generating</span>
-				{:else if cell.status === 'queued' && !cell.value}
-					<span class="muted">Waiting to run</span>
-				{:else if cell.value}
-					{cell.value}
-				{:else}
-					<span class="muted">Empty cell</span>
+<!--
+	Always on screen at a fixed height, like a spreadsheet's formula bar. If it only
+	appeared once a cell was picked, it would push the sheet down under the pointer
+	and send the second click of a double-click to a different row.
+-->
+<section
+	class="reader"
+	aria-label="Cell reader"
+	style:padding-right="calc(0.75rem + {occludedRight}px)"
+>
+	<div class="meta">
+		<span class="where">
+			{#if cell}
+				<strong>{cell.column.name}</strong>
+				<span class="row">row {cell.rowIndex + 1}</span>
+				{#if cell.editing}
+					<span class="editing">Editing</span>
+					<span class="hint">Enter saves, Esc cancels</span>
+				{:else if cell.words && !cell.error}
+					<span class="words">{cell.words} {cell.words === 1 ? 'word' : 'words'}</span>
 				{/if}
-			</div>
-		</section>
-	{/if}
-</div>
+			{:else}
+				<span>No cell selected</span>
+			{/if}
+		</span>
+		<button
+			type="button"
+			class="btn btn-ghost action"
+			disabled={!cell?.value}
+			onclick={copy}
+			aria-label={shownCopyState === 'copied' ? 'Copied' : 'Copy cell text'}
+		>
+			{#if shownCopyState === 'copied'}
+				<Check size={13} weight="bold" /> Copied
+			{:else if shownCopyState === 'failed'}
+				Copy failed
+			{:else}
+				<Copy size={13} /> Copy
+			{/if}
+		</button>
+		<button
+			type="button"
+			class="btn btn-ghost action close"
+			aria-label="Clear selection"
+			disabled={!cell}
+			onclick={() => ws.clearActiveCell()}
+		>
+			<X size={13} weight="bold" />
+		</button>
+	</div>
+
+	<!-- Fixed height, scrolls inside: stepping through cells never shifts the grid.
+	     Focusable so a long cell can be scrolled from the keyboard. -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div
+		class="text"
+		class:mono={cell?.column.generated}
+		tabindex="0"
+		role="region"
+		aria-label={cell ? `${cell.column.name}, row ${cell.rowIndex + 1}` : 'No cell selected'}
+	>
+		{#if !cell}
+			<span class="muted">Click a cell to read all of it here. Double-click to edit it.</span>
+		{:else if cell.editing}
+			{#if cell.value}{cell.value}{:else}<span class="muted">Empty cell</span>{/if}
+		{:else if cell.error}
+			<span class="failed"><WarningCircle size={14} weight="fill" />{cell.error}</span>
+		{:else if cell.status === 'running'}
+			<span class="muted">Generating</span>
+		{:else if cell.status === 'queued' && !cell.value}
+			<span class="muted">Waiting to run</span>
+		{:else if cell.value}
+			{cell.value}
+		{:else}
+			<span class="muted">Empty cell</span>
+		{/if}
+	</div>
+</section>
 
 <style>
 	.reader {
@@ -141,6 +165,7 @@
 		font-size: 0.75rem;
 		color: var(--text-3);
 		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	.where strong {
@@ -185,6 +210,28 @@
 	.text:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: 2px;
+	}
+
+	.editing {
+		align-self: center;
+		padding: 0 0.45rem;
+		border-radius: 999px;
+		background: var(--accent-soft);
+		color: var(--accent-text);
+		font-size: 0.6875rem;
+		font-weight: 600;
+		line-height: 1.35rem;
+	}
+
+	.hint {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	@media (max-width: 640px) {
+		.hint {
+			display: none;
+		}
 	}
 
 	.muted {

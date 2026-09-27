@@ -238,7 +238,7 @@
 		grid-area: 1 / 1;
 	}
 
-	/* Search bar, cell reader (empty until a cell is picked), then the grid. */
+	/* Search bar, cell reader, then the grid. */
 	.pane.sheet {
 		display: grid;
 		grid-template-columns: minmax(0, 1fr);

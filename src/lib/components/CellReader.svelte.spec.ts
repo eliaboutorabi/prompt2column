@@ -72,10 +72,11 @@ afterEach(() => {
 });
 
 describe('CellReader', () => {
-	it('stays out of the way until a cell is picked', async () => {
+	it('says how to use it until a cell is picked', async () => {
 		mount(makeWorkspace());
-		await expect.element(page.getByText('P00 participant')).toBeVisible();
-		expect(document.querySelector('.reader')).toBeNull();
+		await expect.element(reader()).toHaveTextContent(/No cell selected/);
+		await expect.element(reader()).toHaveTextContent(/Click a cell to read all of it here/);
+		await expect.element(page.getByRole('button', { name: 'Copy cell text' })).toBeDisabled();
 	});
 
 	it('shows the whole value of the picked cell, with its column and row', async () => {
@@ -171,21 +172,50 @@ describe('CellReader', () => {
 		await expect.poll(() => readerText()?.textContent).toBe('Found the import button late.');
 	});
 
-	it('closes from its own button', async () => {
+	it('says the cell is being edited and shows the text as it is typed', async () => {
+		mount(makeWorkspace());
+		await userEvent.dblClick(page.getByText('Short note 1'));
+		await expect.element(reader()).toHaveTextContent(/Editing/);
+		await expect.element(reader()).toHaveTextContent(/Enter saves, Esc cancels/);
+		await userEvent.keyboard('{End}, then left early');
+		await expect.poll(() => readerText()?.textContent).toBe('Short note 1, then left early');
+	});
+
+	it('goes back to the saved text once the edit is saved', async () => {
+		const ws = makeWorkspace();
+		mount(ws);
+		await userEvent.dblClick(page.getByText('Short note 1'));
+		await userEvent.keyboard('{End} (checked){Enter}');
+		await expect.poll(() => readerText()?.textContent).toBe('Short note 1 (checked)');
+		await expect.element(reader()).not.toHaveTextContent(/Editing/);
+		expect(ws.rows[1].cells.c2).toBe('Short note 1 (checked)');
+	});
+
+	it('shows the original text again when the edit is cancelled', async () => {
+		mount(makeWorkspace());
+		await userEvent.dblClick(page.getByText('Short note 1'));
+		await userEvent.keyboard('{End} discarded');
+		await expect.poll(() => readerText()?.textContent).toBe('Short note 1 discarded');
+		await userEvent.keyboard('{Escape}');
+		await expect.poll(() => readerText()?.textContent).toBe('Short note 1');
+		await expect.element(reader()).not.toHaveTextContent(/Editing/);
+	});
+
+	it('clears the selection from its own button, staying put', async () => {
 		const ws = makeWorkspace();
 		mount(ws);
 		await userEvent.click(page.getByText(/^Signed up on a phone/));
-		await userEvent.click(page.getByRole('button', { name: 'Close cell reader' }));
-		expect(document.querySelector('.reader')).toBeNull();
+		await userEvent.click(page.getByRole('button', { name: 'Clear selection' }));
 		expect(ws.activeCell).toBeNull();
+		await expect.element(reader()).toHaveTextContent(/No cell selected/);
 	});
 
-	it('closes when the column it shows is deleted', async () => {
+	it('empties when the column it shows is deleted', async () => {
 		const ws = makeWorkspace();
 		mount(ws);
 		await userEvent.click(page.getByText(/^Signed up on a phone/));
 		ws.deleteColumn('c2');
-		await expect.poll(() => document.querySelector('.reader')).toBeNull();
+		await expect.element(reader()).toHaveTextContent(/No cell selected/);
 	});
 
 	it('shows the cell a search lands on', async () => {
@@ -196,18 +226,23 @@ describe('CellReader', () => {
 		await expect.poll(() => readerText()?.textContent).toBe(note);
 	});
 
-	it('keeps a row near the bottom in view when the reader opens and the grid shrinks', async () => {
-		const ws = makeWorkspace(makeRows(40));
-		mount(ws, 300);
-		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
-		await expect.poll(() => grid.clientHeight).toBeGreaterThan(0);
-		// The last row that fits before the reader takes its share of the height.
-		const lastVisible = Math.floor((grid.clientHeight - 36) / 34) - 1;
-		await userEvent.click(page.getByText(`P0${lastVisible} participant`, { exact: true }));
-		await expect.element(reader()).toBeVisible();
-		await expect.poll(() => grid.clientHeight).toBeLessThan(300);
-		const row = document.querySelector<HTMLElement>(`[data-cell="${lastVisible}-0"]`)!;
-		const bottom = grid.getBoundingClientRect().bottom;
-		expect(row.getBoundingClientRect().bottom).toBeLessThanOrEqual(bottom + 1);
+	it('never moves the sheet when a cell is picked', async () => {
+		mount(makeWorkspace(makeRows(12)));
+		// A row well inside the view, so the browser has no reason to scroll it.
+		const cell = page.getByText('P02 participant', { exact: true }).element();
+		const before = cell.getBoundingClientRect().top;
+		await userEvent.click(cell);
+		await expect.element(reader()).toHaveTextContent(/row 3/);
+		expect(cell.getBoundingClientRect().top).toBe(before);
+	});
+
+	it('opens the double-clicked cell for editing, even with nothing selected yet', async () => {
+		// When the reader used to appear on the first click, it pushed the sheet down and
+		// the second click landed rows above, opening the wrong cell.
+		const ws = makeWorkspace(makeRows(12));
+		mount(ws);
+		await userEvent.dblClick(page.getByText('P06 participant', { exact: true }));
+		expect(ws.editingCell).toEqual({ rowId: 'r6', columnId: 'c1' });
+		await expect.element(reader()).toHaveTextContent(/Editing/);
 	});
 });

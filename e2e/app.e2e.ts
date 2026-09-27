@@ -295,7 +295,7 @@ test('reads a long cell in full and copies it', async ({ page, context }) => {
 	await page.getByRole('button', { name: /Research notes/ }).click();
 
 	const reader = page.getByRole('region', { name: 'Cell reader' });
-	await expect(reader).toBeHidden();
+	await expect(reader).toContainText('No cell selected');
 
 	await page.getByText(/^Signed up on a phone during a shift/).click();
 	await expect(reader).toBeVisible();
@@ -319,8 +319,8 @@ test('reads a long cell in full and copies it', async ({ page, context }) => {
 	await expect(reader).toContainText('row 2');
 	await expect(reader).toContainText('ran the whole sheet.');
 
-	await reader.getByRole('button', { name: 'Close cell reader' }).click();
-	await expect(reader).toBeHidden();
+	await reader.getByRole('button', { name: 'Clear selection' }).click();
+	await expect(reader).toContainText('No cell selected');
 
 	// Phones get the same reader under the search bar, inside the screen width.
 	await page.setViewportSize({ width: 390, height: 844 });
@@ -354,4 +354,30 @@ test("tallies a run's answers and re-runs just one of them", async ({ page }) =>
 
 	await page.getByRole('button', { name: 'Ticked rows' }).click();
 	await expect(page.getByRole('button', { name: /Run on 5 rows/ })).toBeEnabled();
+});
+
+test('double-clicking a cell on a fresh sheet edits that cell and rings it', async ({ page }) => {
+	await mockOllama(page);
+	await signUp(page, 'petra.n');
+	await page.getByRole('button', { name: /Support tickets/ }).click();
+
+	// Nothing selected yet: this is the moment the sheet used to jump under the pointer.
+	const cell = page.getByText('Freya Lindqvist', { exact: true });
+	const before = (await cell.boundingBox())!;
+	await cell.dblclick();
+
+	const editor = page.locator('[data-cell-input]');
+	await expect(editor).toHaveValue('Freya Lindqvist');
+	const editing = page.locator('.cell.editing');
+	await expect(editing).toHaveCount(1);
+	const after = (await editing.boundingBox())!;
+	expect(Math.abs(after.y - before.y)).toBeLessThan(before.height);
+	await expect(page.getByRole('region', { name: 'Cell reader' })).toContainText('Editing');
+
+	// Right arrow collapses the selection to the end on every platform (End doesn't on macOS).
+	await page.keyboard.press('ArrowRight');
+	await page.keyboard.type(' (Stockholm)');
+	await page.keyboard.press('Enter');
+	await expect(editor).toHaveCount(0);
+	await expect(page.locator('.cell.active')).toHaveText('Freya Lindqvist (Stockholm)');
 });

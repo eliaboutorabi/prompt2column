@@ -143,8 +143,14 @@ summary against its word budget).
 - A failed row shows its complete error message, which the grid cuts short.
 - It follows the selection, so you can arrow down a column and read each answer in
   turn. Search moves it to each match as well.
-- It stays the same height, scrolling inside for very long text, so stepping from
-  cell to cell never shifts the sheet. Close it with its × button.
+- It's always on screen at the same height, like a spreadsheet's formula bar, and
+  scrolls inside for very long text. Picking or stepping between cells never moves
+  the sheet. The × clears the selection.
+
+The selected cell has a soft outline, and its column header and row number are
+marked so you can find it at a glance. Double-click a cell (or press Enter or F2)
+to edit it: the cell gets a solid ring, the reader says **Editing** and shows what
+you type, Enter saves and Esc cancels.
 
 ## Exporting
 

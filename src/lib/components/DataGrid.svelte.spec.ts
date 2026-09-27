@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { page, userEvent } from 'vitest/browser';
 import { render } from 'vitest-browser-svelte';
 import DataGrid from './DataGrid.svelte';
+// The app's tokens, so tests can check real colours and rings rather than bare classes.
+import '../../routes/layout.css';
 import { Workspace } from '$lib/state/workspace.svelte';
 import { defaultConfig, type Column, type Project } from '$lib/core/types';
 
@@ -268,5 +270,114 @@ describe('answer counts in the column menu', () => {
 		render(DataGrid, { props: { ws, onInsert: () => {} } });
 		await openMenu('Decision');
 		await expect.element(page.getByRole('menuitem', { name: /^Approve:/ })).toBeDisabled();
+	});
+});
+
+describe('selected and edited cells', () => {
+	const cellOf = (text: string) =>
+		page.getByText(text, { exact: true }).element().closest<HTMLElement>('.cell')!;
+
+	it('marks the picked cell, its column header and its row number', async () => {
+		const { container } = render(DataGrid, {
+			props: { ws: makeWorkspace(), onInsert: () => {} }
+		});
+		await userEvent.click(page.getByText('Kwame Boateng'));
+		expect(cellOf('Kwame Boateng').classList.contains('active')).toBe(true);
+		expect(container.querySelectorAll('.cell.active')).toHaveLength(1);
+		const header = container.querySelector('.head-cell.active-col');
+		expect(header?.textContent).toContain('Customer');
+		const gutter = container.querySelector('.gutter.active-row');
+		expect(gutter?.textContent?.trim()).toBe('2');
+	});
+
+	it('moves the marks when another cell is picked, and drops them when the reader closes', async () => {
+		const ws = makeWorkspace();
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.click(page.getByText('Kwame Boateng'));
+		await userEvent.click(page.getByText('Is there a discount?'));
+		expect(container.querySelectorAll('.cell.active')).toHaveLength(1);
+		expect(cellOf('Is there a discount?').classList.contains('active')).toBe(true);
+		ws.clearActiveCell();
+		await expect.poll(() => container.querySelectorAll('.cell.active').length).toBe(0);
+		expect(container.querySelector('.active-col, .active-row')).toBeNull();
+	});
+
+	it('rings the cell being edited, with the input filling it edge to edge', async () => {
+		const { container } = render(DataGrid, {
+			props: { ws: makeWorkspace(), onInsert: () => {} }
+		});
+		await userEvent.dblClick(page.getByText('Ines Moreau'));
+		const editing = container.querySelector<HTMLElement>('.cell.editing')!;
+		expect(editing).not.toBeNull();
+		expect(container.querySelectorAll('.cell.editing')).toHaveLength(1);
+		expect(getComputedStyle(editing).boxShadow).toContain('inset');
+		const input = editing.querySelector<HTMLInputElement>('input')!;
+		expect(document.activeElement).toBe(input);
+		expect(getComputedStyle(input).borderTopWidth).toBe('0px');
+		expect(input.getBoundingClientRect().width).toBeGreaterThan(editing.clientWidth * 0.8);
+	});
+
+	it('lifts the edited cell off a ticked row so the selection stays visible', async () => {
+		const ws = makeWorkspace();
+		ws.tickRows(['r2']);
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.dblClick(page.getByText('Kwame Boateng'));
+		const editing = container.querySelector<HTMLElement>('.cell.editing')!;
+		const row = editing.closest<HTMLElement>('.row')!;
+		expect(row.classList.contains('selected')).toBe(true);
+		expect(getComputedStyle(editing).backgroundColor).not.toBe(
+			getComputedStyle(row).backgroundColor
+		);
+	});
+
+	it('clears the editing ring on Enter and keeps the cell selected', async () => {
+		const ws = makeWorkspace();
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.dblClick(page.getByText('Ines Moreau'));
+		await userEvent.keyboard('{End} (EU)');
+		await userEvent.keyboard('{Enter}');
+		expect(container.querySelector('.cell.editing')).toBeNull();
+		expect(ws.rows[0].cells.c1).toBe('Ines Moreau (EU)');
+		expect(cellOf('Ines Moreau (EU)').classList.contains('active')).toBe(true);
+	});
+
+	it('does not reopen the cell it just saved', async () => {
+		// The grid treats Enter as "edit this cell"; the save must not reach it.
+		const ws = makeWorkspace();
+		const start = vi.spyOn(ws, 'startEditing');
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.dblClick(page.getByText('Ines Moreau'));
+		await userEvent.keyboard('{Enter}');
+		await new Promise((resolve) => setTimeout(resolve, 50));
+		expect(start).toHaveBeenCalledTimes(1);
+	});
+
+	it('hands focus back to the cell, so the arrow keys carry on', async () => {
+		const ws = makeWorkspace();
+		render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.dblClick(page.getByText('Ines Moreau'));
+		await userEvent.keyboard('{Enter}');
+		await expect.poll(() => document.activeElement?.getAttribute('data-cell')).toBe('0-0');
+		await userEvent.keyboard('{ArrowDown}');
+		expect(ws.activeCell).toEqual({ rowId: 'r2', columnId: 'c1' });
+	});
+
+	it('clears the editing ring on Escape without saving', async () => {
+		const ws = makeWorkspace();
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.dblClick(page.getByText('Ines Moreau'));
+		await userEvent.keyboard('{End} changed{Escape}');
+		expect(container.querySelector('.cell.editing')).toBeNull();
+		expect(ws.rows[0].cells.c1).toBe('Ines Moreau');
+	});
+
+	it('marks a cell opened from the keyboard the same way', async () => {
+		const ws = makeWorkspace();
+		const { container } = render(DataGrid, { props: { ws, onInsert: () => {} } });
+		await userEvent.click(page.getByText('Ines Moreau'));
+		await userEvent.keyboard('{ArrowDown}{F2}');
+		const editing = container.querySelector<HTMLElement>('.cell.editing')!;
+		expect(editing.querySelector('input')?.value).toBe('Kwame Boateng');
+		expect(editing.classList.contains('active')).toBe(true);
 	});
 });

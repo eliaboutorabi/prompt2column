@@ -31,8 +31,6 @@
 	let renamingId = $state<string | null>(null);
 	let renameValue = $state('');
 	let renameError = $state('');
-	let editing = $state<{ rowId: string; columnId: string } | null>(null);
-	let editValue = $state('');
 	let focusRow = $state(0);
 	let focusCol = $state(0);
 
@@ -63,6 +61,7 @@
 	const visible = $derived(rows.slice(firstVisible, firstVisible + visibleCount));
 	const allSelected = $derived(rows.length > 0 && ws.selected.size === rows.length);
 	const currentMatch = $derived(ws.currentMatch);
+	const activeCell = $derived(ws.activeCell);
 
 	// Tallied only while a column menu is open, and live, so it shows a run's progress.
 	const menuCounts = $derived(menuColumnId ? countValues(rows, menuColumnId) : null);
@@ -114,8 +113,8 @@
 		const observer = new ResizeObserver(() => {
 			const previous = viewportHeight;
 			viewportHeight = node.clientHeight;
-			// The cell reader opening above the grid makes it shorter. If the selected
-			// row was on screen, keep it there instead of letting it drop out of view.
+			// When the grid gets shorter (a phone keyboard opening, the window shrinking),
+			// keep the selected row on screen if it was, instead of letting it drop away.
 			if (viewportHeight >= previous) return;
 			const top = focusRow * ROW_HEIGHT;
 			const bottom = top + ROW_HEIGHT;
@@ -147,20 +146,26 @@
 		renameError = '';
 	}
 
-	async function startEdit(rowId: string, columnId: string, current: string) {
+	async function startEdit(rowId: string, columnId: string) {
 		if (ws.isBusy) return;
-		editing = { rowId, columnId };
-		editValue = current;
+		ws.startEditing(rowId, columnId);
 		await tick();
 		const input = document.querySelector<HTMLInputElement>('[data-cell-input]');
 		input?.focus();
 		input?.select();
 	}
 
-	function commitEdit() {
-		if (!editing) return;
-		ws.setCell(editing.rowId, editing.columnId, editValue);
-		editing = null;
+	/**
+	 * Ends an edit from the keyboard and hands focus back to the cell, so the arrow
+	 * keys carry on from where the edit was.
+	 */
+	async function finishEdit(save: boolean) {
+		if (save) ws.commitEditing();
+		else ws.cancelEditing();
+		await tick();
+		document
+			.querySelector<HTMLElement>(`[data-cell="${focusRow}-${focusCol}"]`)
+			?.focus({ preventScroll: true });
 	}
 
 	/**
@@ -199,7 +204,7 @@
 	}
 
 	function onGridKeydown(event: KeyboardEvent) {
-		if (editing) return;
+		if (ws.editingCell) return;
 		const steps: Record<string, [number, number]> = {
 			ArrowDown: [1, 0],
 			ArrowUp: [-1, 0],
@@ -217,7 +222,7 @@
 			const column = columns[focusCol];
 			if (!row || !column) return;
 			event.preventDefault();
-			void startEdit(row.id, column.id, row.cells[column.id] ?? '');
+			void startEdit(row.id, column.id);
 		}
 		if (event.key === ' ') {
 			const row = rows[focusRow];
@@ -261,7 +266,7 @@
 		if (event.key === 'Escape') {
 			menuColumnId = null;
 			renamingId = null;
-			editing = null;
+			ws.cancelEditing();
 		}
 	}}
 />
@@ -289,7 +294,12 @@
 			/>
 		</div>
 		{#each columns as column (column.id)}
-			<div class="head-cell" role="columnheader" class:generated={column.generated}>
+			<div
+				class="head-cell"
+				role="columnheader"
+				class:generated={column.generated}
+				class:active-col={activeCell?.columnId === column.id}
+			>
 				{#if renamingId === column.id}
 					<input
 						class="rename"
@@ -399,7 +409,7 @@
 					class:selected={ws.selected.has(row.id)}
 					style="grid-template-columns: {gridTemplate}; height: {ROW_HEIGHT}px"
 				>
-					<div class="cell gutter" role="gridcell">
+					<div class="cell gutter" role="gridcell" class:active-row={activeCell?.rowId === row.id}>
 						<input
 							type="checkbox"
 							class="size-3.5 accent-accent"
@@ -420,7 +430,9 @@
 								column.generated && 'generated',
 								rowIndex === focusRow && columnIndex === focusCol && 'focused',
 								match && 'hit',
-								match && match === currentMatch && 'current'
+								match && match === currentMatch && 'current',
+								activeCell?.rowId === row.id && activeCell.columnId === column.id && 'active',
+								ws.isEditing(row.id, column.id) && 'editing'
 							]}
 							role="gridcell"
 							data-cell={`${rowIndex}-${columnIndex}`}
@@ -431,17 +443,25 @@
 								focusCol = columnIndex;
 								ws.setActiveCell(row.id, column.id);
 							}}
-							ondblclick={() => startEdit(row.id, column.id, value)}
+							ondblclick={() => startEdit(row.id, column.id)}
 						>
-							{#if editing && editing.rowId === row.id && editing.columnId === column.id}
+							{#if ws.isEditing(row.id, column.id)}
 								<input
 									data-cell-input
 									class="cell-input"
-									bind:value={editValue}
-									onblur={commitEdit}
+									bind:value={ws.editDraft}
+									onblur={() => ws.commitEditing()}
 									onkeydown={(event) => {
-										if (event.key === 'Enter') commitEdit();
-										if (event.key === 'Escape') editing = null;
+										// Stop here: the grid reads Enter as "edit this cell" and would
+										// reopen the cell that was just saved.
+										if (event.key === 'Enter') {
+											event.preventDefault();
+											event.stopPropagation();
+											void finishEdit(true);
+										} else if (event.key === 'Escape') {
+											event.stopPropagation();
+											void finishEdit(false);
+										}
 									}}
 									aria-label="Cell value"
 								/>
@@ -637,20 +657,32 @@
 		white-space: nowrap;
 	}
 
+	/* Borderless and filling the cell, so the text stays exactly where it was; the
+	   cell's own ring shows that it is open for typing. */
 	.cell-input {
 		width: 100%;
-		background: var(--surface);
-		border: 1px solid var(--accent);
-		border-radius: 4px;
-		padding: 0.1rem 0.3rem;
-		font-size: 0.8125rem;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		font: inherit;
+		color: inherit;
 		outline: none;
+	}
+
+	.cell-input::selection {
+		background: var(--hit);
 	}
 
 	.cell.focused:focus-visible {
 		outline: 2px solid var(--accent);
 		outline-offset: -2px;
 		border-radius: 0;
+	}
+
+	/* The selected cell, the one the cell reader shows. */
+	.cell.active {
+		box-shadow: inset 0 0 0 2px var(--active-ring);
 	}
 
 	.cell.hit mark {
@@ -666,6 +698,36 @@
 	.cell.current mark {
 		background: var(--accent);
 		color: var(--accent-ink);
+	}
+
+	/* Open for typing: a solid ring and halo lifted over the neighbouring cells, on a
+	   plain ground so a ticked row's tint can't swallow the text selection. */
+	.cell.editing {
+		position: relative;
+		z-index: 3;
+		background: var(--surface);
+		box-shadow:
+			inset 0 0 0 2px var(--accent),
+			0 0 0 3px var(--accent-soft);
+	}
+
+	/* Mark the selected cell's column and row, the way a spreadsheet does. */
+	.head-cell.active-col {
+		color: var(--text);
+		box-shadow: inset 0 -2px 0 var(--accent);
+	}
+
+	.head-cell.generated.active-col {
+		color: var(--accent-text);
+	}
+
+	.gutter.active-row {
+		box-shadow: inset -2px 0 0 var(--accent);
+	}
+
+	.gutter.active-row .rownum {
+		color: var(--accent-text);
+		font-weight: 600;
 	}
 
 	.cell.error {

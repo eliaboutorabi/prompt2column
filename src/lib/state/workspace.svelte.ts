@@ -31,6 +31,9 @@ export class Workspace {
 
 	/** The cell the reader shows: the last one focused in the grid or reached by search. */
 	activeCell = $state<{ rowId: string; columnId: string } | null>(null);
+	/** The cell open for typing, and what has been typed into it so far. */
+	editingCell = $state<{ rowId: string; columnId: string } | null>(null);
+	editDraft = $state('');
 
 	searchQuery = $state('');
 	/** Null searches every column. */
@@ -114,6 +117,7 @@ export class Workspace {
 			this.clearSearch();
 			this.searchColumnId = null;
 			this.activeCell = null;
+			this.editingCell = null;
 			this.selected.clear();
 			this.cellStatus.clear();
 			this.cellError.clear();
@@ -182,6 +186,7 @@ export class Workspace {
 		if (this.lastRunColumnId === columnId) this.lastRunColumnId = null;
 		if (this.searchColumnId === columnId) this.searchColumnId = null;
 		if (this.activeCell?.columnId === columnId) this.activeCell = null;
+		if (this.editingCell?.columnId === columnId) this.editingCell = null;
 		this.touch();
 	}
 
@@ -326,6 +331,29 @@ export class Workspace {
 
 	clearActiveCell(): void {
 		this.activeCell = null;
+	}
+
+	startEditing(rowId: string, columnId: string): void {
+		const row = this.rows.find((candidate) => candidate.id === rowId);
+		if (!row) return;
+		this.editDraft = row.cells[columnId] ?? '';
+		this.editingCell = { rowId, columnId };
+		this.setActiveCell(rowId, columnId);
+	}
+
+	commitEditing(): void {
+		const cell = this.editingCell;
+		if (!cell) return;
+		this.editingCell = null;
+		this.setCell(cell.rowId, cell.columnId, this.editDraft);
+	}
+
+	cancelEditing(): void {
+		this.editingCell = null;
+	}
+
+	isEditing(rowId: string, columnId: string): boolean {
+		return this.editingCell?.rowId === rowId && this.editingCell.columnId === columnId;
 	}
 
 	get currentMatch(): CellMatch | null {

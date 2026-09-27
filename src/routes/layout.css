@@ -34,6 +34,9 @@
 	--danger-soft: oklch(0.955 0.03 27);
 	--danger-line: oklch(0.82 0.09 27);
 
+	/* Ring around the selected cell, softer than the one around a cell being edited. */
+	--active-ring: color-mix(in oklch, var(--accent) 60%, transparent);
+
 	/* Search hits: the accent, thinned so cell text stays readable on top. */
 	--hit: color-mix(in oklch, var(--accent) 45%, transparent);
 
