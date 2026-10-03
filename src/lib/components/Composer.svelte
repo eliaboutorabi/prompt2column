@@ -1,41 +1,29 @@
 <script lang="ts">
 	import {
 		Add01Icon,
-		AiChipIcon,
 		AlertCircleIcon,
-		ArrowDown01Icon,
-		CheckmarkCircle02Icon,
 		CommandLineIcon,
 		Copy01Icon,
-		PauseIcon,
-		PlayIcon,
 		Plug01Icon,
 		QuillWrite02Icon,
 		RefreshIcon,
-		Settings02Icon,
 		StarIcon,
-		StopIcon,
 		Tag01Icon,
 		TextAlignLeftIcon,
 		ThumbsUpIcon,
-		Tick02Icon,
-		ViewIcon
+		Tick02Icon
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
 	import Icon from '$lib/components/Icon.svelte';
 	import { tooltip } from '$lib/actions/tooltip';
 	import Brand from '$lib/components/Brand.svelte';
 	import PromptEditor from './PromptEditor.svelte';
-	import NumberField from './NumberField.svelte';
 	import { autogrow } from '$lib/actions/autogrow';
-	import Select from './Select.svelte';
 	import OutputEditor from './OutputEditor.svelte';
 	import ScopeEditor from './ScopeEditor.svelte';
-	import PreviewDialog from './PreviewDialog.svelte';
 	import { kindIcons } from './kinds';
 	import { PRESETS, presetById } from '$lib/core/presets';
 	import { detectKind } from '$lib/core/columns';
-	import { formatModelSize } from '$lib/core/ollama';
 	import { models } from '$lib/state/models.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 	import type { Column } from '$lib/core/types';
@@ -47,12 +35,12 @@
 	let { ws }: Props = $props();
 
 	let editor = $state<PromptEditor | null>(null);
-	let showPreview = $state(false);
 	let activePreset = $state('');
 	let copiedCommand = $state('');
 	let notice = $state<HTMLDivElement | null>(null);
 
-	function showNotice() {
+	/** Reached from the status bar when Ollama is what's stopping a run. */
+	export function showNotice() {
 		notice?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 	}
 
@@ -64,50 +52,14 @@
 		blank: QuillWrite02Icon
 	};
 
-	const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.userAgent);
-
 	const config = $derived(ws.project!.config);
 	const issues = $derived(ws.templateIssues);
 	const busy = $derived(ws.isBusy);
 	const matchCount = $derived(ws.scopedRows.length);
-	const finished = $derived(ws.runDone + ws.runFailed);
-	const percent = $derived(ws.runTotal ? Math.round((finished / ws.runTotal) * 100) : 0);
-	const perRowMs = $derived(finished > 0 ? ws.runElapsedMs / finished : 0);
-	const remainingMs = $derived(perRowMs * Math.max(0, ws.runTotal - finished));
 	const columnKinds = $derived(ws.columns.map((column) => detectKind(column, ws.rows)));
-	const modelKnown = $derived(models.models.some((model) => model.name === config.model));
-	// What the model list can say at a glance: size, and whether it reasons or sees images.
-	const modelOptions = $derived(
-		models.models.map((model) => ({
-			value: model.name,
-			label: model.name,
-			hint: formatModelSize(model.size),
-			badges: model.capabilities.filter((capability) => ['thinking', 'vision'].includes(capability))
-		}))
-	);
-
-	/** The one thing standing between the user and a run, said plainly. */
-	const blocker = $derived.by(() => {
-		if (busy) return '';
-		if (models.loading && !models.checkedAt) return 'Looking for Ollama';
-		if (models.problem === 'offline') return 'Start Ollama to run';
-		if (models.problem === 'empty') return 'Pull a model to run';
-		if (!config.targetColumnName.trim()) return 'Name the new column to run';
-		if (!config.template.trim()) return 'Write a prompt to run';
-		if (issues.unknown.length) return 'Fix the column references in the prompt';
-		if (!config.model || !modelKnown) return 'Choose a model to run';
-		if (!matchCount) return 'No rows match the rows to run';
-		return '';
-	});
-	const runnable = $derived(!blocker && ws.canRun);
 
 	export function insertColumn(column: Column) {
 		void editor?.insertColumn(column);
-	}
-
-	/** Also reached with ⌘↵ / Ctrl ↵ from anywhere in the workspace. */
-	export function run() {
-		if (runnable) void ws.run(models.host);
 	}
 
 	function applyPreset(id: string) {
@@ -132,13 +84,6 @@
 		let n = 2;
 		while (taken.has(`${base} ${n}`.toLowerCase())) n += 1;
 		return `${base} ${n}`;
-	}
-
-	function formatDuration(ms: number): string {
-		if (!Number.isFinite(ms) || ms <= 0) return '0s';
-		const seconds = Math.round(ms / 1000);
-		if (seconds < 60) return `${seconds}s`;
-		return `${Math.floor(seconds / 60)}m ${String(seconds % 60).padStart(2, '0')}s`;
 	}
 
 	async function copyCommand(command: string) {
@@ -172,11 +117,9 @@
 	<div class="scroll">
 		<header class="intro">
 			<div class="title-row">
-				<Brand markOnly size={34} />
-				<div>
-					<h2 class="title">Add a column</h2>
-					<p class="subtitle">One prompt, run once on every row.</p>
-				</div>
+				<Brand markOnly size={24} />
+				<h2 class="title">Add a column</h2>
+				<span class="subtitle">One prompt, run on every row</span>
 			</div>
 			<div class="presets" role="group" aria-label="Start from a preset">
 				{#each PRESETS as preset (preset.id)}
@@ -232,15 +175,17 @@
 		{/if}
 
 		<section class="group">
-			<label class="label" for="target-name">Column name</label>
-			<input
-				id="target-name"
-				class="field name-input"
-				placeholder="Sentiment"
-				bind:value={config.targetColumnName}
-				disabled={busy}
-				oninput={() => ws.touch()}
-			/>
+			<div class="name-row">
+				<label class="label" for="target-name">Column name</label>
+				<input
+					id="target-name"
+					class="field name-input"
+					placeholder="Sentiment"
+					bind:value={config.targetColumnName}
+					disabled={busy}
+					oninput={() => ws.touch()}
+				/>
+			</div>
 			{#if ws.targetColumn && !ws.targetColumn.generated}
 				<p class="hint">This name matches an imported column. The run will write over it.</p>
 			{/if}
@@ -310,7 +255,7 @@
 			<textarea
 				id="instructions"
 				class="field rules"
-				rows="2"
+				rows="1"
 				placeholder="Judge only what the text says."
 				bind:value={config.instructions}
 				use:autogrow={config.instructions}
@@ -329,205 +274,15 @@
 				disabled={busy}
 			/>
 		</section>
-
-		<section class="group">
-			<div class="group-head">
-				<label class="label" for="model">Model</label>
-				<button
-					type="button"
-					class="head-action"
-					onclick={() => models.scan()}
-					disabled={models.loading}
-				>
-					<Icon icon={RefreshIcon} size={13} class={models.loading ? 'spin' : ''} />
-					Rescan
-				</button>
-			</div>
-			<Select
-				icon={AiChipIcon}
-				id="model"
-				block
-				options={modelOptions}
-				value={modelKnown ? config.model : ''}
-				placeholder={models.models.length ? 'Choose a model' : 'No models found'}
-				disabled={busy || !models.models.length}
-				onchange={(value) => {
-					config.model = value;
-					ws.touch();
-				}}
-			/>
-			{#if models.problem}
-				<button type="button" class="warn link" onclick={showNotice}>
-					<Icon icon={AlertCircleIcon} size={14} />
-					{models.problem === 'offline' ? "Ollama isn't reachable." : 'No models to choose from.'}
-					See how to fix it.
-				</button>
-			{/if}
-
-			<details class="advanced">
-				<summary>
-					<Icon icon={Settings02Icon} size={14} />
-					Advanced
-					<Icon icon={ArrowDown01Icon} size={12} strokeWidth={2} class="chev" />
-				</summary>
-				<div class="grid gap-3 pt-3">
-					<div class="grid grid-cols-2 gap-2">
-						<div>
-							<label class="label" for="concurrency">Rows at once</label>
-							<NumberField
-								id="concurrency"
-								min={1}
-								max={8}
-								bind:value={config.concurrency}
-								disabled={busy}
-							/>
-						</div>
-						<div>
-							<label class="label" for="temperature">Temperature</label>
-							<NumberField
-								id="temperature"
-								min={0}
-								max={1}
-								step={0.1}
-								bind:value={config.temperature}
-								disabled={busy}
-							/>
-						</div>
-					</div>
-					<div>
-						<label class="label" for="host">Ollama address</label>
-						<input
-							id="host"
-							class="field"
-							value={models.host}
-							disabled={busy}
-							onchange={(event) => {
-								models.setHost(event.currentTarget.value);
-								void models.scan();
-							}}
-						/>
-					</div>
-					<label class="toggle">
-						Let thinking models reason first (slower)
-						<input type="checkbox" role="switch" bind:checked={config.think} disabled={busy} />
-					</label>
-				</div>
-			</details>
-		</section>
 	</div>
-
-	<footer class="runbar">
-		{#if ws.isBusy || ws.runTotal > 0}
-			<div
-				class={['progress', ws.runState === 'running' && 'live']}
-				role="status"
-				aria-live="polite"
-			>
-				<div class="progress-head">
-					<span class="state">
-						{#if ws.runState === 'running'}
-							<span class="pulse" aria-hidden="true"></span> Running
-						{:else if ws.runState === 'paused'}
-							<Icon icon={PauseIcon} size={13} /> Paused
-						{:else if ws.runState === 'stopped'}
-							<Icon icon={StopIcon} size={13} /> Stopped
-						{:else}
-							<Icon icon={CheckmarkCircle02Icon} size={14} class="done-icon" /> Done
-						{/if}
-					</span>
-					<span class="count">{finished} / {ws.runTotal} rows</span>
-				</div>
-				<div class="track">
-					<div class="fill" style:width="{percent}%"></div>
-				</div>
-				<div class="progress-foot">
-					<span class={ws.runFailed ? 'failed' : ''}>
-						{#if ws.runFailed}
-							{ws.runFailed} failed
-						{:else if ws.isBusy}
-							{ws.runDone} written
-						{:else}
-							All written
-						{/if}
-					</span>
-					<span>
-						{#if ws.isBusy}
-							{formatDuration(remainingMs)} left
-						{:else}
-							{formatDuration(ws.runElapsedMs)} total
-						{/if}
-					</span>
-				</div>
-			</div>
-		{/if}
-
-		{#if ws.runFailed > 0 && !ws.isBusy}
-			<button
-				type="button"
-				class="btn btn-outline w-full"
-				onclick={() => ws.retryFailed(models.host)}
-			>
-				<Icon icon={RefreshIcon} size={15} />
-				Retry {ws.runFailed} failed {ws.runFailed === 1 ? 'row' : 'rows'}
-			</button>
-		{/if}
-
-		{#if blocker && models.problem}
-			<button type="button" class="blocker link" onclick={showNotice}>{blocker}</button>
-		{:else if blocker}
-			<p class="blocker">{blocker}</p>
-		{/if}
-
-		<div class="actions">
-			<button
-				type="button"
-				class="btn btn-outline"
-				onclick={() => (showPreview = true)}
-				disabled={!config.template.trim() || issues.unknown.length > 0}
-			>
-				<Icon icon={ViewIcon} size={15} /> Preview
-			</button>
-
-			{#if ws.runState === 'running'}
-				<button type="button" class="btn btn-outline grow" onclick={() => ws.pause()}>
-					<Icon icon={PauseIcon} size={15} /> Pause
-				</button>
-				<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
-					<Icon icon={StopIcon} size={15} /> Stop
-				</button>
-			{:else if ws.runState === 'paused'}
-				<button type="button" class="btn btn-primary grow" onclick={() => ws.resume()}>
-					<Icon icon={PlayIcon} size={15} /> Resume
-				</button>
-				<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
-					<Icon icon={StopIcon} size={15} /> Stop
-				</button>
-			{:else}
-				<button type="button" class="btn btn-primary run grow" disabled={!runnable} onclick={run}>
-					<Icon icon={PlayIcon} size={15} />
-					Run on {matchCount}
-					{matchCount === 1 ? 'row' : 'rows'}
-					<kbd class="shortcut" aria-hidden="true">{isMac ? '⌘↵' : 'Ctrl ↵'}</kbd>
-				</button>
-			{/if}
-		</div>
-
-		{#if ws.runMessage && !ws.isBusy}
-			<p class="message">{ws.runMessage}</p>
-		{/if}
-	</footer>
 </aside>
-
-{#if showPreview}
-	<PreviewDialog {ws} host={models.host} onClose={() => (showPreview = false)} />
-{/if}
 
 <style>
 	/* Solid by default. The workspace swaps these for frosted glass when the
 	   composer floats over the sheet. */
 	.composer {
 		display: grid;
-		grid-template-rows: 1fr auto;
+		grid-template-rows: minmax(0, 1fr);
 		height: 100%;
 		min-height: 0;
 		background: var(--composer-bg, var(--surface));
@@ -540,14 +295,19 @@
 	}
 
 	.intro {
-		padding: 1.1rem 1.1rem 1rem;
+		padding: 0.85rem 1rem 0.8rem;
 		border-bottom: 1px solid var(--line);
 	}
 
 	.title-row {
 		display: flex;
-		align-items: center;
-		gap: 0.7rem;
+		align-items: baseline;
+		gap: 0.55rem;
+		min-width: 0;
+	}
+
+	.title-row :global(:first-child) {
+		align-self: center;
 	}
 
 	.title {
@@ -558,24 +318,27 @@
 	}
 
 	.subtitle {
-		margin-top: 0.05rem;
-		font-size: 0.75rem;
+		margin-left: auto;
+		font-size: 0.6875rem;
 		color: var(--text-3);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.presets {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
-		margin-top: 0.9rem;
+		gap: 0.3rem;
+		margin-top: 0.7rem;
 	}
 
 	.preset {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.35rem;
-		height: 1.8rem;
-		padding: 0 0.7rem 0 0.6rem;
+		height: 1.65rem;
+		padding: 0 0.6rem 0 0.5rem;
 		border-radius: 999px;
 		border: 1px solid var(--line-strong);
 		background: var(--surface);
@@ -601,7 +364,7 @@
 	}
 
 	.group {
-		padding: 1rem 1.1rem;
+		padding: 0.8rem 1rem;
 		border-bottom: 1px solid color-mix(in oklch, var(--line) 80%, transparent);
 	}
 
@@ -646,21 +409,44 @@
 		color: var(--text-3);
 	}
 
+	/* Label beside the field: one short line doesn't need a row of its own. */
+	.name-row {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
+	.name-row .label {
+		flex-shrink: 0;
+		margin-bottom: 0;
+	}
+
 	.name-input {
+		flex: 1;
+		min-width: 0;
 		font-weight: 500;
 	}
 
+	/* One line that scrolls sideways, fading at the edge, rather than a block of
+	   chips that pushes everything below it down. */
 	.columns {
 		display: flex;
-		flex-wrap: wrap;
 		gap: 0.3rem;
 		margin-top: 0.55rem;
+		overflow-x: auto;
+		scrollbar-width: none;
+		mask-image: linear-gradient(90deg, #000 calc(100% - 2rem), transparent);
+	}
+
+	.columns::-webkit-scrollbar {
+		display: none;
 	}
 
 	.colchip {
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
+		flex-shrink: 0;
 		max-width: 11rem;
 		height: 1.5rem;
 		padding: 0 0.5rem 0 0.4rem;
@@ -719,7 +505,7 @@
 
 	/* Something to do, not just something wrong: what happened and the fix. */
 	.notice {
-		padding: 0.9rem 1.1rem 0;
+		padding: 0.8rem 1rem 0;
 	}
 
 	.callout {
@@ -803,224 +589,5 @@
 		height: 1.75rem;
 		margin-top: 0.25rem;
 		font-size: 0.75rem;
-	}
-
-	.advanced {
-		margin-top: 0.85rem;
-		border-top: 1px solid var(--line);
-		padding-top: 0.7rem;
-	}
-
-	.advanced summary {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		cursor: pointer;
-		font-size: 0.75rem;
-		color: var(--text-2);
-		list-style: none;
-	}
-
-	.advanced summary:hover {
-		color: var(--text);
-	}
-
-	.advanced summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.advanced summary :global(.chev) {
-		margin-left: auto;
-		color: var(--text-3);
-		transition: transform var(--dur) var(--ease-out);
-	}
-
-	.advanced[open] summary :global(.chev) {
-		transform: rotate(180deg);
-	}
-
-	/* Opens and closes with a short slide where the browser can animate to auto
-	   height; elsewhere it simply snaps, as before. The clip margin keeps focus
-	   rings inside from being shaved off. */
-	.advanced {
-		interpolate-size: allow-keywords;
-	}
-
-	.advanced::details-content {
-		block-size: 0;
-		opacity: 0;
-		overflow: clip;
-		overflow-clip-margin: 4px;
-		transition:
-			block-size var(--dur) var(--ease-out),
-			opacity var(--dur) ease,
-			content-visibility var(--dur) allow-discrete;
-	}
-
-	.advanced[open]::details-content {
-		block-size: auto;
-		opacity: 1;
-	}
-
-	.runbar {
-		display: grid;
-		gap: 0.65rem;
-		padding: 0.85rem 1.1rem 1rem;
-		border-top: 1px solid var(--line);
-		background: var(--composer-footer-bg, var(--surface-2));
-	}
-
-	.progress {
-		display: grid;
-		gap: 0.45rem;
-		padding: 0.65rem 0.75rem;
-		border-radius: var(--radius-panel);
-		background: var(--surface);
-		border: 1px solid var(--line);
-		box-shadow: var(--elev-1);
-	}
-
-	.progress-head,
-	.progress-foot {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-	}
-
-	.state {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.4rem;
-		font-size: 0.75rem;
-		font-weight: 600;
-		color: var(--text);
-	}
-
-	.state :global(.done-icon) {
-		color: var(--accent-text);
-	}
-
-	.pulse {
-		width: 7px;
-		height: 7px;
-		border-radius: 999px;
-		background: var(--accent);
-		box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 60%, transparent);
-		animation: ping 1.4s var(--ease-out) infinite;
-	}
-
-	@keyframes ping {
-		70% {
-			box-shadow: 0 0 0 6px color-mix(in oklch, var(--accent) 0%, transparent);
-		}
-		100% {
-			box-shadow: 0 0 0 0 color-mix(in oklch, var(--accent) 0%, transparent);
-		}
-	}
-
-	.count,
-	.progress-foot {
-		font-family: var(--font-mono);
-		font-size: 0.6875rem;
-		color: var(--text-3);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.count {
-		color: var(--text-2);
-	}
-
-	.progress-foot .failed {
-		color: var(--danger);
-	}
-
-	.track {
-		position: relative;
-		height: 4px;
-		border-radius: 999px;
-		background: var(--surface-3);
-		overflow: hidden;
-	}
-
-	.fill {
-		height: 100%;
-		border-radius: 999px;
-		background: var(--accent);
-		transition: width 0.35s var(--ease-out);
-	}
-
-	/* A light sweep along the bar while rows are being written. */
-	.live .fill {
-		background-image: linear-gradient(
-			90deg,
-			transparent 0%,
-			color-mix(in oklch, white 45%, transparent) 50%,
-			transparent 100%
-		);
-		background-size: 60% 100%;
-		background-repeat: no-repeat;
-		animation: sweep 1.4s linear infinite;
-	}
-
-	@keyframes sweep {
-		from {
-			background-position: -60% 0;
-		}
-		to {
-			background-position: 160% 0;
-		}
-	}
-
-	.blocker {
-		font-size: 0.75rem;
-		color: var(--text-3);
-		text-align: center;
-	}
-
-	.link {
-		cursor: pointer;
-		text-align: left;
-	}
-
-	.blocker.link {
-		justify-self: center;
-		text-align: center;
-		text-decoration: underline;
-		text-decoration-color: var(--line-strong);
-		text-underline-offset: 3px;
-	}
-
-	.link:hover {
-		color: var(--text);
-	}
-
-	.actions {
-		display: flex;
-		gap: 0.5rem;
-	}
-
-	.actions :global(.btn) {
-		height: 2.35rem;
-	}
-
-	.grow {
-		flex: 1;
-	}
-
-	.shortcut {
-		margin-left: 0.2rem;
-		padding: 0.1rem 0.3rem;
-		border-radius: 4px;
-		background: color-mix(in oklch, var(--accent-ink) 12%, transparent);
-		font-family: var(--font-mono);
-		font-size: 0.625rem;
-		font-weight: 500;
-		color: color-mix(in oklch, var(--accent-ink) 75%, transparent);
-	}
-
-	.message {
-		font-size: 0.75rem;
-		color: var(--text-2);
 	}
 </style>

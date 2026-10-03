@@ -71,6 +71,7 @@
 	{#if spec.kind === 'choice'}
 		<div>
 			<span class="label">Allowed labels</span>
+			<!-- The labels and the field that adds one share a line, like tokens in an input. -->
 			<div class="flex flex-wrap items-center gap-1.5">
 				{#each spec.choices as choice (choice)}
 					<span class="tag choice tone-{labelTone(choice)}">
@@ -86,27 +87,31 @@
 						</button>
 					</span>
 				{/each}
-				{#if !spec.choices.length}
-					<span class="text-xs text-ink-3">No labels yet. The model needs at least two.</span>
-				{/if}
-			</div>
-			<div class="mt-2 flex gap-1.5">
-				<input
-					class="field"
-					bind:value={draftChoice}
-					placeholder="Add a label"
-					{disabled}
-					aria-label="New label"
-					onkeydown={(event) => {
-						if (event.key === 'Enter') {
-							event.preventDefault();
-							addChoice();
-						}
-					}}
-				/>
-				<button type="button" class="btn btn-outline" {disabled} onclick={addChoice}>
-					<Icon icon={Add01Icon} size={14} strokeWidth={2} /> Add
-				</button>
+				<span class="adder">
+					<input
+						class="adder-input"
+						bind:value={draftChoice}
+						placeholder={spec.choices.length ? 'Add a label' : 'Add at least two labels'}
+						{disabled}
+						aria-label="New label"
+						onkeydown={(event) => {
+							if (event.key === 'Enter') {
+								event.preventDefault();
+								addChoice();
+							}
+						}}
+					/>
+					<button
+						type="button"
+						class="adder-btn"
+						aria-label="Add the label"
+						disabled={disabled || !draftChoice.trim()}
+						use:tooltip={{ text: 'Add the label', kbd: '↵' }}
+						onclick={addChoice}
+					>
+						<Icon icon={Add01Icon} size={12} strokeWidth={2} />
+					</button>
+				</span>
 			</div>
 			<label class="toggle mt-2.5">
 				Accept answers outside this list
@@ -224,6 +229,61 @@
 	.remove:hover:not(:disabled) {
 		opacity: 1;
 		background: color-mix(in oklch, currentColor 15%, transparent);
+	}
+
+	.adder {
+		display: inline-flex;
+		align-items: center;
+		flex: 1 1 8rem;
+		min-width: 8rem;
+		height: 1.6rem;
+		padding: 0 0.15rem 0 0.55rem;
+		border-radius: 999px;
+		border: 1px dashed var(--line-strong);
+		transition:
+			border-color var(--dur-fast) ease,
+			box-shadow var(--dur-fast) ease;
+	}
+
+	.adder:focus-within {
+		border-style: solid;
+		border-color: var(--accent);
+		box-shadow: var(--ring);
+	}
+
+	.adder-input {
+		flex: 1;
+		min-width: 0;
+		background: transparent;
+		border: 0;
+		outline: none;
+		font-size: 0.75rem;
+		color: var(--text);
+	}
+
+	.adder-input::placeholder {
+		color: var(--text-3);
+	}
+
+	.adder-btn {
+		display: grid;
+		place-items: center;
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 999px;
+		color: var(--text-2);
+		transition:
+			background-color var(--dur-fast) ease,
+			color var(--dur-fast) ease;
+	}
+
+	.adder-btn:hover:not(:disabled) {
+		background: var(--accent-soft);
+		color: var(--accent-text);
+	}
+
+	.adder-btn:disabled {
+		opacity: 0.4;
 	}
 
 	.seg:disabled {

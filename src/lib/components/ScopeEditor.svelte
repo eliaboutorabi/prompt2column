@@ -52,7 +52,14 @@
 </script>
 
 <div class="grid gap-2">
-	<span class="label">Rows to run</span>
+	<div class="scope-head">
+		<span class="label">Rows to run</span>
+		<p class="touch">
+			This run will touch
+			<strong>{matchCount}</strong>
+			{matchCount === 1 ? 'row' : 'rows'}
+		</p>
+	</div>
 	<div class="flex flex-wrap gap-1.5">
 		{#each options as option (option.id)}
 			{@const unavailable = option.id === 'empty' && !hasTarget}
@@ -122,12 +129,6 @@
 		Replace values that are already there
 		<input type="checkbox" role="switch" bind:checked={overwrite} {disabled} />
 	</label>
-
-	<p class="touch">
-		This run will touch
-		<strong>{matchCount}</strong>
-		{matchCount === 1 ? 'row' : 'rows'}.
-	</p>
 </div>
 
 <style>
@@ -135,11 +136,11 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 0.3rem;
-		height: 1.8rem;
+		height: 1.65rem;
 		border-radius: 999px;
 		border: 1px solid var(--line-strong);
 		background: var(--surface);
-		padding: 0 0.7rem 0 0.6rem;
+		padding: 0 0.6rem 0 0.5rem;
 		font-size: 0.75rem;
 		color: var(--text-2);
 		box-shadow: var(--elev-1);
@@ -162,8 +163,19 @@
 		font-weight: 500;
 	}
 
+	.scope-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.scope-head .label {
+		margin-bottom: 0;
+	}
+
 	.touch {
-		font-size: 0.75rem;
+		font-size: 0.6875rem;
 		color: var(--text-3);
 	}
 

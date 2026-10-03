@@ -435,7 +435,7 @@ test('confirms an export, and a finished run on a phone, with a toast', async ({
 	await page.getByRole('button', { name: 'Sheet', exact: true }).click();
 	await page.getByRole('grid').click();
 	await page.keyboard.press('ControlOrMeta+Enter');
-	await expect(page.getByRole('status').filter({ hasText: 'written' })).toContainText(
+	await expect(page.getByRole('status').filter({ hasText: 'rows written to' })).toContainText(
 		'15 rows written to Category'
 	);
 });

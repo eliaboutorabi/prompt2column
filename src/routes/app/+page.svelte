@@ -15,6 +15,7 @@
 	import Brand from '$lib/components/Brand.svelte';
 	import CellReader from '$lib/components/CellReader.svelte';
 	import Composer from '$lib/components/Composer.svelte';
+	import RunBar from '$lib/components/RunBar.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -32,6 +33,7 @@
 
 	const ws = new Workspace();
 	let composer = $state<Composer | null>(null);
+	let runBar = $state<RunBar | null>(null);
 	let searchBar = $state<SearchBar | null>(null);
 	let view = $state<'sheet' | 'prompt'>('sheet');
 
@@ -74,13 +76,13 @@
 		toast.dismiss();
 	});
 
-	// On a phone looking at the sheet, the run panel is out of sight: say when a run ends.
+	// On a phone the status bar is too narrow to show progress: say when a run ends.
 	let previousRunState = ws.runState;
 	$effect(() => {
 		const state = ws.runState;
 		const ended = previousRunState === 'running' && (state === 'done' || state === 'stopped');
 		previousRunState = state;
-		if (!ended || overlay.current || view !== 'sheet') return;
+		if (!ended || overlay.current) return;
 		const column = ws.columns.find((candidate) => candidate.id === ws.lastRunColumnId)?.name;
 		const written = `${ws.runDone} ${ws.runDone === 1 ? 'row' : 'rows'} written`;
 		toast.show(column ? `${written} to ${column}` : written, ws.runFailed ? 'info' : 'success');
@@ -116,8 +118,14 @@
 			ws.stepSearch(event.shiftKey ? -1 : 1);
 		} else if (key === 'enter' && !ws.isBusy) {
 			event.preventDefault();
-			composer?.run();
+			runBar?.run();
 		}
+	}
+
+	async function showNotice() {
+		view = 'prompt';
+		await tick();
+		composer?.showNotice();
 	}
 
 	// The name field sizes itself to the name where the browser can; elsewhere, a close guess.
@@ -134,7 +142,7 @@
 	<title>{ws.project ? `${ws.project.name} | prompt2column` : 'prompt2column'}</title>
 </svelte:head>
 
-<div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_1fr]">
+<div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_minmax(0,1fr)_auto]">
 	<header class="topbar">
 		<a href={resolve('/')} class="home" aria-label="Back to projects">
 			<Brand markOnly />
@@ -190,27 +198,6 @@
 					<SearchBar bind:this={searchBar} {ws} />
 				</span>
 			{/if}
-			<button
-				type="button"
-				class={['status', models.loading ? 'checking' : models.error ? 'offline' : 'online']}
-				onclick={() => models.scan()}
-				disabled={models.loading}
-				use:tooltip={models.error
-					? 'Ollama is not answering. Click to try again.'
-					: `Ollama at ${models.host.replace(/^https?:\/\//, '')}. Click to rescan.`}
-			>
-				<span class="dot" aria-hidden="true"></span>
-				<span class="status-text">
-					{#if models.loading}
-						Connecting
-					{:else if models.error}
-						Ollama offline
-					{:else}
-						{models.models.length}
-						{models.models.length === 1 ? 'model' : 'models'}
-					{/if}
-				</span>
-			</button>
 			<ExportMenu disabled={!ws.project} onExport={exportSheet} />
 			<ThemeToggle />
 		</div>
@@ -255,6 +242,7 @@
 				</div>
 			</div>
 		</div>
+		<RunBar bind:this={runBar} {ws} onShowNotice={showNotice} />
 	{/if}
 </div>
 
@@ -372,64 +360,6 @@
 		align-items: center;
 		gap: 0.35rem;
 		margin-left: auto;
-	}
-
-	/* Live connection state: the dot carries meaning, so it earns its colour. */
-	.status {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
-		height: 2rem;
-		padding: 0 0.6rem;
-		border-radius: var(--radius-control);
-		font-size: 0.75rem;
-		color: var(--text-2);
-		transition: background-color var(--dur-fast) ease;
-	}
-
-	.status:hover:not(:disabled) {
-		background: var(--surface-2);
-	}
-
-	.dot {
-		width: 7px;
-		height: 7px;
-		border-radius: 999px;
-		background: var(--text-3);
-	}
-
-	.online .dot {
-		background: var(--accent);
-		box-shadow: 0 0 0 3px color-mix(in oklch, var(--accent) 22%, transparent);
-	}
-
-	.offline {
-		color: var(--danger);
-	}
-
-	.offline .dot {
-		background: var(--danger);
-		box-shadow: 0 0 0 3px color-mix(in oklch, var(--danger) 20%, transparent);
-	}
-
-	.checking .dot {
-		animation: pulse 1s ease-in-out infinite;
-	}
-
-	@keyframes pulse {
-		50% {
-			opacity: 0.3;
-		}
-	}
-
-	.status-text {
-		display: none;
-	}
-
-	@media (min-width: 640px) {
-		.status-text {
-			display: inline;
-		}
 	}
 
 	@media (min-width: 1100px) {
