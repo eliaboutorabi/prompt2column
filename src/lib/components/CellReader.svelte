@@ -69,20 +69,15 @@
 <!--
 	A formula bar: always on screen at one height, so picking a cell never moves the
 	sheet (if it appeared on the first click, the second click of a double-click
-	would land on a different row).
+	would land on a different row). The name and the text share a first line.
 -->
-<section class="reader" aria-label="Cell reader">
-	<div class={['address', cell?.editing && 'editing-now']}>
+<section class={['reader', cell?.editing && 'editing-now']} aria-label="Cell reader">
+	<div class="address">
 		{#if cell}
 			<strong class="column">{cell.column.name}</strong>
-			<span class="where">
-				<span class="row">row {cell.rowIndex + 1}</span>
-				{#if cell.editing}
-					<span class="editing">Editing</span>
-				{/if}
-			</span>
+			<span class="row">row {cell.rowIndex + 1}</span>
 		{:else}
-			<span class="column none">No cell selected</span>
+			<span class="none">No cell selected</span>
 		{/if}
 	</div>
 
@@ -113,7 +108,7 @@
 
 	<div class="side">
 		{#if cell?.editing}
-			<span class="note">Enter saves, Esc cancels</span>
+			<span class="note editing">Editing. Enter saves, Esc cancels</span>
 		{:else if cell?.words && !cell.error}
 			<span class="note mono">{cell.words} {cell.words === 1 ? 'word' : 'words'}</span>
 		{/if}
@@ -147,79 +142,66 @@
 </section>
 
 <style>
+	/* Two lines of text tall. Every part hangs from the same first line, so the
+	   cell's name, its text and the buttons all start level. */
 	.reader {
+		--lh: 1.25rem;
 		display: grid;
-		grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) auto;
+		grid-template-columns: minmax(0, 10rem) minmax(0, 1fr) auto;
 		align-items: start;
-		gap: 0.85rem;
-		padding: 0.55rem 0.75rem;
+		gap: 1rem;
+		padding: 0.7rem 0.6rem 0.7rem 1rem;
 		background: var(--surface);
 		border-bottom: 1px solid var(--line);
+		transition: box-shadow var(--dur) ease;
 	}
 
-	/* The name box: which cell this is, in a quiet inset like a spreadsheet's. */
+	/* Editing shows as a bar of the accent down the reader's left edge. */
+	.reader.editing-now {
+		box-shadow: inset 2px 0 0 var(--accent);
+	}
+
 	.address {
-		display: grid;
-		align-content: center;
-		gap: 0.1rem;
-		height: 2.55rem;
-		padding: 0 0.65rem;
-		border-radius: var(--radius-control);
-		background: var(--surface-2);
-		box-shadow: inset 0 0 0 1px var(--line);
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
 		min-width: 0;
-		transition:
-			background-color var(--dur) ease,
-			box-shadow var(--dur) ease;
-	}
-
-	.address.editing-now {
-		background: var(--accent-soft);
-		box-shadow: inset 0 0 0 1px var(--accent-line);
+		height: var(--lh);
+		line-height: var(--lh);
+		white-space: nowrap;
 	}
 
 	.column {
+		min-width: 0;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		white-space: nowrap;
-		font-size: 0.75rem;
+		font-size: 0.8125rem;
 		font-weight: 600;
 		color: var(--text);
 	}
 
-	.column.none {
-		font-weight: 500;
-		line-height: 1.25;
-		white-space: normal;
-		color: var(--text-3);
-	}
-
-	.where {
-		display: flex;
-		align-items: center;
-		gap: 0.4rem;
-		white-space: nowrap;
-	}
-
 	.row {
+		flex-shrink: 0;
 		font-family: var(--font-mono);
 		font-size: 0.6875rem;
 		color: var(--text-3);
 		font-variant-numeric: tabular-nums;
 	}
 
-	.editing {
-		font-size: 0.6875rem;
-		font-weight: 600;
-		color: var(--accent-text);
+	.none {
+		font-size: 0.8125rem;
+		font-weight: 500;
+		color: var(--text-3);
 	}
 
+	/* A hairline between the name and the text, as a spreadsheet's formula bar has. */
 	.text {
-		height: calc(0.8125rem * 1.55 * 2);
-		margin-top: 0.3rem;
+		height: calc(var(--lh) * 2);
+		padding-left: 1rem;
+		border-left: 1px solid var(--line);
 		overflow-y: auto;
 		font-size: 0.8125rem;
-		line-height: 1.55;
+		line-height: var(--lh);
 		color: var(--text);
 		white-space: pre-wrap;
 		overflow-wrap: anywhere;
@@ -232,11 +214,12 @@
 		border-radius: 4px;
 	}
 
+	/* Buttons centred on the first line rather than on the block. */
 	.side {
 		display: flex;
 		align-items: center;
-		gap: 0.15rem;
-		height: 2.55rem;
+		gap: 0.1rem;
+		height: var(--lh);
 	}
 
 	.note {
@@ -246,13 +229,19 @@
 		white-space: nowrap;
 	}
 
+	.note.editing {
+		color: var(--accent-text);
+		font-weight: 500;
+	}
+
 	.mono {
 		font-family: var(--font-mono);
 		font-variant-numeric: tabular-nums;
 	}
 
 	.action {
-		width: 2rem;
+		width: 1.75rem;
+		height: 1.75rem;
 		padding: 0;
 	}
 
@@ -281,6 +270,7 @@
 		.reader {
 			grid-template-columns: minmax(0, 6.5rem) minmax(0, 1fr) auto;
 			gap: 0.6rem;
+			padding-left: 0.75rem;
 		}
 
 		.note {
