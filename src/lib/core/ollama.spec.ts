@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { complete, formatModelSize, listModels, OllamaError } from './ollama';
+import { complete, formatModelSize, isCloudModel, listModels, OllamaError } from './ollama';
 
 const originalFetch = globalThis.fetch;
 
@@ -115,5 +115,22 @@ describe('formatModelSize', () => {
 
 	it('returns nothing when the size is unknown', () => {
 		expect(formatModelSize(0)).toBe('');
+	});
+
+	it('says nothing for a cloud model, which is only a stub on disk', () => {
+		expect(formatModelSize(384)).toBe('');
+	});
+});
+
+describe('isCloudModel', () => {
+	it('spots the cloud tags Ollama uses', () => {
+		expect(isCloudModel('gpt-oss:120b-cloud')).toBe(true);
+		expect(isCloudModel('gemma4:31b-cloud')).toBe(true);
+		expect(isCloudModel('kimi-k2:cloud')).toBe(true);
+	});
+
+	it('leaves local models alone, even with "cloud" in the name', () => {
+		expect(isCloudModel('llama3.2')).toBe(false);
+		expect(isCloudModel('cloudy-llm:7b')).toBe(false);
 	});
 });

@@ -156,8 +156,14 @@ function isAbort(error: unknown): boolean {
 	return error instanceof Error && (error.name === 'AbortError' || error.name === 'TimeoutError');
 }
 
+/** Ollama Cloud models are pulled as tiny stubs tagged "cloud" and run remotely. */
+export function isCloudModel(name: string): boolean {
+	return /(^|[:-])cloud$/.test(name);
+}
+
+/** A model's size on disk. Under a megabyte it is only a stub, so it says nothing. */
 export function formatModelSize(bytes: number): string {
-	if (!bytes) return '';
+	if (!bytes || bytes < 1024 ** 2) return '';
 	const gb = bytes / 1024 ** 3;
 	if (gb >= 1) return `${gb.toFixed(gb >= 10 ? 0 : 1)} GB`;
 	return `${Math.round(bytes / 1024 ** 2)} MB`;

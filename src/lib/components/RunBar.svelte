@@ -13,7 +13,7 @@
 	import Select from './Select.svelte';
 	import RunSettings from './RunSettings.svelte';
 	import PreviewDialog from './PreviewDialog.svelte';
-	import { formatModelSize } from '$lib/core/ollama';
+	import { formatModelSize, isCloudModel } from '$lib/core/ollama';
 	import { models } from '$lib/state/models.svelte';
 	import type { Workspace } from '$lib/state/workspace.svelte';
 
@@ -45,7 +45,10 @@
 			value: model.name,
 			label: model.name,
 			hint: formatModelSize(model.size),
-			badges: model.capabilities.filter((capability) => ['thinking', 'vision'].includes(capability))
+			badges: [
+				...(isCloudModel(model.name) ? ['cloud'] : []),
+				...model.capabilities.filter((capability) => ['thinking', 'vision'].includes(capability))
+			]
 		}))
 	);
 
