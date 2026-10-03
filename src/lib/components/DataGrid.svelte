@@ -563,14 +563,41 @@
 			{/each}
 		</div>
 	</div>
+
+	<!-- Past the last row the sheet keeps its columns down to the bottom of the
+	     window, so a short sheet ends in more sheet rather than in a blank gap. -->
+	<div class="filler" aria-hidden="true" style="grid-template-columns: {gridTemplate}">
+		<div class="gutter fill-cell"></div>
+		{#each columns as column (column.id)}
+			<div class="fill-cell"></div>
+		{/each}
+	</div>
 </div>
 
 <style>
+	/* A column of header, rows, then filler that takes whatever height is left. */
 	.scroller {
 		position: relative;
+		display: flex;
+		flex-direction: column;
 		height: 100%;
 		overflow: auto;
 		background: var(--surface);
+	}
+
+	.scroller > :global(*) {
+		flex-shrink: 0;
+	}
+
+	.filler {
+		display: grid;
+		flex: 1 0 0;
+		min-width: min-content;
+		min-height: 0;
+	}
+
+	.fill-cell {
+		border-right: 1px solid var(--grid-line);
 	}
 
 	.head {
