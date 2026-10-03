@@ -210,7 +210,7 @@ These live in `static/samples/`. Each one opens with the preset that suits it.
 
 ## Settings
 
-**Advanced**, at the bottom of the composer, has:
+The **settings button** (the gear beside the model picker in the status bar) has:
 
 | Setting                          | Default                  | Notes                                                   |
 | -------------------------------- | ------------------------ | ------------------------------------------------------- |
@@ -219,8 +219,8 @@ These live in `static/samples/`. Each one opens with the preset that suits it.
 | Ollama address                   | `http://localhost:11434` | Remembered in the browser.                              |
 | Let thinking models reason first | Off                      | Lets reasoning models think before they answer. Slower. |
 
-**Rescan**, next to the model picker, reloads the list after you pull a new
-model.
+Click the **connection status** at the left of the status bar to reload the
+model list after you pull a new model.
 
 ## Privacy and storage
 
@@ -286,8 +286,8 @@ HugeIcons.
 ## Troubleshooting
 
 **"Cannot reach Ollama"** means Ollama isn't running, or it's on a different
-address. Start it with `ollama serve`, check the address under Advanced, then
-click Rescan.
+address. Start it with `ollama serve`, check the address in the run settings, then
+click the connection status to rescan.
 
 **"Ollama is running but has no models"** means you need to pull one, for example
 `ollama pull llama3.2`, then click Rescan.
