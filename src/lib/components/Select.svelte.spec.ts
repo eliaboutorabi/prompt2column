@@ -109,4 +109,37 @@ describe('Select', () => {
 		const gap = trigger.getBoundingClientRect().right - chevron.getBoundingClientRect().right;
 		expect(gap).toBeGreaterThanOrEqual(8);
 	});
+
+	it('shows a description under an option when it has one', async () => {
+		mount({
+			options: [
+				{ value: 'classify', label: 'Classify', description: 'Sort each row into a label.' },
+				{ value: 'score', label: 'Score', description: 'A number in a range.' }
+			],
+			value: 'classify'
+		});
+		await userEvent.click(combobox());
+		await expect
+			.element(page.getByRole('option', { name: /Score/ }))
+			.toHaveTextContent('A number in a range.');
+	});
+
+	it('skips a disabled option from the keyboard and ignores clicks on it', async () => {
+		const { onchange } = mount({
+			options: [
+				{ value: 'all', label: 'Every row' },
+				{ value: 'empty', label: 'Empty results', disabled: true, reason: 'Not yet' },
+				{ value: 'first', label: 'First few' }
+			],
+			value: 'all'
+		});
+		await userEvent.click(combobox());
+		const disabled = page.getByRole('option', { name: /Empty results/ });
+		await expect.element(disabled).toHaveAttribute('aria-disabled', 'true');
+		(disabled.element() as HTMLElement).click();
+		expect(onchange).not.toHaveBeenCalled();
+
+		await userEvent.keyboard('{ArrowDown}{Enter}');
+		expect(onchange).toHaveBeenCalledWith('first');
+	});
 });

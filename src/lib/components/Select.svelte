@@ -9,12 +9,18 @@
 		icon?: IconSvgElement;
 		/** Small tags after the label, like a model's capabilities. */
 		badges?: string[];
+		/** A quiet second line under the label, saying what the option does. */
+		description?: string;
+		/** Shown but not choosable; `reason` says why, on hover. */
+		disabled?: boolean;
+		reason?: string;
 	}
 </script>
 
 <script lang="ts">
 	import { ArrowDown01Icon, Tick02Icon } from '@hugeicons/core-free-icons';
 	import Icon from '$lib/components/Icon.svelte';
+	import { tooltip } from '$lib/actions/tooltip';
 
 	interface Props {
 		value?: string;
@@ -29,6 +35,8 @@
 		block?: boolean;
 		/** "field" looks like an input; "ghost" is bare text, for use inside another control. */
 		variant?: 'field' | 'ghost';
+		/** Repeat the chosen option's hint next to it on the closed control. */
+		hintInTrigger?: boolean;
 		disabled?: boolean;
 		id?: string;
 		/** Accessible name when there is no <label for> pointing at it. */
@@ -45,6 +53,7 @@
 		compact = false,
 		block = false,
 		variant = 'field',
+		hintInTrigger = true,
 		disabled = false,
 		id,
 		label,
@@ -102,7 +111,7 @@
 
 	function choose(index: number) {
 		const option = options[index];
-		if (!option) return;
+		if (!option || option.disabled) return;
 		hide();
 		trigger?.focus();
 		if (option.value === value) return;
@@ -112,7 +121,13 @@
 
 	function move(to: number) {
 		if (!options.length) return;
-		active = Math.max(0, Math.min(options.length - 1, to));
+		const step = to < active ? -1 : 1;
+		let next = Math.max(0, Math.min(options.length - 1, to));
+		while (options[next]?.disabled && next + step >= 0 && next + step < options.length) {
+			next += step;
+		}
+		if (options[next]?.disabled) return;
+		active = next;
 		list?.querySelector(`#${CSS.escape(optionId(active))}`)?.scrollIntoView({ block: 'nearest' });
 	}
 
@@ -215,7 +230,7 @@
 			<Icon icon={selected.icon} size={compact ? 13 : 15} class="lead" />
 		{/if}
 		<span class={['current', !selected && 'placeholder']}>{selected?.label ?? placeholder}</span>
-		{#if selected?.hint && variant === 'field' && !compact}
+		{#if selected?.hint && hintInTrigger && variant === 'field' && !compact}
 			<span class="current-hint">{selected.hint}</span>
 		{/if}
 		<Icon
@@ -235,15 +250,24 @@
 				role="option"
 				tabindex="-1"
 				aria-selected={option.value === value}
-				class={['option', index === active && 'active']}
-				onpointermove={() => (active = index)}
+				aria-disabled={option.disabled || undefined}
+				use:tooltip={option.disabled ? option.reason : undefined}
+				class={['option', index === active && 'active', option.description && 'described']}
+				onpointermove={() => !option.disabled && (active = index)}
 				onmousedown={(event) => event.preventDefault()}
 				onclick={() => choose(index)}
 			>
 				{#if option.icon}
 					<Icon icon={option.icon} size={15} class="option-icon" />
 				{/if}
-				<span class="option-label">{option.label}</span>
+				{#if option.description}
+					<span class="option-text">
+						<span class="option-label">{option.label}</span>
+						<span class="option-description">{option.description}</span>
+					</span>
+				{:else}
+					<span class="option-label">{option.label}</span>
+				{/if}
 				{#each option.badges ?? [] as badge (badge)}
 					<span class="badge">{badge}</span>
 				{/each}
@@ -423,6 +447,40 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+
+	.option-text {
+		display: grid;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+
+	.option-description {
+		font-size: 0.75rem;
+		line-height: 1.35;
+		color: var(--text-3);
+	}
+
+	.option[aria-selected='true'] .option-description {
+		font-weight: 400;
+	}
+
+	.option.described {
+		align-items: flex-start;
+		padding-block: 0.5rem;
+	}
+
+	.option.described :global(.option-icon) {
+		margin-top: 0.1rem;
+	}
+
+	.option.described .check {
+		margin-top: 0.15rem;
+	}
+
+	.option[aria-disabled='true'] {
+		opacity: 0.45;
+		cursor: not-allowed;
 	}
 
 	.badge {
