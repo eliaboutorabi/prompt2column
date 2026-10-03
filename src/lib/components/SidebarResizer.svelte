@@ -8,9 +8,9 @@
 	let startX = 0;
 	let startWidth = 0;
 
-	// The sidebar sits on the right, so dragging its edge left widens it.
+	// The sidebar sits on the left, so dragging its edge right widens it.
 	function onMove(event: PointerEvent) {
-		sidebar.set(startWidth + (startX - event.clientX));
+		sidebar.set(startWidth + (event.clientX - startX));
 	}
 
 	function detach() {
@@ -39,8 +39,8 @@
 	function onKeydown(event: KeyboardEvent) {
 		const step = event.shiftKey ? STEP * 4 : STEP;
 		const next = {
-			ArrowLeft: sidebar.shown + step,
-			ArrowRight: sidebar.shown - step,
+			ArrowRight: sidebar.shown + step,
+			ArrowLeft: sidebar.shown - step,
 			Home: SIDEBAR_MIN,
 			End: sidebar.max
 		}[event.key];
@@ -84,8 +84,8 @@
 		position: absolute;
 		top: 0;
 		bottom: 0;
-		left: -5px;
-		z-index: 5;
+		right: -6px;
+		z-index: 25;
 		width: 10px;
 		cursor: col-resize;
 		touch-action: none;

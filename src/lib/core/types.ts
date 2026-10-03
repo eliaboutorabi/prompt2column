@@ -51,6 +51,8 @@ export interface RowScope {
 }
 
 export interface GenConfig {
+	/** The preset this column started from, so the job picker can show it. */
+	job?: string;
 	model: string;
 	targetColumnName: string;
 	template: string;

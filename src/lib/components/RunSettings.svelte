@@ -107,8 +107,9 @@
 	.trigger {
 		display: grid;
 		place-items: center;
-		width: 2rem;
-		height: 2rem;
+		flex-shrink: 0;
+		width: 2.25rem;
+		height: 2.25rem;
 		border-radius: var(--radius-control);
 		color: var(--text-2);
 		transition:
@@ -118,7 +119,7 @@
 
 	.trigger:hover,
 	.trigger.open {
-		background: var(--surface-3);
+		background: var(--field);
 		color: var(--text);
 	}
 
@@ -138,7 +139,9 @@
 		color: var(--text);
 	}
 
+	/* Rises out of the dock it belongs to. */
 	.panel:popover-open {
 		display: grid;
+		animation: rise-in var(--dur) var(--ease-out);
 	}
 </style>

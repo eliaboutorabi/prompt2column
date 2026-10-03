@@ -25,7 +25,7 @@
 		{ id: 'choice', label: 'Label', hint: 'One value from a list you define', icon: Tag01Icon },
 		{ id: 'boolean', label: 'Yes / no', hint: 'Two labels, nothing else', icon: ToggleOnIcon },
 		{ id: 'number', label: 'Number', hint: 'A number inside a range', icon: HashtagIcon },
-		{ id: 'text', label: 'Free text', hint: 'A short written answer', icon: TextIcon }
+		{ id: 'text', label: 'Text', hint: 'A short written answer', icon: TextIcon }
 	];
 
 	let draftChoice = $state('');
@@ -46,80 +46,65 @@
 	}
 </script>
 
-<div class="grid gap-3">
-	<div>
-		<span class="label">Answer shape</span>
-		<div class="segmented" role="radiogroup" aria-label="Answer shape">
-			{#each kinds as kind (kind.id)}
-				<button
-					type="button"
-					role="radio"
-					aria-checked={spec.kind === kind.id}
-					class="seg"
-					class:on={spec.kind === kind.id}
-					use:tooltip={kind.hint}
-					{disabled}
-					onclick={() => (spec.kind = kind.id)}
-				>
-					<Icon icon={kind.icon} size={13} />
-					{kind.label}
-				</button>
-			{/each}
-		</div>
+<div class="output">
+	<div class="segmented" role="radiogroup" aria-label="Answer shape">
+		{#each kinds as kind (kind.id)}
+			<button
+				type="button"
+				role="radio"
+				aria-checked={spec.kind === kind.id}
+				class="seg"
+				class:on={spec.kind === kind.id}
+				use:tooltip={kind.hint}
+				{disabled}
+				onclick={() => (spec.kind = kind.id)}
+			>
+				<Icon icon={kind.icon} size={13} />
+				{kind.label}
+			</button>
+		{/each}
 	</div>
 
 	{#if spec.kind === 'choice'}
-		<div>
-			<span class="label">Allowed labels</span>
-			<!-- The labels and the field that adds one share a line, like tokens in an input. -->
-			<div class="flex flex-wrap items-center gap-1.5">
-				{#each spec.choices as choice (choice)}
-					<span class="tag choice tone-{labelTone(choice)}">
-						{choice}
-						<button
-							type="button"
-							class="remove"
-							aria-label={`Remove ${choice}`}
-							{disabled}
-							onclick={() => removeChoice(choice)}
-						>
-							<Icon icon={Cancel01Icon} size={11} strokeWidth={2} />
-						</button>
-					</span>
-				{/each}
-				<span class="adder">
-					<input
-						class="adder-input"
-						bind:value={draftChoice}
-						placeholder={spec.choices.length ? 'Add a label' : 'Add at least two labels'}
-						{disabled}
-						aria-label="New label"
-						onkeydown={(event) => {
-							if (event.key === 'Enter') {
-								event.preventDefault();
-								addChoice();
-							}
-						}}
-					/>
+		<!-- The labels read as they will in the grid, with the field that adds one at the end. -->
+		<div class="choices" role="group" aria-label="Allowed labels">
+			{#each spec.choices as choice (choice)}
+				<span class="tag choice tone-{labelTone(choice)}">
+					{choice}
 					<button
 						type="button"
-						class="adder-btn"
-						aria-label="Add the label"
-						disabled={disabled || !draftChoice.trim()}
-						use:tooltip={{ text: 'Add the label', kbd: '↵' }}
-						onclick={addChoice}
+						class="remove"
+						aria-label={`Remove ${choice}`}
+						{disabled}
+						onclick={() => removeChoice(choice)}
 					>
-						<Icon icon={Add01Icon} size={12} strokeWidth={2} />
+						<Icon icon={Cancel01Icon} size={11} strokeWidth={2} />
 					</button>
 				</span>
-			</div>
-			<label class="toggle mt-2.5">
-				Accept answers outside this list
-				<input type="checkbox" role="switch" bind:checked={spec.allowOther} {disabled} />
-			</label>
+			{/each}
+			<span class="adder">
+				<Icon icon={Add01Icon} size={12} strokeWidth={2} />
+				<input
+					bind:value={draftChoice}
+					placeholder={spec.choices.length < 2 ? 'Add at least two labels' : 'Add a label'}
+					{disabled}
+					aria-label="New label"
+					onkeydown={(event) => {
+						if (event.key === 'Enter') {
+							event.preventDefault();
+							addChoice();
+						}
+					}}
+					onblur={addChoice}
+				/>
+			</span>
 		</div>
+		<label class="toggle">
+			Accept answers outside this list
+			<input type="checkbox" role="switch" bind:checked={spec.allowOther} {disabled} />
+		</label>
 	{:else if spec.kind === 'boolean'}
-		<div class="grid grid-cols-2 gap-2">
+		<div class="pair">
 			<div>
 				<label class="label" for="true-label">Write when yes</label>
 				<input id="true-label" class="field" bind:value={spec.trueLabel} {disabled} />
@@ -130,7 +115,7 @@
 			</div>
 		</div>
 	{:else if spec.kind === 'number'}
-		<div class="grid grid-cols-3 gap-2">
+		<div class="pair">
 			<div>
 				<label class="label" for="num-min">Lowest</label>
 				<NumberField id="num-min" optional bind:value={spec.min} {disabled} />
@@ -139,35 +124,41 @@
 				<label class="label" for="num-max">Highest</label>
 				<NumberField id="num-max" optional bind:value={spec.max} {disabled} />
 			</div>
-			<div>
-				<span class="label">Rounding</span>
-				<label class="flex h-9 items-center gap-2 text-xs text-ink-2">
-					<input type="checkbox" role="switch" bind:checked={spec.integer} {disabled} />
-					Whole numbers
-				</label>
-			</div>
 		</div>
+		<label class="toggle">
+			Whole numbers only
+			<input type="checkbox" role="switch" bind:checked={spec.integer} {disabled} />
+		</label>
 	{:else}
-		<div>
-			<label class="label" for="max-words">Length budget</label>
-			<div class="flex items-center gap-2">
-				<div class="w-24 shrink-0">
-					<NumberField id="max-words" optional min={1} bind:value={spec.maxWords} {disabled} />
-				</div>
-				<span class="text-xs text-ink-3">words at most. Leave empty for no limit.</span>
-			</div>
+		<div class="inline">
+			<span class="words">
+				<NumberField
+					id="max-words"
+					optional
+					min={1}
+					bind:value={spec.maxWords}
+					{disabled}
+					label="Length budget in words"
+				/>
+			</span>
+			<span class="note">words at most. Leave empty for no limit.</span>
 		</div>
 	{/if}
 </div>
 
 <style>
+	.output {
+		display: grid;
+		gap: 0.75rem;
+	}
+
+	/* A soft track with the chosen shape raised out of it. */
 	.segmented {
 		display: grid;
 		grid-template-columns: repeat(4, 1fr);
 		gap: 2px;
-		padding: 2px;
-		background: var(--surface-2);
-		border: 1px solid var(--line);
+		padding: 3px;
+		background: var(--field);
 		border-radius: var(--radius-control);
 	}
 
@@ -176,7 +167,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: 0.3rem;
-		height: 1.85rem;
+		height: 1.75rem;
 		padding: 0 0.25rem;
 		border-radius: 6px;
 		font-size: 0.75rem;
@@ -195,14 +186,22 @@
 		background: var(--surface);
 		color: var(--text);
 		font-weight: 500;
-		box-shadow:
-			var(--inner-highlight),
-			0 0 0 1px var(--line),
-			var(--elev-1);
+		box-shadow: var(--inner-highlight), var(--elev-1);
 	}
 
 	.seg.on :global(.hi) {
 		color: var(--accent-text);
+	}
+
+	.seg:disabled {
+		opacity: 0.5;
+	}
+
+	.choices {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.35rem;
 	}
 
 	/* The allowed labels, coloured as they will be in the grid. */
@@ -231,27 +230,35 @@
 		background: color-mix(in oklch, currentColor 15%, transparent);
 	}
 
+	/* A bare line of text until it is used: no box of its own in the row of labels. */
 	.adder {
 		display: inline-flex;
 		align-items: center;
-		flex: 1 1 8rem;
-		min-width: 8rem;
-		height: 1.6rem;
-		padding: 0 0.15rem 0 0.55rem;
+		gap: 0.3rem;
+		flex: 1 1 6rem;
+		min-width: 6rem;
+		height: 1.35rem;
+		padding: 0 0.5rem;
 		border-radius: 999px;
-		border: 1px dashed var(--line-strong);
+		color: var(--text-3);
 		transition:
-			border-color var(--dur-fast) ease,
+			background-color var(--dur-fast) ease,
 			box-shadow var(--dur-fast) ease;
 	}
 
-	.adder:focus-within {
-		border-style: solid;
-		border-color: var(--accent);
-		box-shadow: var(--ring);
+	.adder:hover {
+		background: var(--field);
 	}
 
-	.adder-input {
+	.adder:focus-within {
+		background: var(--surface);
+		box-shadow:
+			0 0 0 1px var(--accent),
+			var(--ring);
+		color: var(--text-2);
+	}
+
+	.adder input {
 		flex: 1;
 		min-width: 0;
 		background: transparent;
@@ -261,32 +268,25 @@
 		color: var(--text);
 	}
 
-	.adder-input::placeholder {
-		color: var(--text-3);
-	}
-
-	.adder-btn {
+	.pair {
 		display: grid;
-		place-items: center;
-		width: 1.25rem;
-		height: 1.25rem;
-		border-radius: 999px;
-		color: var(--text-2);
-		transition:
-			background-color var(--dur-fast) ease,
-			color var(--dur-fast) ease;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem;
 	}
 
-	.adder-btn:hover:not(:disabled) {
-		background: var(--accent-soft);
-		color: var(--accent-text);
+	.inline {
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
 	}
 
-	.adder-btn:disabled {
-		opacity: 0.4;
+	.words {
+		width: 5.5rem;
+		flex-shrink: 0;
 	}
 
-	.seg:disabled {
-		opacity: 0.5;
+	.note {
+		font-size: 0.75rem;
+		color: var(--text-3);
 	}
 </style>

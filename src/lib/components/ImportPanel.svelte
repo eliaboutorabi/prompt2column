@@ -58,6 +58,7 @@
 				const preset = presetById(presetId);
 				project.config = {
 					...project.config,
+					job: preset.id,
 					output: { ...preset.output },
 					instructions: preset.instructions,
 					template: preset.template(table.columns, table.rows),

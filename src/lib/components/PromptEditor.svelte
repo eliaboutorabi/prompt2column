@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import TemplateHighlight from './TemplateHighlight.svelte';
 	import { autogrow } from '$lib/actions/autogrow';
 	import { autocompleteContext, insertReference, rankColumns } from '$lib/core/template';
@@ -12,6 +12,8 @@
 		id?: string;
 		disabled?: boolean;
 		rows?: number;
+		/** A row of actions inside the field, under the text. */
+		footer?: Snippet;
 	}
 
 	let {
@@ -20,7 +22,8 @@
 		placeholder = '',
 		id = 'prompt-editor',
 		disabled = false,
-		rows = 5
+		rows = 5,
+		footer
 	}: Props = $props();
 
 	let textarea = $state<HTMLTextAreaElement | null>(null);
@@ -163,74 +166,102 @@
 	}
 </script>
 
-<div class="shell" bind:this={shell}>
-	<div class="layer overlay" bind:this={overlay} aria-hidden="true">
-		<TemplateHighlight {value} {columns} />
-	</div>
-	<textarea
-		{id}
-		{rows}
-		{placeholder}
-		{disabled}
-		class="layer input"
-		spellcheck="false"
-		bind:this={textarea}
-		bind:value
-		use:autogrow={value}
-		oninput={syncSuggestions}
-		onclick={syncSuggestions}
-		onkeyup={(event) => {
-			if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) syncSuggestions();
-		}}
-		onkeydown={onKeydown}
-		onscroll={onScroll}
-		onblur={() => setTimeout(() => (open = false), 120)}
-		role="combobox"
-		aria-expanded={open}
-		aria-controls={listId}
-		aria-autocomplete="list"></textarea>
+<div class={['frame', disabled && 'disabled']}>
+	<div class="shell" bind:this={shell}>
+		<div class="layer overlay" bind:this={overlay} aria-hidden="true">
+			<TemplateHighlight {value} {columns} />
+		</div>
+		<textarea
+			{id}
+			{rows}
+			{placeholder}
+			{disabled}
+			class="layer input"
+			spellcheck="false"
+			bind:this={textarea}
+			bind:value
+			use:autogrow={value}
+			oninput={syncSuggestions}
+			onclick={syncSuggestions}
+			onkeyup={(event) => {
+				if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) syncSuggestions();
+			}}
+			onkeydown={onKeydown}
+			onscroll={onScroll}
+			onblur={() => setTimeout(() => (open = false), 120)}
+			role="combobox"
+			aria-expanded={open}
+			aria-controls={listId}
+			aria-autocomplete="list"></textarea>
 
-	{#if open}
-		<ul
-			class="popup pop pop-left"
-			id={listId}
-			role="listbox"
-			style="left:{caretLeft}px; top:{caretTop}px"
-			aria-label="Columns"
-		>
-			{#each matches as column, index (column.id)}
-				<li>
-					<button
-						type="button"
-						role="option"
-						aria-selected={index === activeIndex}
-						class="option"
-						class:active={index === activeIndex}
-						onmousedown={(event) => event.preventDefault()}
-						onclick={() => apply(column)}
-						onmouseenter={() => (activeIndex = index)}
-					>
-						<span class="name">{column.name}</span>
-						{#if column.generated}<span class="badge">generated</span>{/if}
-					</button>
-				</li>
-			{/each}
-		</ul>
+		{#if open}
+			<ul
+				class="popup pop pop-left"
+				id={listId}
+				role="listbox"
+				style="left:{caretLeft}px; top:{caretTop}px"
+				aria-label="Columns"
+			>
+				{#each matches as column, index (column.id)}
+					<li>
+						<button
+							type="button"
+							role="option"
+							aria-selected={index === activeIndex}
+							class="option"
+							class:active={index === activeIndex}
+							onmousedown={(event) => event.preventDefault()}
+							onclick={() => apply(column)}
+							onmouseenter={() => (activeIndex = index)}
+						>
+							<span class="name">{column.name}</span>
+							{#if column.generated}<span class="badge">generated</span>{/if}
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+	{#if footer}
+		<div class="footer">{@render footer()}</div>
 	{/if}
 </div>
 
 <style>
-	.shell {
-		position: relative;
-		border: 1px solid var(--line-strong);
+	/* Filled like the other fields, with its actions inside the same surface. */
+	.frame {
+		border: 1px solid transparent;
 		border-radius: var(--radius-control);
-		background: var(--surface);
-		transition: border-color 0.14s ease;
+		background: var(--field);
+		transition:
+			background-color var(--dur-fast) ease,
+			border-color var(--dur-fast) ease,
+			box-shadow var(--dur-fast) ease;
 	}
 
-	.shell:focus-within {
+	.frame:hover:not(.disabled):not(:has(.input:focus)) {
+		background: var(--field-hover);
+	}
+
+	.frame:has(.input:focus) {
+		background: var(--surface);
 		border-color: var(--accent);
-		box-shadow: 0 0 0 3px var(--accent-soft);
+		box-shadow: var(--ring);
+	}
+
+	.frame.disabled {
+		opacity: 0.6;
+	}
+
+	.shell {
+		position: relative;
+	}
+
+	.footer {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0 0.35rem 0.35rem;
 	}
 
 	.layer {

@@ -37,8 +37,9 @@ sheets to try it without your own data.
    anyone else using the same browser (see [Privacy and storage](#privacy-and-storage)).
 2. **Import a sheet.** Drop a CSV or pick one of the three samples. The first row
    becomes the column headers.
-3. **Write the prompt.** Reference columns with `{{Column name}}`. A preset
-   (Classify, Approve or reject, Summarize, Score) gives you a starting draft.
+3. **Pick a job and write the prompt.** The **Job** list (Classify, Approve or
+   reject, Summarize, Score, Custom) fills in a starting draft. Reference columns
+   with `{{Column name}}`.
 4. **Name the new column** and **choose the answer shape**: a label, yes or no, a
    number or free text.
 5. **Choose the rows**: all of them, a range, the ones you ticked, and so on.
@@ -63,8 +64,8 @@ Message: {{Message}}
 
 - **Autocomplete.** Type `{{` (or `@`, or Ctrl Space) and the editor suggests
   columns. Arrow keys pick one, and Enter or Tab inserts it.
-- **Click to insert.** Clicking a column header in the sheet, or a column chip
-  under the editor, adds that reference at the cursor.
+- **Click to insert.** Clicking a column header in the sheet, or **Insert column**
+  inside the editor, adds that reference at the cursor.
 - **Forgiving names.** `{{ customer }}` and `{{Customer}}` point at the same
   column.
 - **Checked as you type.** A reference that matches no column is underlined in
@@ -82,12 +83,12 @@ The shape you choose becomes a JSON schema that Ollama enforces while it
 generates. The model returns the value and nothing else: no greeting, no
 explanation, no markdown.
 
-| Shape         | Writes into the cell        | Options                                      |
-| ------------- | --------------------------- | -------------------------------------------- |
-| **Label**     | One label from your list    | Optionally accept answers outside the list   |
-| **Yes / no**  | One of two words you choose | For example `Approve` and `Reject`           |
-| **Number**    | A number                    | Lowest and highest value, whole numbers only |
-| **Free text** | A single line of text       | A rough word budget (25 by default)          |
+| Shape        | Writes into the cell        | Options                                      |
+| ------------ | --------------------------- | -------------------------------------------- |
+| **Label**    | One label from your list    | Optionally accept answers outside the list   |
+| **Yes / no** | One of two words you choose | For example `Approve` and `Reject`           |
+| **Number**   | A number                    | Lowest and highest value, whole numbers only |
+| **Text**     | A single line of text       | A rough word budget (25 by default)          |
 
 If a reply still misses (a label with the wrong case, say, or a number buried in
 a sentence), it's repaired where the intent is clear. Otherwise the row is retried
@@ -104,8 +105,9 @@ the row is marked as failed and shows the reason.
 | **Ticked rows**   | Rows you ticked in the sheet, with search or from answer counts |
 | **Empty results** | Rows whose result cell is still blank, to finish a stopped run  |
 
-Untick **Replace values that are already there** to leave filled cells alone. The
-composer always shows how many rows the run will touch before you start it.
+Pick these from **Rows to run** in the panel. Untick **Replace values that are
+already there** to leave filled cells alone. The **Run** button always says how
+many rows the run will touch before you start it.
 
 ## Finding cells
 
@@ -210,7 +212,8 @@ These live in `static/samples/`. Each one opens with the preset that suits it.
 
 ## Settings
 
-The **settings button** (the gear beside the model picker in the status bar) has:
+The **settings button** (the gear beside the model picker, at the foot of the
+panel) has:
 
 | Setting                          | Default                  | Notes                                                   |
 | -------------------------------- | ------------------------ | ------------------------------------------------------- |
@@ -219,13 +222,18 @@ The **settings button** (the gear beside the model picker in the status bar) has
 | Ollama address                   | `http://localhost:11434` | Remembered in the browser.                              |
 | Let thinking models reason first | Off                      | Lets reasoning models think before they answer. Slower. |
 
-Click the **connection status** at the left of the status bar to reload the
-model list after you pull a new model.
+Click the **connection status** just above the model picker to reload the model
+list after you pull a new model. Ollama Cloud models (tags ending in `cloud`)
+show up there too once you've signed in to Ollama and pulled them, marked
+**cloud** in the list. Their prompts are sent to Ollama's servers rather than
+staying on your machine.
 
 ## Privacy and storage
 
 - The CSV is read in the browser. It isn't uploaded anywhere.
 - Apart from loading the app itself, the only requests go to your Ollama address.
+  If you choose an Ollama Cloud model, your local Ollama forwards those prompts to
+  Ollama's servers.
 - Projects are saved in the browser's IndexedDB and are private to that browser
   profile. Clearing site data deletes them, so export anything you want to keep.
 - Accounts are **local**. Passphrases are never stored: the app keeps a salted

@@ -17,7 +17,7 @@ afterEach(() => {
 	sidebar.width = SIDEBAR_DEFAULT;
 });
 
-/** Inside a positioned pane, as in the app, so the handle straddles its left edge on screen. */
+/** Inside a positioned pane, as in the app, so the handle straddles its right edge on screen. */
 function mount() {
 	const pane = document.createElement('div');
 	pane.style.cssText = 'position: relative; margin-left: 600px; width: 384px; height: 400px;';
@@ -49,24 +49,24 @@ describe('SidebarResizer', () => {
 		await expect.element(handle()).toHaveAttribute('tabindex', '0');
 	});
 
-	it('widens the sidebar when its edge is dragged left, and remembers it', async () => {
+	it('widens the sidebar when its edge is dragged right, and remembers it', async () => {
 		mount();
-		drag(600, 500);
+		drag(600, 700);
 		expect(sidebar.width).toBe(SIDEBAR_DEFAULT + 100);
 		expect(localStorage.getItem(KEY)).toBe(String(SIDEBAR_DEFAULT + 100));
 		await expect.element(handle()).toHaveAttribute('aria-valuenow', String(SIDEBAR_DEFAULT + 100));
 	});
 
-	it('narrows it when dragged right, down to its minimum', async () => {
+	it('narrows it when dragged left, down to its minimum', async () => {
 		mount();
-		drag(600, 1400);
+		drag(600, 0);
 		expect(sidebar.width).toBe(SIDEBAR_MIN);
 	});
 
 	it('stops following the pointer once released', async () => {
 		mount();
-		drag(600, 560);
-		window.dispatchEvent(new PointerEvent('pointermove', { clientX: 100 }));
+		drag(600, 640);
+		window.dispatchEvent(new PointerEvent('pointermove', { clientX: 1400 }));
 		expect(sidebar.width).toBe(SIDEBAR_DEFAULT + 40);
 	});
 
@@ -87,9 +87,9 @@ describe('SidebarResizer', () => {
 	it('resizes from the keyboard, in bigger steps with Shift', async () => {
 		mount();
 		handle().element().focus();
-		await userEvent.keyboard('{ArrowLeft}');
+		await userEvent.keyboard('{ArrowRight}');
 		expect(sidebar.width).toBe(SIDEBAR_DEFAULT + 16);
-		await userEvent.keyboard('{Shift>}{ArrowRight}{/Shift}');
+		await userEvent.keyboard('{Shift>}{ArrowLeft}{/Shift}');
 		expect(sidebar.width).toBe(SIDEBAR_DEFAULT + 16 - 64);
 		await userEvent.keyboard('{Home}');
 		expect(sidebar.width).toBe(SIDEBAR_MIN);
@@ -99,7 +99,7 @@ describe('SidebarResizer', () => {
 
 	it('goes back to the default width on double-click', async () => {
 		mount();
-		drag(600, 450);
+		drag(600, 750);
 		await userEvent.dblClick(handle());
 		expect(sidebar.width).toBe(SIDEBAR_DEFAULT);
 	});

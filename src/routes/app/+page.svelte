@@ -15,7 +15,6 @@
 	import Brand from '$lib/components/Brand.svelte';
 	import CellReader from '$lib/components/CellReader.svelte';
 	import Composer from '$lib/components/Composer.svelte';
-	import RunBar from '$lib/components/RunBar.svelte';
 	import DataGrid from '$lib/components/DataGrid.svelte';
 	import ExportMenu from '$lib/components/ExportMenu.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
@@ -33,18 +32,14 @@
 
 	const ws = new Workspace();
 	let composer = $state<Composer | null>(null);
-	let runBar = $state<RunBar | null>(null);
 	let searchBar = $state<SearchBar | null>(null);
 	let view = $state<'sheet' | 'prompt'>('sheet');
 
-	// On wide screens the composer floats over the sheet's right edge as frosted
-	// glass. The grid needs its width to keep columns reachable from under it.
-	const overlay = new MediaQuery('min-width: 1024px');
-	let sidebarWidth = $state(0);
-	const occludedRight = $derived(overlay.current ? sidebarWidth : 0);
-	// On phones the Prompt tab lays the composer over the whole sheet. The sheet
-	// stays drawn so it shows through the glass, but it can't be reached.
-	const sheetCovered = $derived(!overlay.current && view === 'prompt');
+	// Wide windows put the panel beside the sheet. Narrower ones switch between
+	// them with tabs, the panel laid over the whole sheet as frosted glass; the
+	// sheet stays drawn so it shows through, but it can't be reached.
+	const wide = new MediaQuery('min-width: 1024px');
+	const sheetCovered = $derived(!wide.current && view === 'prompt');
 	let loadedId = $state('');
 
 	$effect(() => {
@@ -76,13 +71,13 @@
 		toast.dismiss();
 	});
 
-	// On a phone the status bar is too narrow to show progress: say when a run ends.
+	// Looking at the sheet on a narrow screen, the run's panel is out of sight: say when a run ends.
 	let previousRunState = ws.runState;
 	$effect(() => {
 		const state = ws.runState;
 		const ended = previousRunState === 'running' && (state === 'done' || state === 'stopped');
 		previousRunState = state;
-		if (!ended || overlay.current) return;
+		if (!ended || wide.current || view !== 'sheet') return;
 		const column = ws.columns.find((candidate) => candidate.id === ws.lastRunColumnId)?.name;
 		const written = `${ws.runDone} ${ws.runDone === 1 ? 'row' : 'rows'} written`;
 		toast.show(column ? `${written} to ${column}` : written, ws.runFailed ? 'info' : 'success');
@@ -118,14 +113,8 @@
 			ws.stepSearch(event.shiftKey ? -1 : 1);
 		} else if (key === 'enter' && !ws.isBusy) {
 			event.preventDefault();
-			runBar?.run();
+			composer?.run();
 		}
-	}
-
-	async function showNotice() {
-		view = 'prompt';
-		await tick();
-		composer?.showNotice();
 	}
 
 	// The name field sizes itself to the name where the browser can; elsewhere, a close guess.
@@ -142,8 +131,12 @@
 	<title>{ws.project ? `${ws.project.name} | prompt2column` : 'prompt2column'}</title>
 </svelte:head>
 
-<div class="grid h-[100dvh] grid-cols-[minmax(0,1fr)] grid-rows-[3.25rem_minmax(0,1fr)_auto]">
-	<header class="topbar">
+<!--
+	Two columns on a wide screen, each with its own header: the panel under the
+	project's name on the left, the sheet under its tools on the right.
+-->
+<div class="app" style:--side-width="{sidebar.shown}px">
+	<header class="brandbar">
 		<a href={resolve('/')} class="home" aria-label="Back to projects">
 			<Brand markOnly />
 		</a>
@@ -160,18 +153,20 @@
 				/>
 			{/if}
 		</nav>
+	</header>
 
+	<header class="toolbar">
 		{#if ws.project}
-			<div class="stats" aria-label="Sheet size">
-				<span class="stat"><b>{ws.rows.length}</b> rows</span>
-				<span class="stat"><b>{ws.columns.length}</b> columns</span>
+			<p class="stats" aria-label="Sheet size">
+				<span><b>{ws.rows.length}</b> rows</span>
+				<span><b>{ws.columns.length}</b> columns</span>
 				{#if generatedCount}
-					<span class="stat generated">
+					<span class="generated">
 						<Icon icon={AiMagicIcon} size={12} />
 						<b>{generatedCount}</b> generated
 					</span>
 				{/if}
-			</div>
+			</p>
 		{/if}
 
 		{#if ws.selected.size}
@@ -204,9 +199,9 @@
 	</header>
 
 	{#if ws.loading}
-		<div class="grid place-items-center text-sm text-ink-3">Opening the sheet</div>
+		<div class="message text-sm text-ink-3">Opening the sheet</div>
 	{:else if ws.loadError}
-		<div class="grid place-items-center px-6">
+		<div class="message px-6">
 			<div class="max-w-sm text-center">
 				<p class="text-sm font-medium text-ink">{ws.loadError}</p>
 				<button class="btn btn-soft mt-4" onclick={() => goto(resolve('/'))}>
@@ -215,51 +210,69 @@
 			</div>
 		</div>
 	{:else if ws.project}
-		<div class="workspace">
-			<div class="tabs">
-				<button class:on={view === 'sheet'} onclick={() => (view = 'sheet')}>
-					<Icon icon={GridTableIcon} size={15} /> Sheet
-				</button>
-				<button class:on={view === 'prompt'} onclick={() => (view = 'prompt')}>
-					<Icon icon={AiMagicIcon} size={15} /> Prompt
-				</button>
-			</div>
-
-			<div class="main">
-				<div class="pane sheet" inert={sheetCovered}>
-					<CellReader {ws} {occludedRight} />
-					<DataGrid {ws} onInsert={insert} {occludedRight} />
-				</div>
-				<div
-					class={['pane', 'side', view !== 'prompt' && 'hide']}
-					style:--side-width="{sidebar.shown}px"
-					bind:offsetWidth={sidebarWidth}
-				>
-					{#if overlay.current}
-						<SidebarResizer />
-					{/if}
-					<Composer bind:this={composer} {ws} />
-				</div>
-			</div>
+		<div class="tabs">
+			<button class:on={view === 'sheet'} onclick={() => (view = 'sheet')}>
+				<Icon icon={GridTableIcon} size={15} /> Sheet
+			</button>
+			<button class:on={view === 'prompt'} onclick={() => (view = 'prompt')}>
+				<Icon icon={AiMagicIcon} size={15} /> Prompt
+			</button>
 		</div>
-		<RunBar bind:this={runBar} {ws} onShowNotice={showNotice} />
+
+		<div class={['pane', 'side', view !== 'prompt' && 'hide']}>
+			{#if wide.current}
+				<SidebarResizer />
+			{/if}
+			<Composer bind:this={composer} {ws} />
+		</div>
+
+		<div class="pane sheet" inert={sheetCovered}>
+			<CellReader {ws} />
+			<DataGrid {ws} onInsert={insert} />
+		</div>
 	{/if}
 </div>
 
 <style>
-	.topbar {
+	/* Narrow first: one column, with the panel and the sheet sharing the main cell.
+	   minmax(0, 1fr) stops any child's natural width from widening the page. */
+	.app {
+		display: grid;
+		height: 100dvh;
+		grid-template-columns: auto minmax(0, 1fr);
+		grid-template-rows: 3.25rem auto minmax(0, 1fr);
+		grid-template-areas:
+			'brand toolbar'
+			'tabs tabs'
+			'main main';
+	}
+
+	.brandbar,
+	.toolbar {
 		display: flex;
 		align-items: center;
-		gap: 0.75rem;
 		min-width: 0;
-		padding: 0 0.75rem 0 0.9rem;
 		background: var(--surface);
 		border-bottom: 1px solid var(--line);
+	}
+
+	.brandbar {
+		grid-area: brand;
+		gap: 0.6rem;
+		padding: 0 0.5rem 0 0.9rem;
+	}
+
+	.toolbar {
+		grid-area: toolbar;
+		gap: 0.75rem;
+		padding: 0 0.75rem 0 0.5rem;
+		container-type: inline-size;
 	}
 
 	.home {
 		display: grid;
 		place-items: center;
+		flex-shrink: 0;
 		border-radius: 7px;
 	}
 
@@ -271,6 +284,7 @@
 	}
 
 	.crumb {
+		flex-shrink: 0;
 		padding: 0.2rem 0.35rem;
 		border-radius: 6px;
 		font-size: 0.8125rem;
@@ -282,7 +296,7 @@
 
 	.crumb:hover {
 		color: var(--text);
-		background: var(--surface-2);
+		background: var(--field);
 	}
 
 	.crumbs :global(.sep) {
@@ -310,7 +324,7 @@
 	}
 
 	.name:hover {
-		background: var(--surface-2);
+		background: var(--field);
 	}
 
 	.name:focus {
@@ -320,39 +334,39 @@
 		box-shadow: var(--ring);
 	}
 
+	/* The sheet's size as a line of quiet text, not a row of badges. */
 	.stats {
 		display: none;
 		align-items: center;
-		gap: 0.35rem;
-	}
-
-	.stat {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		height: 1.4rem;
-		padding: 0 0.5rem;
-		border-radius: 999px;
-		background: var(--surface-2);
-		font-size: 0.6875rem;
+		gap: 0.9rem;
+		padding-left: 0.5rem;
+		font-size: 0.75rem;
 		color: var(--text-3);
 		white-space: nowrap;
 	}
 
-	.stat b {
+	.stats span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.3rem;
+	}
+
+	.stats b {
 		font-family: var(--font-mono);
 		font-weight: 500;
 		color: var(--text-2);
 		font-variant-numeric: tabular-nums;
 	}
 
-	.stat.generated {
-		background: var(--accent-soft);
+	.stats .generated,
+	.stats .generated b {
 		color: var(--accent-text);
 	}
 
-	.stat.generated b {
-		color: var(--accent-text);
+	@container (min-width: 720px) {
+		.stats {
+			display: flex;
+		}
 	}
 
 	.actions {
@@ -360,12 +374,6 @@
 		align-items: center;
 		gap: 0.35rem;
 		margin-left: auto;
-	}
-
-	@media (min-width: 1100px) {
-		.stats {
-			display: flex;
-		}
 	}
 
 	.ticked {
@@ -418,31 +426,14 @@
 		}
 	}
 
-	/* minmax(0, 1fr) columns stop any child's natural width from widening the
-	   page past a phone screen. */
-	.workspace {
+	.message {
+		grid-area: main;
 		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: auto minmax(0, 1fr);
-		min-height: 0;
-	}
-
-	/* Both panes share one cell: the sheet underneath, the composer floating on top
-	   as frosted glass. Layers: grid header and gutter stay below 20, the composer
-	   is 20, popovers 40. */
-	.main {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr);
-		grid-template-rows: minmax(0, 1fr);
-		min-height: 0;
-	}
-
-	.pane {
-		min-height: 0;
-		min-width: 0;
+		place-items: center;
 	}
 
 	.tabs {
+		grid-area: tabs;
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		border-bottom: 1px solid var(--line);
@@ -466,9 +457,10 @@
 		font-weight: 500;
 	}
 
-	.pane.sheet,
-	.pane.side {
-		grid-area: 1 / 1;
+	.pane {
+		grid-area: main;
+		min-height: 0;
+		min-width: 0;
 	}
 
 	/* Cell reader, then the grid. */
@@ -478,14 +470,13 @@
 		grid-template-rows: auto minmax(0, 1fr);
 	}
 
+	/* Narrow: the Prompt tab lays the panel over the sheet, the Sheet tab removes it.
+	   Layers: grid header and gutter stay below 20, the panel is 20, popovers 40. */
 	.pane.side {
 		z-index: 20;
 		background: var(--surface);
-		--composer-bg: transparent;
-		--composer-edge: transparent;
 	}
 
-	/* Tabbed layout: the Prompt tab covers the sheet, the Sheet tab removes the panel. */
 	.pane.side.hide {
 		display: none;
 	}
@@ -495,35 +486,8 @@
 			background: var(--glass);
 			-webkit-backdrop-filter: blur(6px) saturate(1.4);
 			backdrop-filter: blur(6px) saturate(1.4);
-			--composer-footer-bg: var(--glass-footer);
-		}
-	}
-
-	/* Wide layout: no tabs, and the composer becomes a sidebar over the sheet's
-	   right edge. Scoped rules outrank Tailwind utilities, so the breakpoint lives here. */
-	@media (min-width: 1024px) {
-		.tabs {
-			display: none;
-		}
-
-		.pane.side {
-			position: relative;
-			justify-self: end;
-			width: var(--side-width, 24rem);
-			border-left: 1px solid var(--line);
-		}
-
-		.pane.side.hide {
-			display: block;
-		}
-
-		@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-			.pane.side {
-				border-left-color: var(--glass-edge);
-				box-shadow:
-					inset 1px 0 0 var(--glass-highlight),
-					var(--glass-shadow);
-			}
+			--composer-bg: transparent;
+			--dock-bg: var(--glass-footer);
 		}
 	}
 
@@ -532,7 +496,55 @@
 			background: var(--surface);
 			-webkit-backdrop-filter: none;
 			backdrop-filter: none;
-			--composer-footer-bg: var(--surface-2);
+			--dock-bg: var(--surface);
+		}
+	}
+
+	/* Wide: no tabs. The panel takes the left column under the project's name, a
+	   resizable width, and one hairline from the top of the window to the bottom
+	   keeps it apart from the sheet. Scoped rules outrank Tailwind utilities, so
+	   the breakpoint lives here. */
+	@media (min-width: 1024px) {
+		.app {
+			grid-template-columns: var(--side-width, 24rem) minmax(0, 1fr);
+			grid-template-rows: 3.25rem minmax(0, 1fr);
+			grid-template-areas:
+				'brand toolbar'
+				'side sheet';
+		}
+
+		.brandbar {
+			border-right: 1px solid var(--line);
+		}
+
+		.toolbar {
+			padding-left: 0.5rem;
+		}
+
+		.tabs {
+			display: none;
+		}
+
+		.message {
+			grid-area: side / side / sheet / sheet;
+		}
+
+		.pane.side,
+		.pane.side.hide {
+			grid-area: side;
+			position: relative;
+			display: block;
+			z-index: auto;
+			border-right: 1px solid var(--line);
+			background: var(--surface);
+			-webkit-backdrop-filter: none;
+			backdrop-filter: none;
+			--composer-bg: var(--surface);
+			--dock-bg: var(--surface);
+		}
+
+		.pane.sheet {
+			grid-area: sheet;
 		}
 	}
 </style>

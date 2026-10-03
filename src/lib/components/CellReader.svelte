@@ -11,11 +11,9 @@
 
 	interface Props {
 		ws: Workspace;
-		/** Width of the sidebar floating over the right edge, kept clear of the text. */
-		occludedRight?: number;
 	}
 
-	let { ws, occludedRight = 0 }: Props = $props();
+	let { ws }: Props = $props();
 
 	/** Everything about the selected cell, kept live so a run fills it in as you watch. */
 	const cell = $derived.by(() => {
@@ -73,11 +71,7 @@
 	sheet (if it appeared on the first click, the second click of a double-click
 	would land on a different row).
 -->
-<section
-	class="reader"
-	aria-label="Cell reader"
-	style:padding-right="calc(0.75rem + {occludedRight}px)"
->
+<section class="reader" aria-label="Cell reader">
 	<div class={['address', cell?.editing && 'editing-now']}>
 		{#if cell}
 			<strong class="column">{cell.column.name}</strong>

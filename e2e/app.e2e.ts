@@ -48,6 +48,12 @@ async function signUp(page: Page, name = 'ines.moreau') {
 	await expect(page.getByRole('heading', { name: 'Start a project' })).toBeVisible();
 }
 
+/** Picks which rows the next run takes, from the panel's "Rows to run" list. */
+async function chooseRows(page: Page, name: string) {
+	await page.getByRole('combobox', { name: 'Rows to run' }).click();
+	await page.getByRole('option', { name }).click();
+}
+
 /** Picks a format from the Export menu and returns the downloaded file. */
 async function exportAs(page: Page, format: 'CSV' | 'JSON') {
 	await page.getByRole('button', { name: 'Export' }).click();
@@ -143,10 +149,9 @@ test('keeps the project and its generated column after leaving and coming back',
 
 	await page.getByRole('button', { name: /Expense requests/ }).click();
 	await page.getByLabel('Column name').fill('Decision');
-	await page.getByRole('button', { name: 'A range' }).click();
+	await chooseRows(page, 'A range');
 	await page.getByLabel('First row in the range').fill('1');
 	await page.getByLabel('Last row in the range').fill('4');
-	await expect(page.getByText('This run will touch')).toContainText('4');
 
 	await page.getByRole('button', { name: /Run on 4 rows/ }).click();
 	await expect(page.getByText('4 / 4 rows')).toBeVisible({ timeout: 30_000 });
@@ -236,7 +241,7 @@ test('finds cells from the keyboard and runs the prompt on just those rows', asy
 	await expect(page.getByRole('search')).toContainText(/2\s+of 2/);
 
 	await page.getByRole('button', { name: 'Tick 2 rows' }).click();
-	await page.getByRole('button', { name: 'Ticked rows' }).click();
+	await chooseRows(page, 'Ticked rows');
 	await expect(page.getByRole('button', { name: /Run on 2 rows/ })).toBeEnabled();
 
 	await search.press('Escape');
@@ -244,28 +249,27 @@ test('finds cells from the keyboard and runs the prompt on just those rows', asy
 	await expect(page.locator('mark')).toHaveCount(0);
 });
 
-test('floats the composer over the sheet as frosted glass on wide screens and phones', async ({
-	page
-}) => {
+test('puts the panel beside the sheet on wide screens, and over it on phones', async ({ page }) => {
 	await page.setViewportSize({ width: 1180, height: 760 });
 	await mockOllama(page);
 	await signUp(page, 'freya.glass');
 	await page.getByRole('button', { name: /Support tickets/ }).click();
 
+	// Wide: the panel takes the left column and the sheet starts where it ends.
 	const grid = page.getByRole('grid');
 	const sidebar = page.locator('.pane.side');
 	await expect(page.getByRole('complementary')).toBeVisible();
-	expect(await sidebar.evaluate((el) => getComputedStyle(el).backdropFilter)).toContain('blur');
-
-	// The sheet runs on underneath the sidebar instead of stopping at its edge.
-	const gridBox = (await grid.boundingBox())!;
 	const sideBox = (await sidebar.boundingBox())!;
-	expect(gridBox.x + gridBox.width).toBeGreaterThan(sideBox.x + sideBox.width / 2);
+	const gridBox = (await grid.boundingBox())!;
+	expect(sideBox.x).toBeLessThanOrEqual(1);
+	expect(gridBox.x).toBeGreaterThanOrEqual(sideBox.x + sideBox.width - 1);
+	expect(gridBox.x + gridBox.width).toBeLessThanOrEqual(1180 + 1);
 
-	// Scrolled all the way right, the last column sits clear of the glass.
-	await grid.evaluate((el) => (el.scrollLeft = el.scrollWidth));
-	const last = (await page.getByRole('columnheader', { name: /Message/ }).boundingBox())!;
-	expect(last.x + last.width).toBeLessThanOrEqual(sideBox.x + 1);
+	// Model, settings and Run sit together at the foot of the panel.
+	const run = page.getByRole('button', { name: /Run on 15 rows/ });
+	const runBox = (await run.boundingBox())!;
+	expect(runBox.x + runBox.width).toBeLessThanOrEqual(sideBox.x + sideBox.width + 1);
+	expect(runBox.y + runBox.height).toBeGreaterThan(760 - 80);
 
 	// On phones the Prompt tab lays the panel over the whole sheet, which stays
 	// drawn underneath so it shows through the glass but can't be reached.
@@ -304,10 +308,10 @@ test('reads a long cell in full and copies it', async ({ page, context }) => {
 	// The grid cuts this note off; the reader shows it through to its last words.
 	await expect(reader).toContainText('said it felt like 30.');
 
-	// On a wide screen the text wraps before the frosted sidebar, not under it.
+	// On a wide screen the reader sits over the sheet, clear of the panel beside it.
 	const text = (await reader.locator('.text').boundingBox())!;
 	const sidebar = (await page.locator('.pane.side').boundingBox())!;
-	expect(text.x + text.width).toBeLessThanOrEqual(sidebar.x + 1);
+	expect(text.x).toBeGreaterThanOrEqual(sidebar.x + sidebar.width - 1);
 
 	await reader.getByRole('button', { name: 'Copy cell text' }).click();
 	await expect(reader.getByRole('button', { name: 'Copied' })).toBeVisible();
@@ -352,7 +356,7 @@ test("tallies a run's answers and re-runs just one of them", async ({ page }) =>
 	await expect(menu).toBeHidden();
 	await expect(page.locator('.row.selected')).toHaveCount(5);
 
-	await page.getByRole('button', { name: 'Ticked rows' }).click();
+	await chooseRows(page, 'Ticked rows');
 	await expect(page.getByRole('button', { name: /Run on 5 rows/ })).toBeEnabled();
 });
 
@@ -451,20 +455,19 @@ test('lets the sidebar be dragged wider, keeps the sheet in step, and remembers 
 
 	const sidebar = page.locator('.pane.side');
 	const handle = page.getByRole('separator', { name: 'Resize sidebar' });
-	const lastTrack = () =>
-		page.locator('.head').evaluate((head) => head.style.gridTemplateColumns.split(' ').at(-1));
+	const sheetLeft = () => page.getByRole('grid').evaluate((el) => el.getBoundingClientRect().left);
 	await expect(handle).toHaveAttribute('aria-valuenow', '384');
-	expect(await lastTrack()).toBe('384px');
+	expect(Math.round(await sheetLeft())).toBe(384);
 
 	const box = (await handle.boundingBox())!;
 	await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
 	await page.mouse.down();
-	await page.mouse.move(box.x + box.width / 2 - 150, box.y + box.height / 2, { steps: 5 });
+	await page.mouse.move(box.x + box.width / 2 + 150, box.y + box.height / 2, { steps: 5 });
 	await page.mouse.up();
 
 	await expect(sidebar).toHaveJSProperty('offsetWidth', 534);
-	// The sheet's spare room past its last column grows with the sidebar floating over it.
-	await expect.poll(lastTrack).toBe('534px');
+	// The sheet gives up the room the panel took.
+	await expect.poll(async () => Math.round(await sheetLeft())).toBe(534);
 
 	await page.reload();
 	await expect(page.getByRole('grid')).toBeVisible();

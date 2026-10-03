@@ -206,7 +206,7 @@ describe('search in the grid', () => {
 	});
 });
 
-describe('grid under the frosted sidebar', () => {
+describe('grid scrolling sideways', () => {
 	const wide: Column[] = [
 		{ id: 'c1', name: 'Customer', generated: false },
 		{ id: 'c2', name: 'Message', generated: false },
@@ -224,43 +224,23 @@ describe('grid under the frosted sidebar', () => {
 		return ws;
 	}
 
-	it('adds room at the end of each row so the last column can clear the sidebar', async () => {
-		const ws = workspace();
-		render(DataGrid, {
-			props: { ws, onInsert: () => {}, occludedRight: 250 },
-			target: sizedTarget()
-		});
-		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
-		await expect.poll(() => grid.scrollWidth).toBeGreaterThan(0);
-		const columnsWidth = [...document.querySelectorAll<HTMLElement>('.head-cell')].reduce(
-			(sum, cell) => sum + cell.offsetWidth,
-			0
-		);
-		expect(grid.scrollWidth).toBe(columnsWidth + 250);
-	});
-
-	it('scrolls a match out from under the sidebar', async () => {
+	it('scrolls a match sideways into view', async () => {
 		const ws = workspace();
 		render(SearchBar, { props: { ws } });
-		render(DataGrid, {
-			props: { ws, onInsert: () => {}, occludedRight: 250 },
-			target: sizedTarget(820)
-		});
+		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget(560) });
 		await userEvent.fill(page.getByRole('searchbox'), 'needle');
 		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
 		await expect.poll(() => grid.scrollLeft).toBeGreaterThan(0);
 		const cell = document.querySelector<HTMLElement>('.cell.current')!;
-		const clearEdge = grid.getBoundingClientRect().right - 250;
-		expect(cell.getBoundingClientRect().right).toBeLessThanOrEqual(clearEdge + 1);
+		expect(cell.getBoundingClientRect().right).toBeLessThanOrEqual(
+			grid.getBoundingClientRect().right + 1
+		);
 	});
 
-	it('lines up a column wider than the clear area by its left edge', async () => {
+	it('lines up a column wider than the view by its left edge', async () => {
 		const ws = workspace();
 		render(SearchBar, { props: { ws } });
-		render(DataGrid, {
-			props: { ws, onInsert: () => {}, occludedRight: 250 },
-			target: sizedTarget(520)
-		});
+		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget(300) });
 		await userEvent.fill(page.getByRole('searchbox'), 'needle');
 		const grid = document.querySelector<HTMLElement>('[role="grid"]')!;
 		await expect.poll(() => grid.scrollLeft).toBeGreaterThan(0);
@@ -284,7 +264,7 @@ describe('grid under the frosted sidebar', () => {
 		await expect.poll(edge).toBe(1);
 	});
 
-	it('leaves the layout alone when nothing floats over the grid', async () => {
+	it('lays out one track per column after the gutter', async () => {
 		const ws = workspace();
 		render(DataGrid, { props: { ws, onInsert: () => {} }, target: sizedTarget() });
 		const head = document.querySelector<HTMLElement>('.head')!;

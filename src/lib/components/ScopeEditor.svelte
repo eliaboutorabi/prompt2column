@@ -7,9 +7,8 @@
 		ListViewIcon
 	} from '@hugeicons/core-free-icons';
 	import type { IconSvgElement } from '@hugeicons/svelte';
-	import Icon from '$lib/components/Icon.svelte';
-	import { tooltip } from '$lib/actions/tooltip';
 	import NumberField from './NumberField.svelte';
+	import Select from './Select.svelte';
 	import type { RowScope, ScopeKind } from '$lib/core/types';
 
 	interface Props {
@@ -17,9 +16,10 @@
 		overwrite: boolean;
 		rowCount: number;
 		selectedCount: number;
-		matchCount: number;
 		hasTarget: boolean;
 		disabled?: boolean;
+		/** Id for the list, so a <label for> outside can name it. */
+		id?: string;
 	}
 
 	let {
@@ -27,18 +27,28 @@
 		overwrite = $bindable(),
 		rowCount,
 		selectedCount,
-		matchCount,
 		hasTarget,
-		disabled = false
+		disabled = false,
+		id = 'scope'
 	}: Props = $props();
 
-	const options: Array<{ id: ScopeKind; label: string; icon: IconSvgElement }> = [
+	const kinds: Array<{ id: ScopeKind; label: string; icon: IconSvgElement }> = [
 		{ id: 'all', label: 'Every row', icon: ListViewIcon },
 		{ id: 'first', label: 'First few', icon: LeftToRightListNumberIcon },
 		{ id: 'range', label: 'A range', icon: ArrowDataTransferVerticalIcon },
 		{ id: 'selected', label: 'Ticked rows', icon: CheckmarkSquare02Icon },
 		{ id: 'empty', label: 'Empty results', icon: DashedLineCircleIcon }
 	];
+
+	const options = $derived(
+		kinds.map((kind) => ({
+			value: kind.id,
+			label: kind.label,
+			icon: kind.icon,
+			disabled: kind.id === 'empty' && !hasTarget,
+			reason: 'Available once the column exists'
+		}))
+	);
 
 	// The saved counts don't know the sheet's size; fit them to it when picked.
 	function pick(kind: ScopeKind) {
@@ -51,40 +61,21 @@
 	}
 </script>
 
-<div class="grid gap-2">
-	<div class="scope-head">
-		<span class="label">Rows to run</span>
-		<p class="touch">
-			This run will touch
-			<strong>{matchCount}</strong>
-			{matchCount === 1 ? 'row' : 'rows'}
-		</p>
-	</div>
-	<div class="flex flex-wrap gap-1.5">
-		{#each options as option (option.id)}
-			{@const unavailable = option.id === 'empty' && !hasTarget}
-			<!-- A disabled button gets no hover, so the reason lives on its wrapper. -->
-			<span
-				class="pill-wrap"
-				use:tooltip={unavailable ? 'Available once the column exists' : undefined}
-			>
-				<button
-					type="button"
-					class="pill"
-					class:on={scope.kind === option.id}
-					disabled={disabled || unavailable}
-					onclick={() => pick(option.id)}
-				>
-					<Icon icon={option.icon} size={13} />
-					{option.label}
-				</button>
-			</span>
-		{/each}
-	</div>
+<div class="scope">
+	<div class="line">
+		<span class="kind">
+			<Select
+				{id}
+				block
+				{options}
+				value={scope.kind}
+				{disabled}
+				onchange={(value) => pick(value as ScopeKind)}
+			/>
+		</span>
 
-	{#if scope.kind === 'first'}
-		<div class="flex items-center gap-2">
-			<div class="w-24">
+		{#if scope.kind === 'first'}
+			<span class="number">
 				<NumberField
 					min={1}
 					max={rowCount}
@@ -92,12 +83,10 @@
 					{disabled}
 					label="How many rows from the top"
 				/>
-			</div>
-			<span class="text-xs text-ink-3">rows from the top</span>
-		</div>
-	{:else if scope.kind === 'range'}
-		<div class="flex items-center gap-2">
-			<div class="w-24">
+			</span>
+			<span class="note">from the top</span>
+		{:else if scope.kind === 'range'}
+			<span class="number">
 				<NumberField
 					min={1}
 					max={rowCount}
@@ -105,9 +94,9 @@
 					{disabled}
 					label="First row in the range"
 				/>
-			</div>
-			<span class="text-xs text-ink-3">to</span>
-			<div class="w-24">
+			</span>
+			<span class="note">to</span>
+			<span class="number">
 				<NumberField
 					min={1}
 					max={rowCount}
@@ -115,87 +104,49 @@
 					{disabled}
 					label="Last row in the range"
 				/>
-			</div>
-		</div>
-	{:else if scope.kind === 'selected'}
-		<p class="text-xs text-ink-3">
-			{selectedCount === 0
-				? 'Tick rows in the sheet to build this set.'
-				: `${selectedCount} ticked in the sheet.`}
-		</p>
-	{/if}
+			</span>
+		{:else if scope.kind === 'selected'}
+			<span class="note">
+				{selectedCount === 0 ? 'Tick rows in the sheet' : `${selectedCount} ticked in the sheet`}
+			</span>
+		{/if}
+	</div>
 
-	<label class="toggle" class:hidden={scope.kind === 'empty'}>
-		Replace values that are already there
-		<input type="checkbox" role="switch" bind:checked={overwrite} {disabled} />
-	</label>
+	{#if scope.kind !== 'empty'}
+		<label class="toggle">
+			Replace values that are already there
+			<input type="checkbox" role="switch" bind:checked={overwrite} {disabled} />
+		</label>
+	{/if}
 </div>
 
 <style>
-	.pill {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.3rem;
-		height: 1.65rem;
-		border-radius: 999px;
-		border: 1px solid var(--line-strong);
-		background: var(--surface);
-		padding: 0 0.6rem 0 0.5rem;
-		font-size: 0.75rem;
-		color: var(--text-2);
-		box-shadow: var(--elev-1);
-		transition:
-			background-color var(--dur-fast) ease,
-			color var(--dur-fast) ease,
-			border-color var(--dur-fast) ease;
+	.scope {
+		display: grid;
+		gap: 0.75rem;
 	}
 
-	.pill:hover:not(.on):not(:disabled) {
-		background: var(--surface-2);
-		color: var(--text);
-	}
-
-	/* Soft, like the presets: the Run button stays the only solid accent in the panel. */
-	.pill.on {
-		background: var(--accent-soft);
-		border-color: var(--accent-line);
-		color: var(--accent-text);
-		font-weight: 500;
-	}
-
-	.scope-head {
+	.line {
 		display: flex;
-		align-items: baseline;
-		justify-content: space-between;
+		align-items: center;
 		gap: 0.5rem;
+		min-width: 0;
 	}
 
-	.scope-head .label {
-		margin-bottom: 0;
+	.kind {
+		display: flex;
+		flex: 1 1 9rem;
+		min-width: 0;
 	}
 
-	.touch {
-		font-size: 0.6875rem;
+	.number {
+		flex: 0 0 4.75rem;
+	}
+
+	.note {
+		flex-shrink: 0;
+		font-size: 0.75rem;
 		color: var(--text-3);
-	}
-
-	.touch strong {
-		font-family: var(--font-mono);
-		font-weight: 600;
-		color: var(--text);
-		font-variant-numeric: tabular-nums;
-	}
-
-	.pill:disabled {
-		opacity: 0.45;
-		pointer-events: none;
-	}
-
-	.pill-wrap {
-		display: inline-flex;
-	}
-
-	.pill-wrap:has(.pill:disabled) {
-		cursor: not-allowed;
+		white-space: nowrap;
 	}
 </style>
