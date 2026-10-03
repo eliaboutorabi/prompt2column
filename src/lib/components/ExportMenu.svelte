@@ -70,7 +70,7 @@
 	<button
 		bind:this={trigger}
 		type="button"
-		class="btn btn-outline"
+		class="btn btn-soft"
 		aria-haspopup="menu"
 		aria-expanded={open}
 		{disabled}

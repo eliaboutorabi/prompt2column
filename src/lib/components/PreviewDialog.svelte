@@ -119,7 +119,7 @@
 			<section>
 				<div class="flex items-center justify-between gap-3">
 					<span class="cap">Answer</span>
-					<button class="btn btn-outline" onclick={test} disabled={testing || !config?.model}>
+					<button class="btn btn-soft" onclick={test} disabled={testing || !config?.model}>
 						{#if testing}
 							<Icon icon={Loading03Icon} size={14} class="spin" /> Running
 						{:else}

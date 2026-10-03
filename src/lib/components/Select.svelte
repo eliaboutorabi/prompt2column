@@ -294,19 +294,20 @@
 			color var(--dur-fast) ease;
 	}
 
+	/* Filled like the other fields; the border only shows when it has focus. */
 	.is-field .trigger {
-		background: var(--surface);
-		border: 1px solid var(--line-strong);
-		box-shadow: var(--elev-1);
+		background: var(--field);
+		border: 1px solid transparent;
 	}
 
 	.is-field .trigger:hover:not(:disabled) {
-		border-color: color-mix(in oklch, var(--text-3) 70%, var(--line-strong));
+		background: var(--field-hover);
 	}
 
 	.is-field .trigger:focus-visible,
 	.is-field .trigger[aria-expanded='true'] {
 		outline: none;
+		background: var(--surface);
 		border-color: var(--accent);
 		box-shadow: var(--ring);
 	}

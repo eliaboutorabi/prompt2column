@@ -162,7 +162,7 @@
 						{/if}
 						<button
 							type="button"
-							class="btn btn-outline retry"
+							class="btn btn-soft retry"
 							onclick={() => models.scan()}
 							disabled={models.loading}
 						>

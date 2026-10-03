@@ -173,7 +173,7 @@
 
 	<div class="actions">
 		{#if ws.runFailed > 0 && !ws.isBusy}
-			<button type="button" class="btn btn-outline" onclick={() => ws.retryFailed(models.host)}>
+			<button type="button" class="btn btn-soft" onclick={() => ws.retryFailed(models.host)}>
 				<Icon icon={RefreshIcon} size={15} />
 				Retry {ws.runFailed} failed
 			</button>
@@ -181,7 +181,7 @@
 
 		<button
 			type="button"
-			class="btn btn-outline preview"
+			class="btn btn-soft preview"
 			onclick={() => (showPreview = true)}
 			disabled={!config.template.trim() || issues.unknown.length > 0}
 		>
@@ -189,17 +189,17 @@
 		</button>
 
 		{#if ws.runState === 'running'}
-			<button type="button" class="btn btn-outline wide" onclick={() => ws.pause()}>
+			<button type="button" class="btn btn-soft wide" onclick={() => ws.pause()}>
 				<Icon icon={PauseIcon} size={15} /> Pause
 			</button>
-			<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
+			<button type="button" class="btn btn-soft" onclick={() => ws.stop()}>
 				<Icon icon={StopIcon} size={15} /> Stop
 			</button>
 		{:else if ws.runState === 'paused'}
 			<button type="button" class="btn btn-primary wide" onclick={() => ws.resume()}>
 				<Icon icon={PlayIcon} size={15} /> Resume
 			</button>
-			<button type="button" class="btn btn-outline" onclick={() => ws.stop()}>
+			<button type="button" class="btn btn-soft" onclick={() => ws.stop()}>
 				<Icon icon={StopIcon} size={15} /> Stop
 			</button>
 		{:else}

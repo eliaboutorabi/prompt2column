@@ -209,7 +209,7 @@
 		<div class="grid place-items-center px-6">
 			<div class="max-w-sm text-center">
 				<p class="text-sm font-medium text-ink">{ws.loadError}</p>
-				<button class="btn btn-outline mt-4" onclick={() => goto(resolve('/'))}>
+				<button class="btn btn-soft mt-4" onclick={() => goto(resolve('/'))}>
 					Back to projects
 				</button>
 			</div>

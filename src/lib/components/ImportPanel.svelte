@@ -123,7 +123,7 @@
 			</span>
 			<span class="drop-sub">The file is read in this browser and never uploaded.</span>
 		</span>
-		<span class="btn btn-outline choose" aria-hidden="true">Choose file</span>
+		<span class="btn btn-soft choose" aria-hidden="true">Choose file</span>
 	</label>
 
 	{#if error}

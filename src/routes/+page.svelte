@@ -221,7 +221,7 @@
 									<div class="confirm">
 										<span>Delete this project?</span>
 										<button
-											class="btn btn-outline danger"
+											class="btn btn-soft danger"
 											onclick={async () => {
 												await session.removeProject(project.id);
 												pendingDelete = null;
@@ -704,7 +704,11 @@
 	}
 
 	.confirm .danger {
-		border-color: var(--danger-line);
+		background: var(--danger-soft);
 		color: var(--danger);
+	}
+
+	.confirm .danger:hover:not(:disabled) {
+		background: color-mix(in oklch, var(--danger-soft) 80%, var(--danger));
 	}
 </style>

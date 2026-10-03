@@ -141,20 +141,21 @@
 		align-items: stretch;
 		width: 100%;
 		height: 2.25rem;
-		border: 1px solid var(--line-strong);
+		border: 1px solid transparent;
 		border-radius: var(--radius-control);
-		background: var(--surface);
-		box-shadow: var(--elev-1);
+		background: var(--field);
 		transition:
+			background-color var(--dur-fast) ease,
 			border-color var(--dur-fast) ease,
 			box-shadow var(--dur-fast) ease;
 	}
 
-	.number:hover:not(.disabled) {
-		border-color: color-mix(in oklch, var(--text-3) 70%, var(--line-strong));
+	.number:hover:not(.disabled):not(:focus-within) {
+		background: var(--field-hover);
 	}
 
 	.number:focus-within {
+		background: var(--surface);
 		border-color: var(--accent);
 		box-shadow: var(--ring);
 	}

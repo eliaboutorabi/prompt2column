@@ -6,6 +6,7 @@
  * Palette: cool-neutral paper with a faint green cast, one accent (citron).
  * The accent carries every primary action, focus ring and progress state.
  * Corner radius rule: controls 8px, panels 12px, chips full pill. No exceptions.
+ * Controls are filled, not outlined; a border appears only on focus.
  */
 
 @custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
@@ -22,6 +23,10 @@
 	--line-strong: oklch(0.86 0.007 110);
 	/* The sheet's own rules, a step softer than panel lines so data leads. */
 	--grid-line: oklch(0.935 0.004 110);
+	/* Filled controls: a quiet fill instead of a drawn box, so a form reads as
+	   one surface rather than a stack of outlines. */
+	--field: oklch(0.962 0.004 110);
+	--field-hover: oklch(0.945 0.005 110);
 	--text: oklch(0.22 0.01 110);
 	--text-2: oklch(0.47 0.01 110);
 	--text-3: oklch(0.6 0.008 110);
@@ -98,6 +103,8 @@
 	--line: oklch(0.272 0.008 110);
 	--line-strong: oklch(0.345 0.01 110);
 	--grid-line: oklch(0.245 0.007 110);
+	--field: oklch(0.235 0.008 110);
+	--field-hover: oklch(0.262 0.009 110);
 	--text: oklch(0.96 0.004 110);
 	--text-2: oklch(0.74 0.008 110);
 	--text-3: oklch(0.6 0.008 110);
@@ -389,15 +396,14 @@
 		color: var(--text);
 	}
 
-	.btn-outline {
-		background: var(--surface);
-		border-color: var(--line-strong);
+	/* The everyday button: a soft fill, quieter than the accent. */
+	.btn-soft {
+		background: var(--field);
 		color: var(--text);
-		box-shadow: var(--elev-1);
 	}
 
-	.btn-outline:hover:not(:disabled) {
-		background: var(--surface-2);
+	.btn-soft:hover:not(:disabled) {
+		background: var(--field-hover);
 	}
 
 	/* Square, for a lone icon. Always pair with an aria-label. */
@@ -408,27 +414,33 @@
 
 	.field {
 		width: 100%;
-		background: var(--surface);
-		border: 1px solid var(--line-strong);
+		background: var(--field);
+		border: 1px solid transparent;
 		border-radius: var(--radius-control);
 		padding: 0.5rem 0.7rem;
 		font-size: 0.8125rem;
 		line-height: 1.35;
 		color: var(--text);
-		box-shadow: var(--elev-1);
 		transition:
+			background-color var(--dur-fast) ease,
 			border-color var(--dur-fast) ease,
 			box-shadow var(--dur-fast) ease;
 	}
 
-	.field:hover:not(:disabled) {
-		border-color: color-mix(in oklch, var(--text-3) 70%, var(--line-strong));
+	.field:hover:not(:disabled):not(:focus) {
+		background: var(--field-hover);
 	}
 
 	.field:focus {
 		outline: none;
+		background: var(--surface);
 		border-color: var(--accent);
 		box-shadow: var(--ring);
+	}
+
+	.field:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
 	}
 
 	.label {
