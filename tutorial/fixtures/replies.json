@@ -1,0 +1,1319 @@
+[
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4183\nCustomer: Tomasz Wierzbicki\nPlan: Solo\nChannel: Chat\nMessage: Just wanted to say the new keyboard shortcuts are excellent. Cut my weekly cleanup from 40 minutes to about 10.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 344,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:53.123803462Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Sentiment\": \"positive\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 276038822,
+			"prompt_eval_count": 174,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 11
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4182\nCustomer: Ines Moreau\nPlan: Studio\nChannel: Email\nMessage: The export finished but every timestamp is shifted by two hours. I re-checked my timezone setting twice, it is correct. This is the third week we have shipped reports with wrong times.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 714,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:53.486907541Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 287839191,
+			"prompt_eval_count": 184,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4184\nCustomer: Amara Okonkwo\nPlan: Team\nChannel: Email\nMessage: How do I move a project from one workspace to another? I looked in settings and the docs but could not find it.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 773,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:53.901973585Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"neutral\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 262522839,
+			"prompt_eval_count": 173,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4185\nCustomer: Bilal Haddad\nPlan: Studio\nChannel: Phone\nMessage: Billing charged us twice in March. I have sent the invoices to your finance address twice with no reply. We are close to disputing the charge with the bank.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1122,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:54.614939952Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 265351766,
+			"prompt_eval_count": 179,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4186\nCustomer: Sanne de Vries\nPlan: Solo\nChannel: Chat\nMessage: Login link never arrives. Checked spam. Tried two browsers. I have been locked out since Friday and I have a deadline Monday.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1266,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:55.167338141Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 357650879,
+			"prompt_eval_count": 173,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4187\nCustomer: Diego Barrantes\nPlan: Team\nChannel: Email\nMessage: Small thing, the CSV import ignores the last row when the file has no trailing newline. Workaround is easy, just flagging it.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1226,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:55.845671151Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"neutral\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 218654373,
+			"prompt_eval_count": 173,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4188\nCustomer: Freya Lindqvist\nPlan: Studio\nChannel: Email\nMessage: We upgraded to Studio mainly for the audit log and it has been solid. One request: could the log export as JSON rather than only CSV?",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 990,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:56.138403651Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"positive\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 238680060,
+			"prompt_eval_count": 176,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4189\nCustomer: Rahul Chandrasekhar\nPlan: Solo\nChannel: Chat\nMessage: cancel my account",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 753,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:56.604075998Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 323287887,
+			"prompt_eval_count": 149,
+			"prompt_eval_cached_count": 128,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4190\nCustomer: Marta Kovács\nPlan: Team\nChannel: Email\nMessage: The mobile layout breaks on my phone below about 380 pixels wide. Buttons overlap the header and I cannot dismiss the dialog at all.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1120,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:57.293691016Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 219656804,
+			"prompt_eval_count": 175,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4191\nCustomer: Kwame Boateng\nPlan: Studio\nChannel: Phone\nMessage: Your support team called back within ten minutes and fixed the SSO mapping on the spot. Genuinely the best onboarding I have had with a vendor this year.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1239,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:57.844178667Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"positive\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 252520575,
+			"prompt_eval_count": 178,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4192\nCustomer: Elif Yalçın\nPlan: Solo\nChannel: Email\nMessage: Is there a student discount? I am finishing a masters and paying out of pocket.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1010,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:58.300578231Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"neutral\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 217920693,
+			"prompt_eval_count": 165,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4193\nCustomer: Joonas Peltonen\nPlan: Team\nChannel: Chat\nMessage: Sync has been dropping silently since the last release. No error, the rows just stop updating until I reload. My team has lost trust in the numbers.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 962,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:58.822733039Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 229451432,
+			"prompt_eval_count": 179,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4194\nCustomer: Chiara Bellini\nPlan: Studio\nChannel: Email\nMessage: Documentation for the webhook signature is out of date. The header name changed but the page still shows the old one. Took me an afternoon to work that out.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1134,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:56:59.436036293Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 207904826,
+			"prompt_eval_count": 178,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4195\nCustomer: Ndeye Faye\nPlan: Solo\nChannel: Chat\nMessage: All good now, the workaround you sent worked. Thanks for the quick reply on a Sunday.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1358,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:00.110227227Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Sentiment\": \"positive\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 265893476,
+			"prompt_eval_count": 166,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 11
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Sentiment\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with exactly one of these labels: positive, neutral, negative.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nCopy one label exactly as written: positive | neutral | negative.\nJudge only what the text says. Do not guess beyond it.",
+		"prompt": "Classify this row.\n\nTicket: SUP-4196\nCustomer: Petra Novakova\nPlan: Team\nChannel: Email\nMessage: Renewal quote came in 38 percent above last year with no notice and no change in seat count. We need an explanation before the board meeting on the 14th.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string",
+					"enum": ["positive", "neutral", "negative"]
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1242,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:00.691415638Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Sentiment\": \"negative\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 326743972,
+			"prompt_eval_count": 182,
+			"prompt_eval_cached_count": 160,
+			"eval_count": 12
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0913\nRequester: Tomasz Wierzbicki\nTeam: Engineering\nAmount EUR: 1850\nCategory: Travel\nPolicy cap EUR: 1200\nJustification: Flights and three nights in Lisbon for the platform conference. No pre-approval was requested before booking.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 267,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:01.885772912Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 215075627,
+			"prompt_eval_count": 202,
+			"prompt_eval_cached_count": 0,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0912\nRequester: Ines Moreau\nTeam: Design\nAmount EUR: 240\nCategory: Software\nPolicy cap EUR: 500\nJustification: Annual licence for the icon library we already use in the design system. Replaces three one-off purchases from last year.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 751,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:02.361813395Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 204472010,
+			"prompt_eval_count": 203,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0914\nRequester: Amara Okonkwo\nTeam: Research\nAmount EUR: 89\nCategory: Books\nPolicy cap EUR: 200\nJustification: Two reference texts on survey methodology for the retention study.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 917,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:02.798515912Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 192896042,
+			"prompt_eval_count": 190,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0915\nRequester: Bilal Haddad\nTeam: Sales\nAmount EUR: 620\nCategory: Client dinner\nPolicy cap EUR: 300\nJustification: Dinner for six with the Rotterdam account during contract renewal week.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1131,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:03.467279876Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 214571850,
+			"prompt_eval_count": 191,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0916\nRequester: Sanne de Vries\nTeam: Engineering\nAmount EUR: 0\nCategory: Hardware\nPolicy cap EUR: 1500\nJustification: Replacement laptop charger. Amount to be confirmed, waiting on the invoice.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1123,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:03.928846146Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 201409956,
+			"prompt_eval_count": 192,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 9
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0917\nRequester: Diego Barrantes\nTeam: Marketing\nAmount EUR: 4300\nCategory: Agency fees\nPolicy cap EUR: 2000\nJustification: Video edit for the launch film. Vendor is the founder's former studio.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 792,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:04.294523958Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 248729490,
+			"prompt_eval_count": 197,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0918\nRequester: Freya Lindqvist\nTeam: Engineering\nAmount EUR: 310\nCategory: Software\nPolicy cap EUR: 500\nJustification: Profiler licence for the performance work planned this quarter. Trial results attached in the ticket.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 674,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:04.521763836Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 217276381,
+			"prompt_eval_count": 197,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0919\nRequester: Rahul Chandrasekhar\nTeam: Support\nAmount EUR: 55\nCategory: Meals\nPolicy cap EUR: 80\nJustification: Late shift dinner during the March incident, single receipt attached.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 655,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:04.961807547Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 229513222,
+			"prompt_eval_count": 188,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0920\nRequester: Marta Kovacs\nTeam: Design\nAmount EUR: 1150\nCategory: Hardware\nPolicy cap EUR: 1500\nJustification: Colour-accurate external display for print proofing. Quote from the approved supplier.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 585,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:05.201971708Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 211309037,
+			"prompt_eval_count": 196,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0921\nRequester: Kwame Boateng\nTeam: Sales\nAmount EUR: 780\nCategory: Travel\nPolicy cap EUR: 1200\nJustification: Train and two nights in Milan for an on-site with a signed customer. Booked eleven days ahead.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 710,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:05.667501293Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 216139901,
+			"prompt_eval_count": 201,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0922\nRequester: Elif Yalcin\nTeam: Research\nAmount EUR: 2600\nCategory: Participant incentives\nPolicy cap EUR: 2000\nJustification: Vouchers for 52 interview participants at 50 each. Overruns the cap because the sample was widened after the pilot.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 871,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:06.078833653Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 405255325,
+			"prompt_eval_count": 209,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0923\nRequester: Joonas Peltonen\nTeam: Engineering\nAmount EUR: 175\nCategory: Training\nPolicy cap EUR: 600\nJustification: Two-day workshop on distributed tracing, remote attendance.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 707,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:06.386127471Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 206808593,
+			"prompt_eval_count": 191,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0924\nRequester: Chiara Bellini\nTeam: Marketing\nAmount EUR: 95\nCategory: Subscriptions\nPolicy cap EUR: 200\nJustification: Stock photography credits for the quarterly newsletter.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 663,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:06.693463158Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 200747399,
+			"prompt_eval_count": 186,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0925\nRequester: Ndeye Faye\nTeam: Support\nAmount EUR: 1400\nCategory: Hardware\nPolicy cap EUR: 1500\nJustification: Standing desk and chair for a documented back injury, occupational health note on file.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 722,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:07.107040347Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Decision\": true\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 223574807,
+			"prompt_eval_count": 197,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 10
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Decision\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with true or false, where true means \"Approve\" and false means \"Reject\".\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nApply the policy strictly. When the row is missing evidence, reject it.",
+		"prompt": "Decide whether to approve this request.\n\nRequest: EXP-0926\nRequester: Petra Novakova\nTeam: Sales\nAmount EUR: 330\nCategory: Client gifts\nPolicy cap EUR: 150\nJustification: Hampers for three accounts that renewed early. No prior approval, receipt is a handwritten note.\n\nPolicy: approve when the request is clearly justified and within limits. Otherwise reject.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "boolean"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 667,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:07.40971538Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Decision\": false\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 235769648,
+			"prompt_eval_count": 198,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 9
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-201\nStudy: Onboarding friction\nParticipant: P04 warehouse supervisor\nDate: 2026-02-03\nRaw notes: Signed up on a phone during a shift. Skipped the tour twice because he thought it was an ad. Found the import button only after the researcher pointed at it. Said he expected the app to read the file straight from the shared drive. Kept calling the projects 'folders'. Finished the first import in 11 minutes but said it felt like 30.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 478,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:08.375136693Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Summary\": \"Warehouse supervisor P04 struggled with onboarding, mistaking the tour for ads and requiring guidance to find the import button.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 415574498,
+			"prompt_eval_count": 241,
+			"prompt_eval_cached_count": 0,
+			"eval_count": 33
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-202\nStudy: Onboarding friction\nParticipant: P07 clinic administrator\nDate: 2026-02-04\nRaw notes: Very comfortable with spreadsheets, 14 years of practice. Immediately looked for a formula bar and was surprised there was none. Wanted to see what the model would write before running it on 900 rows. Asked three times whether the data leaves the building. Once told it stays local she relaxed and ran the whole sheet.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1067,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:08.957898451Z",
+			"message": {
+				"role": "assistant",
+				"content": "```json\n{\n  \"Summary\": \"Experienced clinic administrator P07 sought a formula bar and verified data locality before processing 900 rows during onboarding friction study RN-202.\"\n}\n```"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 547473679,
+			"prompt_eval_count": 232,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 46
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-203\nStudy: Onboarding friction\nParticipant: P11 freelance translator\nDate: 2026-02-05\nRaw notes: Works across four languages and expected the tool to keep the source language column untouched. Wrote a prompt with no column reference at all and got the same answer on every row, then worked out the problem on her own within a minute. Said the highlighted column names were the part that made the idea click.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1354,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:09.623984234Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Freelance translator P11 initially struggled with column references but resolved the issue using highlighted column names during the onboarding friction study.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 423102724,
+			"prompt_eval_count": 227,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 35
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-204\nStudy: Batch reliability\nParticipant: P02 logistics analyst\nDate: 2026-02-11\nRaw notes: Ran 2400 rows overnight on a laptop that went to sleep. Came back to a partial column and no clear record of where it stopped. Rebuilt the missing part by sorting on blanks. Asked for a way to run only the empty cells, said that would have saved him an hour.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1447,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:10.417024147Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Logistics analyst P02 spent an hour rebuilding data after a laptop sleep interrupted a 2400-row batch reliability run.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 469062585,
+			"prompt_eval_count": 226,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 38
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-205\nStudy: Batch reliability\nParticipant: P05 grants officer\nDate: 2026-02-12\nRaw notes: Cared most about consistency between rows. Ran the same 60 rows three times and compared answers by hand in a separate sheet. Two rows changed wording each time and that bothered her more than an outright error would have. Asked whether the temperature setting was what caused it.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1302,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:11.042018603Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Grants officer P05 noted inconsistency in wording across three runs of 60 rows, questioning if temperature settings caused the variations.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 463750838,
+			"prompt_eval_count": 220,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 37
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-206\nStudy: Batch reliability\nParticipant: P09 quality lead\nDate: 2026-02-13\nRaw notes: Wanted the model to answer only from a fixed list because his downstream pivot table breaks on free text. Tried to enforce the list in the prompt text itself and still got a sentence back on two rows. Said a hard constraint would matter more to him than speed.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1271,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:11.681828358Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Summary\": \"P09 quality lead requested hard constraints for fixed-list answers to prevent downstream pivot table errors, prioritizing accuracy over speed.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 472163180,
+			"prompt_eval_count": 217,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 34
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-207\nStudy: Trust and review\nParticipant: P03 policy researcher\nDate: 2026-02-18\nRaw notes: Read every generated cell for the first 40 rows, then spot-checked. Wanted a way to mark a cell as reviewed. Said the value of the tool is the first pass, not the final answer, and that she would never publish a column she had not read.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1334,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:12.372472897Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Policy researcher P03 reviewed 40 rows, requested a review marking feature, and emphasized the tool's value as a first-pass draft.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 458052624,
+			"prompt_eval_count": 222,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 41
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-208\nStudy: Trust and review\nParticipant: P08 nonprofit director\nDate: 2026-02-19\nRaw notes: Ran an approval prompt on grant applications and then deliberately fed it a case he knew was borderline. The model approved it and he immediately lost confidence in the rest of the column. Talked for a while about wanting the reason next to the decision.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1272,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:12.962169623Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Summary\": \"Nonprofit director P08 lost confidence in the model after it approved a borderline grant application and requested reasons for decisions.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 388760729,
+			"prompt_eval_count": 215,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 33
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-209\nStudy: Trust and review\nParticipant: P12 data journalist\nDate: 2026-02-20\nRaw notes: Used it to label 1100 council motions by topic. Compared against 80 rows she had labelled by hand last year, agreement was high enough that she kept the column. Wanted to export both the labels and the exact prompt that produced them for her methodology note.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1344,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:13.669647376Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Data journalist P12 used the tool to label 1100 council motions, finding high agreement with her manual labels.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 489383987,
+			"prompt_eval_count": 222,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 36
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-210\nStudy: Model choice\nParticipant: P06 solo consultant\nDate: 2026-02-25\nRaw notes: Had three models on his machine and no idea which to pick. Chose the largest one, waited four seconds a row, and got frustrated. Switched to a small model after prompting and said the answers were close enough for triage work.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1312,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:14.264658191Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Participant P06 switched from a slow large model to a small model, finding the latter sufficient for triage work.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 561802310,
+			"prompt_eval_count": 213,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 33
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-211\nStudy: Model choice\nParticipant: P10 university lecturer\nDate: 2026-02-26\nRaw notes: Ran the same summary prompt across two models on 30 abstracts and put the results side by side. Said the smaller model wrote shorter and cleaner and that longer was not better for her use. Asked whether she could keep both columns.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1299,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:15.022326033Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n\"Summary\": \"University lecturer P10 preferred the smaller model's shorter, cleaner summaries over longer ones during a model choice study on February 26, 2026.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 518143073,
+			"prompt_eval_count": 212,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 44
+		}
+	},
+	{
+		"model": "gemma4:31b-cloud",
+		"system": "You fill in the \"Summary\" cell for one row of a spreadsheet.\nRead the row data in the user message and reply with plain text of at most 25 words.\nReply with JSON matching the schema and nothing else.\nNo greeting, no preamble, no explanation, no markdown, no quotes around the value.\nStay under 25 words. Write one continuous line without line breaks.\nKeep the original meaning. Do not add facts that are not in the row.",
+		"prompt": "Summarize this row in one sentence.\n\nNote: RN-212\nStudy: Model choice\nParticipant: P13 municipal archivist\nDate: 2026-02-27\nRaw notes: Machine is eight years old and the first run took nine minutes for 20 rows. Never complained about the wait, said it still beats reading each record. Main worry was whether the tool would still work when the office network is down.",
+		"format": {
+			"type": "object",
+			"properties": {
+				"value": {
+					"type": "string"
+				}
+			},
+			"required": ["value"],
+			"additionalProperties": false
+		},
+		"think": false,
+		"latencyMs": 1409,
+		"reply": {
+			"model": "gemma4:31b",
+			"created_at": "2026-10-03T06:57:15.681741301Z",
+			"message": {
+				"role": "assistant",
+				"content": "{\n  \"Summary\": \"Municipal archivist P13 found the tool faster than manual reading despite slow performance and expressed concern regarding offline functionality.\"\n}"
+			},
+			"done": true,
+			"done_reason": "stop",
+			"total_duration": 513520190,
+			"prompt_eval_count": 214,
+			"prompt_eval_cached_count": 96,
+			"eval_count": 33
+		}
+	}
+]
